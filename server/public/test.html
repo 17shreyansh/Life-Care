@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      overflow: auto;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Connection Test</h1>
+  <p>This page tests the connection to the API server at <code>http://localhost:5000/api/counsellors</code></p>
+  
+  <button id="testButton">Test API Connection</button>
+  
+  <div id="result" style="margin-top: 20px;"></div>
+  
+  <script>
+    document.getElementById('testButton').addEventListener('click', testApi);
+    
+    // Test API on page load
+    window.onload = testApi;
+    
+    function testApi() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '<p>Testing connection...</p>';
+      
+      fetch('http://localhost:5000/api/counsellors', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('API Response:', data);
+        resultDiv.innerHTML = `
+          <p class="success">✅ Success! API is working correctly.</p>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      })
+      .catch(error => {
+        console.error('API Error:', error);
+        resultDiv.innerHTML = `
+          <p class="error">❌ Error: ${error.message}</p>
+          <p>Possible reasons:</p>
+          <ul>
+            <li>Server is not running on port 5000</li>
+            <li>CORS is not properly configured</li>
+            <li>Network issue between client and server</li>
+          </ul>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>
