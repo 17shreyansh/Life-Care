@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import NotFound from './pages/public/NotFound';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
@@ -21,8 +22,13 @@ import Register from './pages/auth/Register';
 
 // Client Pages
 import ClientDashboard from './pages/client/Dashboard';
-import CounsellorList from './pages/client/CounsellorList';
+import Counsellors from './pages/client/Counsellors';
 import BookAppointment from './pages/client/BookAppointment';
+import MyAppointments from './pages/client/MyAppointments';
+import ChatVideo from './pages/client/ChatVideo';
+import Payments from './pages/client/Payments';
+import Feedback from './pages/client/Feedback';
+import Profile from './pages/client/Profile';
 
 // Counsellor Pages
 import CounsellorDashboard from './pages/counsellor/Dashboard';
@@ -46,16 +52,22 @@ function App() {
           <Route path="gallery" element={<Gallery />} />
           <Route path="videos" element={<Videos />} />
           <Route path="contact" element={<Contact />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
         </Route>
+        
+        {/* Auth Routes */}
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
 
         {/* Client Routes with DashboardLayout */}
         <Route path="/client" element={<DashboardLayout role="client" />}>
           <Route path="dashboard" element={<ClientDashboard />} />
-          <Route path="counsellors" element={<CounsellorList />} />
+          <Route path="counsellors" element={<Counsellors />} />
           <Route path="book-appointment/:counsellorId" element={<BookAppointment />} />
-          {/* Add more client routes as needed */}
+          <Route path="appointments" element={<MyAppointments />} />
+          <Route path="chat-video" element={<ChatVideo />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="feedback" element={<Feedback />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         {/* Counsellor Routes with DashboardLayout */}
@@ -73,6 +85,9 @@ function App() {
         {/* Test Routes */}
         <Route path="/test" element={<TestApi />} />
         <Route path="/simple-test" element={<SimpleTest />} />
+        
+        {/* 404 Route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

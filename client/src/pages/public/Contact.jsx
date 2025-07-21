@@ -1,196 +1,250 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     subject: '',
     message: ''
   });
-  const [formStatus, setFormStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    
-    // Simulate API call
+    // In a real app, this would send the form data to the server
+    console.log(formData);
+    setSubmitted(true);
+    // Reset form
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      subject: '',
+      message: ''
+    });
+    // Show success message for 3 seconds
     setTimeout(() => {
-      setFormStatus({ type: 'success', message: 'Your message has been sent successfully! We will get back to you soon.' });
-      setLoading(false);
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
-      });
-    }, 1500);
+      setSubmitted(false);
+    }, 3000);
   };
 
   return (
-    <div className="container py-5">
-      <div className="row mb-5">
-        <div className="col-lg-8 mx-auto text-center">
-          <h1 className="display-4">Contact Us</h1>
-          <p className="lead text-muted">We're here to help. Reach out to us with any questions or concerns.</p>
+    <div className="contact-page py-5">
+      <div className="container">
+        <div className="text-center mb-5">
+          <h1 className="mb-3">Contact <span className="text-gradient">Us</span></h1>
+          <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
+            Have questions or need support? We're here to help. Reach out to us through any of the channels below.
+          </p>
         </div>
-      </div>
 
-      <div className="row">
-        {/* Contact Information */}
-        <div className="col-lg-4 mb-4 mb-lg-0">
-          <div className="card h-100">
-            <div className="card-body">
-              <h3 className="card-title">Get In Touch</h3>
-              <p className="card-text">Have questions about our services? Need support? Our team is ready to assist you.</p>
-              
-              <div className="d-flex mb-3">
-                <div className="me-3">
-                  <i className="bi bi-geo-alt fs-4 text-primary"></i>
+        <div className="row mb-5">
+          <div className="col-md-4 mb-4 mb-md-0">
+            <div className="card contact-info-card h-100">
+              <div className="card-body p-4">
+                <div className="d-flex align-items-center mb-4">
+                  <div className="contact-icon me-3">
+                    <i className="bi bi-geo-alt"></i>
+                  </div>
+                  <div>
+                    <h5 className="mb-1">Our Location</h5>
+                    <p className="mb-0 text-muted">Flat No 30A DDA Flat Pocket 2, Dr Lean, Dwarka Sector 6-110075</p>
+                  </div>
                 </div>
-                <div>
-                  <h5 className="mb-1">Address</h5>
-                  <p className="mb-0">123 Mental Health Street<br />Wellness City, WC 10001</p>
+                <div className="d-flex align-items-center mb-4">
+                  <div className="contact-icon me-3">
+                    <i className="bi bi-telephone"></i>
+                  </div>
+                  <div>
+                    <h5 className="mb-1">Phone Number</h5>
+                    <p className="mb-0">
+                      <a href="tel:08123746026" className="text-muted text-decoration-none">08123746026</a>
+                    </p>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="d-flex mb-3">
-                <div className="me-3">
-                  <i className="bi bi-telephone fs-4 text-primary"></i>
+                <div className="d-flex align-items-center mb-4">
+                  <div className="contact-icon me-3">
+                    <i className="bi bi-envelope"></i>
+                  </div>
+                  <div>
+                    <h5 className="mb-1">Email Address</h5>
+                    <p className="mb-0">
+                      <a href="mailto:contact@sspsychologist.com" className="text-muted text-decoration-none">contact@sspsychologist.com</a>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h5 className="mb-1">Phone</h5>
-                  <p className="mb-0">+1 (555) 123-4567</p>
-                </div>
-              </div>
-              
-              <div className="d-flex mb-3">
-                <div className="me-3">
-                  <i className="bi bi-envelope fs-4 text-primary"></i>
-                </div>
-                <div>
-                  <h5 className="mb-1">Email</h5>
-                  <p className="mb-0">contact@sspsychologist.com</p>
-                </div>
-              </div>
-              
-              <div className="d-flex">
-                <div className="me-3">
-                  <i className="bi bi-clock fs-4 text-primary"></i>
-                </div>
-                <div>
-                  <h5 className="mb-1">Working Hours</h5>
-                  <p className="mb-0">Monday - Friday: 9AM - 6PM<br />Saturday: 10AM - 4PM</p>
+                <div className="d-flex align-items-center">
+                  <div className="contact-icon me-3">
+                    <i className="bi bi-clock"></i>
+                  </div>
+                  <div>
+                    <h5 className="mb-1">Working Hours</h5>
+                    <p className="mb-0 text-muted">Monday - Saturday: 9:00 AM - 7:00 PM</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        {/* Contact Form */}
-        <div className="col-lg-8">
-          <div className="card">
-            <div className="card-body">
-              <h3 className="card-title mb-4">Send Us a Message</h3>
-              
-              {formStatus && (
-                <div className={`alert alert-${formStatus.type}`} role="alert">
-                  {formStatus.message}
-                </div>
-              )}
-              
-              <form onSubmit={handleSubmit}>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label htmlFor="name" className="form-label">Your Name</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      id="name" 
-                      name="name" 
-                      value={formData.name} 
-                      onChange={handleChange} 
-                      required 
-                    />
+          <div className="col-md-8">
+            <div className="card contact-form-card h-100">
+              <div className="card-body p-4">
+                <h4 className="mb-4">Send us a message</h4>
+                {submitted ? (
+                  <div className="alert alert-success">
+                    <i className="bi bi-check-circle me-2"></i>
+                    Thank you for your message! We'll get back to you soon.
                   </div>
-                  <div className="col-md-6">
-                    <label htmlFor="email" className="form-label">Email Address</label>
-                    <input 
-                      type="email" 
-                      className="form-control" 
-                      id="email" 
-                      name="email" 
-                      value={formData.email} 
-                      onChange={handleChange} 
-                      required 
-                    />
+                ) : null}
+                <form onSubmit={handleSubmit}>
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <div className="form-floating mb-3">
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="name"
+                          name="name"
+                          placeholder="Your Name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                        />
+                        <label htmlFor="name">Your Name</label>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-floating mb-3">
+                        <input
+                          type="email"
+                          className="form-control"
+                          id="email"
+                          name="email"
+                          placeholder="Your Email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                        />
+                        <label htmlFor="email">Your Email</label>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-floating mb-3">
+                        <input
+                          type="tel"
+                          className="form-control"
+                          id="phone"
+                          name="phone"
+                          placeholder="Your Phone"
+                          value={formData.phone}
+                          onChange={handleChange}
+                        />
+                        <label htmlFor="phone">Your Phone (Optional)</label>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-floating mb-3">
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="subject"
+                          name="subject"
+                          placeholder="Subject"
+                          value={formData.subject}
+                          onChange={handleChange}
+                          required
+                        />
+                        <label htmlFor="subject">Subject</label>
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <div className="form-floating mb-3">
+                        <textarea
+                          className="form-control"
+                          id="message"
+                          name="message"
+                          placeholder="Your Message"
+                          style={{ height: '150px' }}
+                          value={formData.message}
+                          onChange={handleChange}
+                          required
+                        ></textarea>
+                        <label htmlFor="message">Your Message</label>
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <button type="submit" className="btn btn-primary">
+                        <i className="bi bi-send me-2"></i>Send Message
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-12">
-                    <label htmlFor="subject" className="form-label">Subject</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      id="subject" 
-                      name="subject" 
-                      value={formData.subject} 
-                      onChange={handleChange} 
-                      required 
-                    />
-                  </div>
-                  <div className="col-12">
-                    <label htmlFor="message" className="form-label">Message</label>
-                    <textarea 
-                      className="form-control" 
-                      id="message" 
-                      name="message" 
-                      rows="5" 
-                      value={formData.message} 
-                      onChange={handleChange} 
-                      required
-                    ></textarea>
-                  </div>
-                  <div className="col-12">
-                    <button 
-                      type="submit" 
-                      className="btn btn-primary" 
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Sending...
-                        </>
-                      ) : 'Send Message'}
-                    </button>
-                  </div>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* Map */}
-      <div className="row mt-5">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-body p-0">
-              <div className="ratio ratio-21x9">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387193.3059353029!2d-74.25986548248684!3d40.69714941932609!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sin!4v1619427748465!5m2!1sen!2sin" 
-                  style={{ border: 0 }} 
-                  allowFullScreen="" 
-                  loading="lazy"
-                  title="Office Location"
-                ></iframe>
+
+        {/* Map Section */}
+        <div className="card map-card mb-5">
+          <div className="card-body p-0">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3503.2536671665396!2d77.0518!3d28.5917!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1a9c31eec4e1%3A0x39493976c8c4c3a!2sDwarka%20Sector%206%2C%20Dwarka%2C%20Delhi%2C%20110075!5e0!3m2!1sen!2sin!4v1623825643412!5m2!1sen!2sin" 
+              width="100%" 
+              height="450" 
+              style={{ border: 0 }} 
+              allowFullScreen="" 
+              loading="lazy"
+              title="Office Location"
+            ></iframe>
+          </div>
+        </div>
+
+        {/* Quick Contact Cards */}
+        <div className="row g-4">
+          <div className="col-md-4">
+            <div className="card quick-contact-card h-100">
+              <div className="card-body text-center p-4">
+                <div className="quick-contact-icon mb-4">
+                  <i className="bi bi-headset"></i>
+                </div>
+                <h5 className="card-title mb-3">Customer Support</h5>
+                <p className="card-text text-muted mb-3">Need help with booking or technical issues? Our support team is ready to assist.</p>
+                <a href="mailto:support@sspsychologist.com" className="btn btn-outline-primary">
+                  <i className="bi bi-envelope me-2"></i>Email Support
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card quick-contact-card h-100">
+              <div className="card-body text-center p-4">
+                <div className="quick-contact-icon mb-4">
+                  <i className="bi bi-calendar-check"></i>
+                </div>
+                <h5 className="card-title mb-3">Book an Appointment</h5>
+                <p className="card-text text-muted mb-3">Ready to schedule a session? Book an appointment with one of our counsellors.</p>
+                <a href="/client/counsellors" className="btn btn-outline-primary">
+                  <i className="bi bi-calendar-plus me-2"></i>Book Now
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card quick-contact-card h-100">
+              <div className="card-body text-center p-4">
+                <div className="quick-contact-icon mb-4">
+                  <i className="bi bi-people"></i>
+                </div>
+                <h5 className="card-title mb-3">Join Our Team</h5>
+                <p className="card-text text-muted mb-3">Are you a mental health professional? We're always looking for qualified counsellors.</p>
+                <a href="mailto:careers@sspsychologist.com" className="btn btn-outline-primary">
+                  <i className="bi bi-person-plus me-2"></i>Apply Now
+                </a>
               </div>
             </div>
           </div>

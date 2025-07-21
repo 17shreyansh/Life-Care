@@ -6,7 +6,7 @@ const MainLayout = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <main className="flex-grow-1">
+      <main className="flex-grow-1" style={{ marginTop: '100px' }}>
         <Outlet />
       </main>
       <Footer />
