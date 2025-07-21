@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Logo from '../../assets/logo.png';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -9,8 +10,9 @@ const Footer = () => {
         <div className="row gy-4">
           <div className="col-lg-4 col-md-6">
             <div className="mb-4 d-flex align-items-center">
-              <div className="sidebar-logo me-2">SS</div>
-              <span className="text-gradient fs-4 fw-bold">Life Care</span>
+              <img src={Logo} alt="Life Care Logo" className="logo-img me-2" style={{ height: '40px' }} />
+              <div className="sidebar-logo fs-4 fw-bold me-1">SS</div>
+              <span className="text-gradient fs-4 fw-bold">Psychologist Life Care</span>
             </div>
             <p className="mb-4">A modern, secure, and user-centric platform designed to bridge the gap between individuals seeking mental health support and qualified professionals.</p>
             <div className="d-flex gap-3">

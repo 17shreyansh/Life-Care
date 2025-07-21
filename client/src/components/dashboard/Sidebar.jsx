@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Logo from '../../assets/logo.png';
 
 const Sidebar = ({ userRole, onToggle }) => {
   const location = useLocation();
@@ -81,8 +82,9 @@ const Sidebar = ({ userRole, onToggle }) => {
       
       <div className="sidebar-header">
         <Link to="/" className="sidebar-brand">
-          <div className="sidebar-logo">SS</div>
-          {!collapsed && <span className="sidebar-title">Life Care</span>}
+          <img src={Logo} alt="Life Care Logo" className="logo-img me-2" style={{ height: '40px', width: collapsed ? '40px' : 'auto' }} />
+          {/* <div className="sidebar-logo">SS</div> */}
+          {!collapsed && <span className="sidebar-title">SS Psychologist Life Care</span>}
         </Link>
       </div>
       

@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import Logo from '../../assets/logo.png';
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -52,8 +53,9 @@ const Header = () => {
       <div className="container">
         <Link className="navbar-brand" to="/">
           <div className="d-flex align-items-center">
-            <div className="sidebar-logo me-2">SS</div>
-            <span className="brand-text">Life Care</span>
+            <img src={Logo} alt="Life Care Logo" className="logo-img me-2" style={{ height: '40px' }} />
+            <div className="sidebar-logo me-0">SS </div>
+            <span className="brand-text">Psychologist Life Care</span>
           </div>
         </Link>
         
