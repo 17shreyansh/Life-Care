@@ -5,6 +5,7 @@ import Sidebar from '../components/dashboard/Sidebar';
 const DashboardLayout = ({ role }) => {
   const [userName, setUserName] = useState('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,11 +25,37 @@ const DashboardLayout = ({ role }) => {
     setSidebarCollapsed(collapsed);
   };
 
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Update isMobile state when window resizes
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="dashboard-layout">
+      {isMobile && (
+        <button 
+          className="mobile-sidebar-toggle dashboard-toggle" 
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          <i className="bi bi-list"></i>
+        </button>
+      )}
+      
+      {mobileOpen && <div className="sidebar-overlay"></div>}
+      
       <Sidebar 
         userRole={role} 
         onToggle={handleSidebarToggle}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
       />
       
       <div className={`dashboard-content ${sidebarCollapsed ? 'expanded' : ''}`}>

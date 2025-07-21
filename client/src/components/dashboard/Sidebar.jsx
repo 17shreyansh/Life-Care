@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../../assets/logo.png';
 
-const Sidebar = ({ userRole, onToggle }) => {
+const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const sidebarRef = useRef(null);
   
   // Define navigation links based on user role
   const getNavLinks = () => {
@@ -73,9 +74,26 @@ const Sidebar = ({ userRole, onToggle }) => {
       onToggle(collapsed);
     }
   }, [collapsed, onToggle]);
+  
+  // Handle click outside to close sidebar on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target) && mobileOpen) {
+        setMobileOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileOpen, setMobileOpen]);
 
   return (
-    <div className={`sidebar floating ${collapsed ? 'collapsed' : ''}`}>
+    <div 
+      ref={sidebarRef}
+      className={`sidebar floating ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}
+    >
       <button className="sidebar-toggle" onClick={toggleSidebar}>
         <i className={`bi ${collapsed ? 'bi-chevron-right' : 'bi-chevron-left'}`}></i>
       </button>

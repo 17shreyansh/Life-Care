@@ -90,38 +90,30 @@ const Blog = () => {
           </p>
         </div>
 
-        {/* Search and Filter Section */}
-        <div className="row mb-5">
-          <div className="col-lg-8">
-            <div className="card search-card mb-4">
-              <div className="card-body p-2">
-                <div className="input-group">
-                  <span className="input-group-text bg-transparent border-0">
-                    <i className="bi bi-search"></i>
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control border-0"
-                    placeholder="Search articles..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-4">
-            <div className="d-flex flex-wrap gap-2">
-              {categories.map((category, index) => (
-                <button
-                  key={index}
-                  className={`btn ${activeCategory === category ? 'btn-primary' : 'btn-outline-primary'}`}
-                  onClick={() => setActiveCategory(category)}
-                >
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </button>
-              ))}
-            </div>
+        {/* Blog Filters */}
+        <div className="filter-container mb-5">
+          {categories.map((category, index) => (
+            <button
+              key={index}
+              className={`filter-btn ${activeCategory === category ? 'active' : ''}`}
+              onClick={() => setActiveCategory(category)}
+            >
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </button>
+          ))}
+        </div>
+        
+        {/* Search Bar */}
+        <div className="mb-5">
+          <div className="search-bar">
+            <i className="bi bi-search search-icon"></i>
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
           </div>
         </div>
 

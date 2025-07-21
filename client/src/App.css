@@ -32,6 +32,41 @@
   box-shadow: 0 5px 20px rgba(37, 99, 235, 0.1);
 }
 
+@media (max-width: 991px) {
+  .navbar {
+    padding: 10px 15px;
+  }
+  
+  .mobile-small {
+    font-size: 0.9rem;
+  }
+  
+  .navbar-brand img {
+    height: 30px !important;
+  }
+  
+  .navbar-collapse {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar-toggler {
+    padding: 4px 8px;
+    font-size: 1.1rem;
+    border: none;
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+  }
+  
+  .navbar-toggler:focus {
+    box-shadow: none;
+    outline: none;
+  }
+}
+
 .navbar-scrolled {
   padding: 10px 20px;
   background-color: rgba(255, 255, 255, 0.95);
@@ -233,6 +268,63 @@ main {
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   border-radius: 20px;
+}
+
+/* Mobile sidebar styles */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -100%;
+    width: 280px;
+    height: 100vh;
+    top: 0;
+    border-radius: 0 20px 20px 0;
+    transition: left 0.3s ease;
+  }
+  
+  .sidebar.mobile-open {
+    left: 0;
+  }
+  
+  .mobile-sidebar-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 45px;
+    height: 45px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    z-index: 999;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Hide dashboard toggle on all screen sizes by default */
+  .mobile-sidebar-toggle.dashboard-toggle {
+    display: none !important;
+  }
+  
+  /* Only show dashboard toggle on mobile screens */
+  @media (max-width: 768px) {
+    .mobile-sidebar-toggle.dashboard-toggle {
+      display: flex !important;
+    }
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
 }
 
 .sidebar.collapsed {
@@ -455,6 +547,24 @@ main {
 .dashboard-content.expanded {
   margin-left: 120px;
   width: calc(100% - 120px);
+}
+
+/* Mobile dashboard styles */
+@media (max-width: 768px) {
+  .dashboard-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 70px 15px 30px;
+  }
+  
+  .dashboard-content.expanded {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .dashboard-header {
+    padding: 15px;
+  }
 }
 
 .dashboard-main-content {
