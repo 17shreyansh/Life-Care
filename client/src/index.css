@@ -7,6 +7,10 @@
   --light-text: #6c757d;
   --border-color: #e2e8f0;
   --background-color: #f8fafc;
+  --border-radius: 15px;
+  --border-radius-sm: 15px;
+  --border-radius-lg: 15px;
+  --border-radius-full: 9999px;
 }
 
 * {
@@ -107,10 +111,12 @@ body {
 
 .why-card {
   border: none;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  background-color: white;
+  background: linear-gradient(135deg, #f6f9ff, #ffffff);
+  border-top: 4px solid;
+  border-image: linear-gradient(to right, var(--primary-color), var(--secondary-color)) 1;
 }
 
 .why-card:hover {
@@ -150,9 +156,29 @@ body {
 
 .feature-card {
   border: none;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #e6f7ff, #ffffff);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(16, 185, 129, 0.1));
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.feature-card .card-body {
+  position: relative;
+  z-index: 1;
 }
 
 .feature-card:hover {
@@ -199,9 +225,30 @@ body {
 
 .condition-card {
   border: none;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #f0f9ff, #ffffff);
+  position: relative;
+  overflow: hidden;
+}
+
+.condition-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, transparent, rgba(16, 185, 129, 0.1));
+  border-radius: 50%;
+  transform: translate(30%, 30%);
+  z-index: 0;
+}
+
+.condition-card .card-body {
+  position: relative;
+  z-index: 1;
 }
 
 .condition-card:hover {
@@ -250,6 +297,26 @@ body {
 
 .testimonial-card {
   transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff, #f8f9ff);
+  position: relative;
+  overflow: hidden;
+}
+
+.testimonial-card::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), transparent);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.testimonial-card .card-body {
+  position: relative;
+  z-index: 1;
 }
 
 .testimonial-card:hover {
@@ -264,6 +331,25 @@ body {
 
 .care-option-card {
   transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff, #f0f7ff);
+  position: relative;
+  overflow: hidden;
+}
+
+.care-option-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent, rgba(37, 99, 235, 0.05));
+  z-index: 0;
+}
+
+.care-option-card .card-body {
+  position: relative;
+  z-index: 1;
 }
 
 .care-option-card:hover {
@@ -295,8 +381,8 @@ body {
 }
 
 .cta-card {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  border-radius: 20px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), #4f46e5);
+  border-radius: var(--border-radius);
   padding: 50px;
   color: white;
   box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
@@ -349,7 +435,7 @@ body {
 }
 
 .blog-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   overflow: hidden;
   transition: all 0.3s ease;
 }
@@ -501,7 +587,7 @@ body {
 }
 
 .video-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   background-color: white;
@@ -610,7 +696,7 @@ body {
 }
 
 .featured-video-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   position: relative;
@@ -652,7 +738,7 @@ body {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* Video Modal */
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -667,9 +753,48 @@ body {
   padding: 20px;
 }
 
+.modal-content {
+  background-color: white;
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
 .modal-custom {
   background-color: white;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   width: 100%;
   max-width: 800px;
   overflow: hidden;
@@ -753,7 +878,7 @@ body {
 
 .gallery-item {
   position: relative;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
@@ -859,8 +984,26 @@ body {
 }
 
 .value-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.value-card:nth-child(1) {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), #ffffff);
+}
+
+.value-card:nth-child(2) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), #ffffff);
+}
+
+.value-card:nth-child(3) {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), #ffffff);
+}
+
+.value-card:nth-child(4) {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), #ffffff);
 }
 
 .value-card:hover {
@@ -889,9 +1032,27 @@ body {
 
 /* Team section styles */
 .team-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   overflow: hidden;
   transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff, #f6f9ff);
+  position: relative;
+}
+
+.team-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(to top, rgba(37, 99, 235, 0.05), transparent);
+  z-index: 0;
+}
+
+.team-card .card-body {
+  position: relative;
+  z-index: 1;
 }
 
 .team-card:hover {
@@ -949,7 +1110,7 @@ body {
 }
 
 .contact-info-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   background-color: white;
   transition: all 0.3s ease;
 }
@@ -967,12 +1128,12 @@ body {
 }
 
 .contact-form-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   background-color: white;
 }
 
 .map-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   overflow: hidden;
 }
 
@@ -996,7 +1157,7 @@ body {
 }
 
 .quick-contact-card {
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   transition: all 0.3s ease;
 }
 
@@ -1022,6 +1183,249 @@ body {
 .quick-contact-card:hover .quick-contact-icon {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(96, 165, 250, 0.2));
   transform: scale(1.1);
+}
+
+/* Auth Pages styles */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(16, 185, 129, 0.2));
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.3) 0%, transparent 25%),
+              radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.3) 0%, transparent 25%);
+  z-index: 0;
+}
+
+.auth-page::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0px, rgba(255, 255, 255, 0.05) 10px, transparent 10px, transparent 20px);
+  animation: backgroundMove 60s linear infinite;
+  z-index: 0;
+}
+
+@keyframes backgroundMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50%, 50%);
+  }
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 1200px;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+}
+
+.auth-card {
+  display: flex;
+  background-color: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.2);
+  width: 100%;
+  max-height: 90vh;
+  position: relative;
+}
+
+.register-card {
+  max-width: 1000px;
+}
+
+.auth-image {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  min-height: 600px;
+}
+
+.auth-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(16, 185, 129, 0.85));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.auth-text {
+  color: white;
+  text-align: center;
+  max-width: 400px;
+}
+
+.auth-text h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.auth-text p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.auth-form {
+  flex: 1;
+  padding: 40px;
+  max-width: 500px;
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 0;
+    height: auto;
+  }
+  
+  .auth-card {
+    flex-direction: column;
+    max-height: none;
+    border-radius: 0;
+    height: 100vh;
+  }
+  
+  .auth-image {
+    min-height: 30vh;
+  }
+  
+  .auth-form {
+    max-width: 100%;
+    padding: 30px 20px;
+  }
+  
+  .auth-text h2 {
+    font-size: 2rem;
+  }
+}
+
+/* Auth Form Elements */
+.auth-form .form-control {
+  padding: 12px 15px;
+  border-radius: var(--border-radius);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.auth-form .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.auth-form .form-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #4b5563;
+}
+
+.auth-form .btn {
+  padding: 12px 20px;
+}
+
+.auth-form .form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Step Indicator Styles */
+.step-indicator {
+  position: relative;
+  margin: 30px 0;
+}
+
+.step-progress {
+  position: relative;
+  height: 4px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  margin: 0 auto;
+  margin-bottom: 30px;
+}
+
+.step-progress-bar {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.step-circles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.step-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.step-circle span {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.step-circle p {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+  transition: all 0.3s ease;
+}
+
+.step-circle.active span {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.step-circle.active p {
+  color: var(--primary-color);
+  font-weight: 600;
 }
 
 /* Counsellors Page styles */
@@ -1117,7 +1521,7 @@ body {
 
 .counsellor-profile-card {
   background-color: white;
-  border-radius: 15px;
+  border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;

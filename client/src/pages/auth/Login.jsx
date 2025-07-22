@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
+import heroImage from '../../assets/woman-psychologist.jpg';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -52,11 +53,18 @@ const Login = () => {
   };
 
   return (
-    <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col md={6}>
-          <Card className="shadow">
-            <Card.Body className="p-4">
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-image" style={{ backgroundImage: `url(${heroImage})` }}>
+            <div className="auth-overlay">
+              <div className="auth-text">
+                <h2>Welcome Back</h2>
+                <p>Your mental health journey continues here</p>
+              </div>
+            </div>
+          </div>
+          <div className="auth-form">
               <div className="text-center mb-4">
                 <h2 className="fw-bold">Login</h2>
                 <p className="text-muted">Welcome back to S S Psychologist Life Care</p>
@@ -110,11 +118,10 @@ const Login = () => {
                   <p>Don't have an account? <Link to="/register" className="text-decoration-none">Register</Link></p>
                 </div>
               </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+            </div>
+          </div>
+        </div>
+      </div>
   );
 };
 

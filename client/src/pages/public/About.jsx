@@ -58,7 +58,7 @@ const About = () => {
         {/* Mission & Vision Section */}
         <div className="row mb-5">
           <div className="col-lg-6 mb-4 mb-lg-0">
-            <div className="card h-100 border-0 shadow-sm">
+            <div className="card h-100 border-0 shadow-sm card-gradient-blue">
               <div className="card-body p-4">
                 <h6 className="text-primary fw-bold mb-2">OUR MISSION</h6>
                 <h3 className="mb-4">What We Strive For</h3>
@@ -89,7 +89,7 @@ const About = () => {
             </div>
           </div>
           <div className="col-lg-6">
-            <div className="card h-100 border-0 shadow-sm">
+            <div className="card h-100 border-0 shadow-sm card-gradient-green">
               <div className="card-body p-4">
                 <h6 className="text-primary fw-bold mb-2">OUR VISION</h6>
                 <h3 className="mb-4">Where We're Headed</h3>
@@ -191,7 +191,7 @@ const About = () => {
           </div>
           <div className="row g-4">
             <div className="col-md-6 col-lg-4">
-              <div className="card team-card border-0 shadow-sm">
+              <div className="card team-card card-gradient-blue border-0 shadow-sm">
                 <div className="team-image-wrapper">
                   <img 
                     src="https://placehold.co/400x400?text=Dr.+Sarah" 
@@ -212,7 +212,7 @@ const About = () => {
               </div>
             </div>
             <div className="col-md-6 col-lg-4">
-              <div className="card team-card border-0 shadow-sm">
+              <div className="card team-card card-gradient-green border-0 shadow-sm">
                 <div className="team-image-wrapper">
                   <img 
                     src="https://placehold.co/400x400?text=Dr.+Michael" 
@@ -233,7 +233,7 @@ const About = () => {
               </div>
             </div>
             <div className="col-md-6 col-lg-4">
-              <div className="card team-card border-0 shadow-sm">
+              <div className="card team-card card-gradient-purple border-0 shadow-sm">
                 <div className="team-image-wrapper">
                   <img 
                     src="https://placehold.co/400x400?text=Dr.+Emily" 
@@ -257,7 +257,7 @@ const About = () => {
         </div>
 
         {/* Security Section */}
-        <div className="card border-0 shadow mb-5">
+        <div className="card border-0 shadow mb-5 card-gradient-orange">
           <div className="card-body p-4">
             <div className="row align-items-center">
               <div className="col-lg-6 mb-4 mb-lg-0">

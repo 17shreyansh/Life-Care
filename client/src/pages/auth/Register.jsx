@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
+import groupImage from '../../assets/group.jpg';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -53,14 +54,41 @@ const Register = () => {
   };
 
   return (
-    <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col md={6}>
-          <Card className="shadow">
-            <Card.Body className="p-4">
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-card register-card">
+          <div className="auth-image" style={{ backgroundImage: `url(${groupImage})` }}>
+            <div className="auth-overlay">
+              <div className="auth-text">
+                <h2>Join Our Community</h2>
+                <p>Start your mental health journey today</p>
+              </div>
+            </div>
+          </div>
+          <div className="auth-form">
               <div className="text-center mb-4">
-                <h2 className="fw-bold">Create an Account</h2>
-                <p className="text-muted">Join S S Psychologist Life Care</p>
+                <h3 className="fw-bold">Create an Account</h3>
+                <p className="text-muted">Fill in your details to get started</p>
+              </div>
+              
+              <div className="step-indicator mb-4">
+                <div className="step-progress">
+                  <div className="step-progress-bar" style={{ width: '50%' }}></div>
+                </div>
+                <div className="step-circles">
+                  <div className="step-circle active">
+                    <span>1</span>
+                    <p>Personal Info</p>
+                  </div>
+                  <div className="step-circle">
+                    <span>2</span>
+                    <p>Account Setup</p>
+                  </div>
+                  <div className="step-circle">
+                    <span>✓</span>
+                    <p>Complete</p>
+                  </div>
+                </div>
               </div>
 
               {error && <Alert variant="danger">{error}</Alert>}
@@ -156,11 +184,10 @@ const Register = () => {
                   <p>Already have an account? <Link to="/login" className="text-decoration-none">Login</Link></p>
                 </div>
               </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+            </div>
+          </div>
+        </div>
+      </div>
   );
 };
 

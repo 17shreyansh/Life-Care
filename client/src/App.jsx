@@ -17,6 +17,7 @@ import Blog from './pages/public/Blog';
 import Gallery from './pages/public/Gallery';
 import Videos from './pages/public/Videos';
 import Contact from './pages/public/Contact';
+import CounsellorsDemo from './pages/public/CounsellorsDemo';
 
 // Auth Pages
 import Login from './pages/auth/Login';

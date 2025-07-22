@@ -1,8 +1,70 @@
 import { Link } from 'react-router-dom';
 import ConditionsSection from '../../components/home/ConditionsSection';
-import HeroImage from '../../assets/woman-psychologist.jpg'; // Adjust the path as necessary
+import HeroImage from '../../assets/woman-psychologist.jpg';
+import doc1 from '../../assets/doc1.png';
+import doc2 from '../../assets/doc2.jpg';
+import doc3 from '../../assets/doc3.png';
+import { useState } from 'react';
 
 const Home = () => {
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedCounsellor, setSelectedCounsellor] = useState(null);
+  const [bookingDate, setBookingDate] = useState('');
+  const [bookingTime, setBookingTime] = useState('');
+  const [bookingStep, setBookingStep] = useState(1); // 1: Select date/time, 2: Check availability, 3: Confirm
+  const [isAvailable, setIsAvailable] = useState(false);
+  
+  const counsellors = [
+    {
+      id: 1,
+      name: 'Dr. Monish Khera',
+      title: 'Counselling Psychologist',
+      description: 'Specializes in anxiety disorders and depression with over 10 years of experience.'
+    },
+    {
+      id: 2,
+      name: 'Dr. Sarah Johnson',
+      title: 'Clinical Psychologist',
+      description: 'Expert in mood disorders and cognitive behavioral therapy with 15 years of practice.'
+    },
+    {
+      id: 3,
+      name: 'Dr. Emily Rodriguez',
+      title: 'Psychiatrist',
+      description: 'Specializes in relationship counseling and stress management techniques.'
+    }
+  ];
+  
+  const handleBookSession = (counsellorId) => {
+    const counsellor = counsellors.find(c => c.id === counsellorId);
+    setSelectedCounsellor(counsellor);
+    setBookingStep(1);
+    setBookingDate('');
+    setBookingTime('');
+    setIsAvailable(false);
+    setShowBookingModal(true);
+  };
+  
+  const handleCloseModal = () => {
+    setShowBookingModal(false);
+  };
+  
+  const handleCheckAvailability = () => {
+    // In a real app, this would make an API call to check availability
+    // For demo purposes, we'll simulate a check with a timeout
+    setBookingStep(2);
+    setTimeout(() => {
+      setIsAvailable(true);
+      setBookingStep(3);
+    }, 1000);
+  };
+  
+  const handleConfirmBooking = () => {
+    // In a real app, this would make an API call to confirm the booking
+    alert(`Booking confirmed with ${selectedCounsellor.name} on ${bookingDate} at ${bookingTime}`);
+    setShowBookingModal(false);
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -40,7 +102,6 @@ const Home = () => {
             </div>
             <div className="col-lg-6 d-none d-lg-block">
               <div className="hero-image-container">
-                {/* <img src="https://placehold.co/600x400?text=Mental+Health+Support" alt="Mental Health Support" className="img-fluid hero-image" /> */}
                 <img src={HeroImage} alt="Mental Health Support" className="img-fluid hero-image" />
                 <div className="hero-shape-1"></div>
                 <div className="hero-shape-2"></div>
@@ -168,33 +229,97 @@ const Home = () => {
       {/* Featured Counsellors */}
       <section className="py-5 bg-light">
         <div className="container">
-          <h2 className="text-center mb-5">Featured Counsellors</h2>
+          <div className="text-center mb-5">
+            <h6 className="text-primary fw-bold mb-2">OUR EXPERTS</h6>
+            <h2 className="mb-4">Featured Counsellors</h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
+              Our team consists of qualified and experienced mental health professionals dedicated to providing the best care.
+            </p>
+          </div>
           <div className="row g-4">
-            {[1, 2, 3].map((item) => (
-              <div className="col-md-4" key={item}>
-                <div className="card h-100">
-                  <img src={`https://placehold.co/300x200?text=Counsellor+${item}`} className="card-img-top" alt={`Counsellor ${item}`} />
-                  <div className="card-body">
-                    <h5 className="card-title">Dr. Monish Khera</h5>
-                    <p className="card-text">Counselling Psychologist</p>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="text-warning">
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-half"></i>
-                        <span className="ms-1 text-dark">4.5</span>
-                      </div>
-                      <Link to="/client/counsellors" className="btn btn-sm btn-outline-primary">View Profile</Link>
-                    </div>
+            <div className="col-md-6 col-lg-4">
+              <div className="card team-card card-gradient-blue border-0 shadow-sm">
+                <div className="team-image-wrapper">
+                  <img 
+                    // src="https://placehold.co/400x400?text=Dr.+Monish" 
+                    src={doc1}
+                    alt="Dr. Monish Khera" 
+                    className="card-img-top"
+                    style={{ 
+                      objectPosition: 'top center' /* Adjust as needed */
+                    }}
+                  />
+                </div>
+                <div className="card-body text-center p-4">
+                  <h5 className="card-title mb-1">Dr. Monish Khera</h5>
+                  <p className="text-primary mb-3">Counselling Psychologist</p>
+                  <p className="card-text text-muted mb-3">Specializes in anxiety disorders and depression with over 10 years of experience.</p>
+                  <div className="team-social mb-3">
+                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
+                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
+                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
                   </div>
+                  <button className="btn btn-primary w-100" onClick={() => handleBookSession(1)}>Book Session</button>
                 </div>
               </div>
-            ))}
+            </div>
+            <div className="col-md-6 col-lg-4">
+              <div className="card team-card card-gradient-green border-0 shadow-sm">
+                <div className="team-image-wrapper">
+                  <img 
+                    // src="https://placehold.co/400x400?text=Dr.+Sarah" 
+                    src={doc2}
+                    alt="Dr. Sarah Johnson" 
+                    className="card-img-top"
+                    style={{ 
+                      objectPosition: 'top center' /* Adjust as needed */
+                    }}
+                  />
+                </div>
+                <div className="card-body text-center p-4">
+                  <h5 className="card-title mb-1">Dr. Sarah Johnson</h5>
+                  <p className="text-primary mb-3">Clinical Psychologist</p>
+                  <p className="card-text text-muted mb-3">Expert in mood disorders and cognitive behavioral therapy with 15 years of practice.</p>
+                  <div className="team-social mb-3">
+                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
+                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
+                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
+                  </div>
+                  <button className="btn btn-primary w-100" onClick={() => handleBookSession(2)}>Book Session</button>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6 col-lg-4">
+              <div className="card team-card card-gradient-purple border-0 shadow-sm">
+                <div className="team-image-wrapper">
+                  <img 
+                    // src="https://placehold.co/400x400?text=Dr.+Emily" 
+                    src={doc3}
+                    alt="Dr. Emily Rodriguez" 
+                    className="card-img-top"
+                    style={{ 
+                      objectPosition: 'top center' /* Adjust as needed */
+                    }}
+                  />
+                </div>
+                <div className="card-body text-center p-4">
+                  <h5 className="card-title mb-1">Dr. Emily Rodriguez</h5>
+                  <p className="text-primary mb-3">Psychiatrist</p>
+                  <p className="card-text text-muted mb-3">Specializes in relationship counseling and stress management techniques.</p>
+                  <div className="team-social mb-3">
+                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
+                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
+                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
+                  </div>
+                  <button className="btn btn-primary w-100" onClick={() => handleBookSession(3)}>Book Session</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="text-center mt-4">
-            <Link to="/client/counsellors" className="btn btn-primary">View All Counsellors</Link>
+            <Link to="/client/counsellors" className="btn btn-primary">
+              <i className="bi bi-people me-2"></i>View All Counsellors
+            </Link>
           </div>
         </div>
       </section>
@@ -212,7 +337,7 @@ const Home = () => {
           
           <div className="row g-4">
             <div className="col-md-6 col-lg-4">
-              <div className="card testimonial-card h-100 border-0 shadow-sm">
+              <div className="card testimonial-card card-gradient-blue h-100 border-0 shadow-sm">
                 <div className="card-body p-4">
                   <div className="d-flex justify-content-between mb-4">
                     <div className="text-warning">
@@ -237,7 +362,7 @@ const Home = () => {
             </div>
             
             <div className="col-md-6 col-lg-4">
-              <div className="card testimonial-card h-100 border-0 shadow-sm">
+              <div className="card testimonial-card card-gradient-green h-100 border-0 shadow-sm">
                 <div className="card-body p-4">
                   <div className="d-flex justify-content-between mb-4">
                     <div className="text-warning">
@@ -262,7 +387,7 @@ const Home = () => {
             </div>
             
             <div className="col-md-6 col-lg-4">
-              <div className="card testimonial-card h-100 border-0 shadow-sm">
+              <div className="card testimonial-card card-gradient-purple h-100 border-0 shadow-sm">
                 <div className="card-body p-4">
                   <div className="d-flex justify-content-between mb-4">
                     <div className="text-warning">
@@ -308,7 +433,7 @@ const Home = () => {
           
           <div className="row g-4">
             <div className="col-md-4">
-              <div className="card care-option-card h-100 border-0 shadow-sm">
+              <div className="card care-option-card card-gradient-blue h-100 border-0 shadow-sm">
                 <div className="card-body text-center p-4">
                   <div className="care-icon-wrapper mb-4">
                     <i className="bi bi-person-video3 fs-1"></i>
@@ -325,7 +450,7 @@ const Home = () => {
             </div>
             
             <div className="col-md-4">
-              <div className="card care-option-card h-100 border-0 shadow-sm">
+              <div className="card care-option-card card-gradient-green h-100 border-0 shadow-sm">
                 <div className="card-body text-center p-4">
                   <div className="care-icon-wrapper mb-4">
                     <i className="bi bi-people-fill fs-1"></i>
@@ -342,7 +467,7 @@ const Home = () => {
             </div>
             
             <div className="col-md-4">
-              <div className="card care-option-card h-100 border-0 shadow-sm">
+              <div className="card care-option-card card-gradient-purple h-100 border-0 shadow-sm">
                 <div className="card-body text-center p-4">
                   <div className="care-icon-wrapper mb-4">
                     <i className="bi bi-journal-text fs-1"></i>
@@ -383,6 +508,104 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Booking Modal */}
+      {showBookingModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h4>Book a Session with {selectedCounsellor?.name}</h4>
+              <button className="close-btn" onClick={handleCloseModal}>
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+            
+            <div className="modal-body p-4">
+              {bookingStep === 1 && (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label">Select Date</label>
+                    <input 
+                      type="date" 
+                      className="form-control" 
+                      value={bookingDate}
+                      onChange={(e) => setBookingDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="form-label">Select Time</label>
+                    <select 
+                      className="form-control"
+                      value={bookingTime}
+                      onChange={(e) => setBookingTime(e.target.value)}
+                      required
+                    >
+                      <option value="">Choose a time slot</option>
+                      <option value="09:00">09:00 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="12:00">12:00 PM</option>
+                      <option value="14:00">02:00 PM</option>
+                      <option value="15:00">03:00 PM</option>
+                      <option value="16:00">04:00 PM</option>
+                      <option value="17:00">05:00 PM</option>
+                    </select>
+                  </div>
+                  
+                  <button 
+                    className="btn btn-primary w-100" 
+                    onClick={handleCheckAvailability}
+                    disabled={!bookingDate || !bookingTime}
+                  >
+                    Check Availability
+                  </button>
+                </>
+              )}
+              
+              {bookingStep === 2 && (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-3">Checking availability...</p>
+                </div>
+              )}
+              
+              {bookingStep === 3 && (
+                <>
+                  {isAvailable ? (
+                    <div className="text-center py-3">
+                      <i className="bi bi-check-circle text-success" style={{ fontSize: '3rem' }}></i>
+                      <h5 className="mt-3">Time Slot Available!</h5>
+                      <p className="mb-4">The selected time slot is available for booking.</p>
+                      <div className="d-flex justify-content-between">
+                        <button className="btn btn-outline-secondary" onClick={() => setBookingStep(1)}>
+                          Change Time
+                        </button>
+                        <button className="btn btn-success" onClick={handleConfirmBooking}>
+                          Confirm Booking
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-3">
+                      <i className="bi bi-x-circle text-danger" style={{ fontSize: '3rem' }}></i>
+                      <h5 className="mt-3">Time Slot Unavailable</h5>
+                      <p className="mb-4">Please select a different time or date.</p>
+                      <button className="btn btn-primary" onClick={() => setBookingStep(1)}>
+                        Try Another Time
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
