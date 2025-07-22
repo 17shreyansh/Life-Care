@@ -1,80 +1,80 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
+import { useAuth } from '../../contexts/AuthContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { forgotPassword } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setEmail(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-    
-    // Simulate API call
-    setTimeout(() => {
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      await forgotPassword(email);
+      setSuccess('Password reset link has been sent to your email');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send reset email');
+    } finally {
       setLoading(false);
-      setSuccess(true);
-    }, 1000);
+    }
   };
 
   return (
-    <div className="container">
-      <div className="row justify-content-center">
-        <div className="col-md-6 col-lg-5">
-          <div className="card shadow-lg border-0 rounded-lg mt-5">
-            <div className="card-header bg-white text-center p-4 border-0">
-              <h3 className="font-weight-bold mb-2">Forgot Password</h3>
-              <p className="text-muted mb-0">Enter your email to reset your password</p>
-            </div>
-            <div className="card-body p-4">
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
-              {success ? (
-                <div className="alert alert-success" role="alert">
-                  <p>Password reset link has been sent to your email.</p>
-                  <p className="mb-0">Please check your inbox and follow the instructions.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email Address</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="d-grid">
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-lg"
-                      disabled={loading}
-                    >
-                      {loading ? 'Sending...' : 'Reset Password'}
-                    </button>
-                  </div>
-                </form>
-              )}
-              <div className="text-center mt-4">
-                <p className="mb-0">
-                  <Link to="/login" className="text-primary">
-                    <i className="bi bi-arrow-left me-1"></i> Back to Login
-                  </Link>
-                </p>
+    <Container className="py-5">
+      <Row className="justify-content-center">
+        <Col md={6}>
+          <Card className="shadow">
+            <Card.Body className="p-4">
+              <div className="text-center mb-4">
+                <h2 className="fw-bold">Forgot Password</h2>
+                <p className="text-muted">Enter your email to reset your password</p>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
+              {error && <Alert variant="danger">{error}</Alert>}
+              {success && <Alert variant="success">{success}</Alert>}
+
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email address</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter your email"
+                  />
+                </Form.Group>
+
+                <Button
+                  variant="primary"
+                  type="submit"
+                  className="w-100 mb-3"
+                  disabled={loading}
+                >
+                  {loading ? 'Sending...' : 'Send Reset Link'}
+                </Button>
+
+                <div className="text-center">
+                  <p>Remember your password? <Link to="/login" className="text-decoration-none">Login</Link></p>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

@@ -1,38 +1,43 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import LoadingSpinner from './LoadingSpinner';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import Spinner from 'react-bootstrap/Spinner';
 
-const ProtectedRoute = ({ 
-  children, 
-  allowedRoles = [], 
-  isAuthenticated = false, 
-  userRole = null, 
-  isLoading = false 
-}) => {
-  const location = useLocation();
+const ProtectedRoute = ({ allowedRoles }) => {
+  const { user, loading, isAuthenticated } = useAuth();
 
   // Show loading spinner while checking authentication
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="protected-route-loading">
-        <LoadingSpinner text="Verifying your access..." />
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
       </div>
     );
   }
 
   // If not authenticated, redirect to login
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/login" replace />;
   }
 
-  // If no specific roles are required or user has the required role
-  if (allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
-    return children;
+  // If roles are specified and user's role is not allowed, redirect to appropriate dashboard
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // Redirect based on user role
+    if (user.role === 'client') {
+      return <Navigate to="/client/dashboard" replace />;
+    } else if (user.role === 'counsellor') {
+      return <Navigate to="/counsellor/dashboard" replace />;
+    } else if (user.role === 'admin') {
+      return <Navigate to="/admin/dashboard" replace />;
+    } else {
+      // Fallback to home page
+      return <Navigate to="/" replace />;
+    }
   }
 
-  // If user doesn't have the required role, redirect based on their role
-  const redirectPath = userRole ? `/${userRole}/dashboard` : '/';
-  return <Navigate to={redirectPath} replace />;
+  // If authenticated and authorized, render the child routes
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

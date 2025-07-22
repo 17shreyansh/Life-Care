@@ -1,285 +1,268 @@
 import { useState, useEffect } from 'react';
+import { Row, Col, Card, Button, Table, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { counsellorAPI } from '../../services/api';
 
-const CounsellorDashboard = () => {
-  const [todayAppointments, setTodayAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+const Dashboard = () => {
   const [stats, setStats] = useState({
+    upcomingAppointments: [],
     totalAppointments: 0,
-    completedSessions: 0,
-    totalEarnings: 0,
-    averageRating: 0
-  });
-
-  // Mock data
-  const mockAppointments = [
-    {
-      id: 1,
-      clientName: 'John Smith',
-      clientImage: 'https://placehold.co/100x100?text=JS',
-      time: '10:00 AM',
-      duration: '50 min',
-      type: 'Video Call',
-      status: 'upcoming'
-    },
-    {
-      id: 2,
-      clientName: 'Emily Johnson',
-      clientImage: 'https://placehold.co/100x100?text=EJ',
-      time: '2:30 PM',
-      duration: '50 min',
-      type: 'Video Call',
-      status: 'upcoming'
+    earnings: {
+      total: 0,
+      pending: 0
     }
-  ];
-
-  const mockStats = {
-    totalAppointments: 45,
-    completedSessions: 38,
-    totalEarnings: 76000,
-    averageRating: 4.8
-  };
+  });
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setTodayAppointments(mockAppointments);
-      setStats(mockStats);
-      setLoading(false);
-    }, 1000);
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch counsellor profile
+        const profileRes = await counsellorAPI.getProfile();
+        setProfile(profileRes.data.data);
+        
+        // Fetch upcoming appointments
+        const upcomingRes = await counsellorAPI.getAppointments({ 
+          status: 'confirmed',
+          startDate: new Date().toISOString()
+        });
+        
+        // Fetch all appointments count
+        const allRes = await counsellorAPI.getAppointments();
+        
+        // Fetch earnings
+        const earningsRes = await counsellorAPI.getEarnings();
+        
+        setStats({
+          upcomingAppointments: upcomingRes.data.data.slice(0, 5), // Show only 5 upcoming appointments
+          totalAppointments: allRes.data.pagination.total,
+          earnings: earningsRes.data.data.earnings
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
-  return (
-    <div className="container-fluid">
-      <div className="row g-4">
-        {/* Stats Cards */}
-        <div className="col-md-3">
-          <div className="card h-100">
-            <div className="card-body text-center">
-              <div className="display-4 fw-bold text-primary mb-2">{stats.totalAppointments}</div>
-              <h5>Total Appointments</h5>
-              <small className="text-muted">This Month</small>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card h-100">
-            <div className="card-body text-center">
-              <div className="display-4 fw-bold text-success mb-2">{stats.completedSessions}</div>
-              <h5>Completed Sessions</h5>
-              <small className="text-muted">This Month</small>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card h-100">
-            <div className="card-body text-center">
-              <div className="display-4 fw-bold text-info mb-2">₹{stats.totalEarnings.toLocaleString()}</div>
-              <h5>Total Earnings</h5>
-              <small className="text-muted">This Month</small>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card h-100">
-            <div className="card-body text-center">
-              <div className="display-4 fw-bold text-warning mb-2">{stats.averageRating}</div>
-              <h5>Average Rating</h5>
-              <div className="text-warning">
-                <i className="bi bi-star-fill"></i>
-                <i className="bi bi-star-fill"></i>
-                <i className="bi bi-star-fill"></i>
-                <i className="bi bi-star-fill"></i>
-                <i className="bi bi-star-half"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
-        {/* Today's Schedule */}
-        <div className="col-md-8">
-          <div className="card h-100">
-            <div className="card-header d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Today's Schedule</h5>
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR'
+    }).format(amount);
+  };
+
+  return (
+    <div>
+      <h2 className="mb-4">Counsellor Dashboard</h2>
+      
+      {!profile?.isVerified && (
+        <div className="alert alert-warning mb-4">
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          Your profile is pending verification. Please complete your profile and upload verification documents.
+          <div className="mt-2">
+            <Link to="/counsellor/profile" className="btn btn-sm btn-warning">Complete Profile</Link>
+          </div>
+        </div>
+      )}
+      
+      <Row className="g-4 mb-4">
+        <Col md={4}>
+          <Card className="h-100 shadow-sm">
+            <Card.Body className="d-flex flex-column">
+              <div className="d-flex align-items-center mb-3">
+                <div className="icon-box bg-primary-light me-3">
+                  <i className="bi bi-calendar-check text-primary"></i>
+                </div>
+                <h5 className="card-title mb-0">Upcoming Sessions</h5>
+              </div>
+              <h2 className="mb-3">{stats.upcomingAppointments.length}</h2>
+              <Link to="/counsellor/appointments" className="btn btn-outline-primary mt-auto">View All</Link>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={4}>
+          <Card className="h-100 shadow-sm">
+            <Card.Body className="d-flex flex-column">
+              <div className="d-flex align-items-center mb-3">
+                <div className="icon-box bg-success-light me-3">
+                  <i className="bi bi-wallet2 text-success"></i>
+                </div>
+                <h5 className="card-title mb-0">Total Earnings</h5>
+              </div>
+              <h2 className="mb-3">{formatCurrency(stats.earnings.total)}</h2>
+              <Link to="/counsellor/earnings" className="btn btn-outline-success mt-auto">View Details</Link>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={4}>
+          <Card className="h-100 shadow-sm">
+            <Card.Body className="d-flex flex-column">
+              <div className="d-flex align-items-center mb-3">
+                <div className="icon-box bg-info-light me-3">
+                  <i className="bi bi-cash-coin text-info"></i>
+                </div>
+                <h5 className="card-title mb-0">Pending Withdrawal</h5>
+              </div>
+              <h2 className="mb-3">{formatCurrency(stats.earnings.pending)}</h2>
+              <Link to="/counsellor/earnings" className="btn btn-outline-info mt-auto">Withdraw</Link>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      <Row>
+        <Col lg={8}>
+          <Card className="shadow-sm mb-4">
+            <Card.Header className="bg-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Upcoming Appointments</h5>
               <Link to="/counsellor/appointments" className="btn btn-sm btn-outline-primary">View All</Link>
-            </div>
-            <div className="card-body">
+            </Card.Header>
+            <Card.Body>
               {loading ? (
-                <div className="text-center py-4">
-                  <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              ) : todayAppointments.length > 0 ? (
-                <div className="table-responsive">
-                  <table className="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Client</th>
-                        <th>Time</th>
-                        <th>Type</th>
-                        <th>Actions</th>
+                <p className="text-center py-3">Loading appointments...</p>
+              ) : stats.upcomingAppointments.length > 0 ? (
+                <Table responsive hover className="mb-0">
+                  <thead>
+                    <tr>
+                      <th>Client</th>
+                      <th>Date & Time</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.upcomingAppointments.map((appointment) => (
+                      <tr key={appointment._id}>
+                        <td>{appointment.client?.name || 'Client'}</td>
+                        <td>
+                          <div>{formatDate(appointment.date)}</div>
+                          <small className="text-muted">{appointment.startTime} - {appointment.endTime}</small>
+                        </td>
+                        <td>
+                          <Badge bg={appointment.sessionType === 'video' ? 'primary' : 'info'}>
+                            {appointment.sessionType === 'video' ? 'Video' : 'Chat'}
+                          </Badge>
+                        </td>
+                        <td>
+                          <Badge bg="success">Confirmed</Badge>
+                        </td>
+                        <td>
+                          <Link to={`/counsellor/appointments/${appointment._id}`} className="btn btn-sm btn-outline-primary">
+                            View
+                          </Link>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {todayAppointments.map(appointment => (
-                        <tr key={appointment.id}>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <img 
-                                src={appointment.clientImage} 
-                                alt={appointment.clientName} 
-                                className="rounded-circle me-2" 
-                                width="40" 
-                                height="40" 
-                              />
-                              <div>{appointment.clientName}</div>
-                            </div>
-                          </td>
-                          <td>
-                            {appointment.time}
-                            <br />
-                            <small className="text-muted">({appointment.duration})</small>
-                          </td>
-                          <td>{appointment.type}</td>
-                          <td>
-                            <div className="btn-group btn-group-sm">
-                              <Link to={`/counsellor/appointments/${appointment.id}`} className="btn btn-outline-primary">Details</Link>
-                              <Link to={`/counsellor/session/${appointment.id}`} className="btn btn-outline-success">Start Session</Link>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </Table>
               ) : (
                 <div className="text-center py-4">
-                  <p>No appointments scheduled for today.</p>
-                  <Link to="/counsellor/availability" className="btn btn-primary">Update Availability</Link>
+                  <p className="mb-0">No upcoming appointments</p>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="col-md-4">
-          <div className="card h-100">
-            <div className="card-header">
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col lg={4}>
+          <Card className="shadow-sm mb-4">
+            <Card.Header className="bg-white">
               <h5 className="mb-0">Quick Actions</h5>
-            </div>
-            <div className="card-body">
-              <div className="d-grid gap-3">
-                <Link to="/counsellor/availability" className="btn btn-outline-primary">
-                  <i className="bi bi-calendar-check me-2"></i> Update Availability
+            </Card.Header>
+            <Card.Body>
+              <div className="d-grid gap-2">
+                <Link to="/counsellor/availability" className="btn btn-primary">
+                  <i className="bi bi-calendar-week me-2"></i>Update Availability
                 </Link>
-                <Link to="/counsellor/earnings" className="btn btn-outline-success">
-                  <i className="bi bi-cash-coin me-2"></i> View Earnings
+                <Link to="/counsellor/content" className="btn btn-outline-primary">
+                  <i className="bi bi-file-earmark-text me-2"></i>Create Content
                 </Link>
-                <Link to="/counsellor/profile" className="btn btn-outline-info">
-                  <i className="bi bi-person-gear me-2"></i> Edit Profile
-                </Link>
-                <Link to="/counsellor/content" className="btn btn-outline-secondary">
-                  <i className="bi bi-file-earmark-plus me-2"></i> Upload Content
+                <Link to="/counsellor/profile" className="btn btn-outline-secondary">
+                  <i className="bi bi-person me-2"></i>Update Profile
                 </Link>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Reviews */}
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="mb-0">Recent Reviews</h5>
-            </div>
-            <div className="card-body">
-              <div className="d-flex mb-3 pb-3 border-bottom">
-                <img src="https://placehold.co/50x50?text=MJ" alt="Client" className="rounded-circle me-3" />
-                <div>
-                  <div className="d-flex align-items-center mb-1">
-                    <h6 className="mb-0 me-2">Maria Johnson</h6>
-                    <div className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star-fill"></i>
+            </Card.Body>
+          </Card>
+          
+          <Card className="shadow-sm">
+            <Card.Header className="bg-white">
+              <h5 className="mb-0">Profile Completion</h5>
+            </Card.Header>
+            <Card.Body>
+              {loading ? (
+                <p className="text-center">Loading profile...</p>
+              ) : (
+                <>
+                  <div className="mb-3">
+                    <div className="d-flex justify-content-between mb-1">
+                      <span>Profile Completion</span>
+                      <span>{profile ? '80%' : '0%'}</span>
+                    </div>
+                    <div className="progress">
+                      <div 
+                        className="progress-bar bg-success" 
+                        role="progressbar" 
+                        style={{ width: profile ? '80%' : '0%' }}
+                        aria-valuenow={profile ? 80 : 0} 
+                        aria-valuemin="0" 
+                        aria-valuemax="100"
+                      ></div>
                     </div>
                   </div>
-                  <p className="mb-1">Dr. Smith is an excellent therapist. She really listens and provides practical advice that has helped me tremendously.</p>
-                  <small className="text-muted">2 days ago</small>
-                </div>
-              </div>
-              <div className="d-flex">
-                <img src="https://placehold.co/50x50?text=RT" alt="Client" className="rounded-circle me-3" />
-                <div>
-                  <div className="d-flex align-items-center mb-1">
-                    <h6 className="mb-0 me-2">Robert Thompson</h6>
-                    <div className="text-warning">
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star-fill"></i>
-                      <i className="bi bi-star"></i>
-                    </div>
-                  </div>
-                  <p className="mb-1">Very professional and knowledgeable. I appreciate the structured approach to our sessions.</p>
-                  <small className="text-muted">1 week ago</small>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer bg-white">
-              <Link to="/counsellor/reviews" className="btn btn-sm btn-outline-primary">View All Reviews</Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Earnings Chart */}
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Earnings Overview</h5>
-              <div className="dropdown">
-                <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                  This Month
-                </button>
-                <ul className="dropdown-menu">
-                  <li><a className="dropdown-item" href="#">This Week</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">Last 3 Months</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="text-center py-5">
-                {/* Chart would go here - using placeholder */}
-                <p className="text-muted">Earnings chart visualization would appear here</p>
-                <div style={{ height: '150px', background: 'linear-gradient(to right, #e0e0e0, #f0f0f0)' }} className="rounded"></div>
-              </div>
-            </div>
-            <div className="card-footer bg-white">
-              <div className="d-flex justify-content-between">
-                <div>
-                  <p className="mb-0 text-muted">Total Earnings</p>
-                  <h5>₹76,000</h5>
-                </div>
-                <div>
-                  <p className="mb-0 text-muted">Pending Payout</p>
-                  <h5>₹12,500</h5>
-                </div>
-                <div>
-                  <Link to="/counsellor/earnings" className="btn btn-sm btn-primary">Detailed Report</Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                  
+                  <ul className="list-group list-group-flush mb-3">
+                    <li className="list-group-item d-flex justify-content-between align-items-center px-0">
+                      Basic Information
+                      <span className="badge bg-success rounded-pill">
+                        <i className="bi bi-check-lg"></i>
+                      </span>
+                    </li>
+                    <li className="list-group-item d-flex justify-content-between align-items-center px-0">
+                      Qualifications
+                      <span className="badge bg-success rounded-pill">
+                        <i className="bi bi-check-lg"></i>
+                      </span>
+                    </li>
+                    <li className="list-group-item d-flex justify-content-between align-items-center px-0">
+                      Availability
+                      <span className="badge bg-success rounded-pill">
+                        <i className="bi bi-check-lg"></i>
+                      </span>
+                    </li>
+                    <li className="list-group-item d-flex justify-content-between align-items-center px-0">
+                      Verification Documents
+                      <span className={`badge ${profile?.isVerified ? 'bg-success' : 'bg-warning'} rounded-pill`}>
+                        {profile?.isVerified ? <i className="bi bi-check-lg"></i> : <i className="bi bi-exclamation-lg"></i>}
+                      </span>
+                    </li>
+                  </ul>
+                  
+                  <Link to="/counsellor/profile" className="btn btn-outline-primary btn-sm">
+                    Complete Profile
+                  </Link>
+                </>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };
 
-export default CounsellorDashboard;
+export default Dashboard;

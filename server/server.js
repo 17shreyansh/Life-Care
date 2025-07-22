@@ -51,7 +51,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/cms', require('./routes/cms'));
 
 // Root route
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.send('S S Psychologist Life Care API is running');
 });
 

@@ -1,139 +1,120 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    rememberMe: false
+    password: ''
   });
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
-    setError(null);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await login(formData);
       
-      // Mock successful login
-      localStorage.setItem('token', 'mock-jwt-token');
-      localStorage.setItem('userRole', 'client'); // or 'counsellor' or 'admin'
-      localStorage.setItem('userName', 'John Doe');
+      // Check if OTP verification is required
+      if (result.requireOTP) {
+        navigate('/verify-otp', { state: { email: formData.email, isLogin: true } });
+        return;
+      }
       
-      // Redirect based on role
-      navigate('/client/dashboard');
-      
+      // Redirect based on user role
+      if (result.role === 'client') {
+        navigate('/client/dashboard');
+      } else if (result.role === 'counsellor') {
+        navigate('/counsellor/dashboard');
+      } else if (result.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      setError(err.response?.data?.message || 'Failed to login');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-8 col-lg-6 col-xl-5">
-          <div className="card shadow">
-            <div className="card-body p-4 p-md-5">
+    <Container className="py-5">
+      <Row className="justify-content-center">
+        <Col md={6}>
+          <Card className="shadow">
+            <Card.Body className="p-4">
               <div className="text-center mb-4">
-                <h2 className="fw-bold">Welcome Back</h2>
-                <p className="text-muted">Sign in to your account</p>
+                <h2 className="fw-bold">Login</h2>
+                <p className="text-muted">Welcome back to S S Psychologist Life Care</p>
               </div>
 
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
+              {error && <Alert variant="danger">{error}</Alert>}
 
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">Email Address</label>
-                  <input
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email address</Form.Label>
+                  <Form.Control
                     type="email"
-                    className="form-control"
-                    id="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    placeholder="Enter your email"
                   />
-                </div>
+                </Form.Group>
 
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">Password</label>
-                  <input
+                <Form.Group className="mb-3">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control
                     type="password"
-                    className="form-control"
-                    id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     required
+                    placeholder="Enter your password"
                   />
+                </Form.Group>
+
+                <div className="d-flex justify-content-between mb-3">
+                  <Form.Check
+                    type="checkbox"
+                    label="Remember me"
+                  />
+                  <Link to="/forgot-password" className="text-decoration-none">Forgot password?</Link>
                 </div>
 
-                <div className="d-flex justify-content-between mb-4">
-                  <div className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="rememberMe"
-                      name="rememberMe"
-                      checked={formData.rememberMe}
-                      onChange={handleChange}
-                    />
-                    <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
-                  </div>
-                  <Link to="/forgot-password" className="text-primary">Forgot password?</Link>
-                </div>
-
-                <button
+                <Button
+                  variant="primary"
                   type="submit"
-                  className="btn btn-primary w-100"
+                  className="w-100 mb-3"
                   disabled={loading}
                 >
-                  {loading ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                      Signing in...
-                    </>
-                  ) : 'Sign In'}
-                </button>
+                  {loading ? 'Logging in...' : 'Login'}
+                </Button>
 
-                <div className="text-center mt-4">
-                  <p>Don't have an account? <Link to="/register" className="text-primary">Register</Link></p>
+                <div className="text-center">
+                  <p>Don't have an account? <Link to="/register" className="text-decoration-none">Register</Link></p>
                 </div>
-
-                <div className="divider d-flex align-items-center my-4">
-                  <p className="text-center fw-bold mx-3 mb-0 text-muted">OR</p>
-                </div>
-
-                <div className="d-grid gap-2">
-                  <button className="btn btn-outline-danger" type="button">
-                    <i className="bi bi-google me-2"></i> Continue with Google
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
