@@ -23,9 +23,13 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  duration: {
+    type: Number, // in minutes
+    required: true
+  },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+    enum: ['pending', 'confirmed', 'cancelled', 'completed', 'no-show'],
     default: 'pending'
   },
   sessionType: {
@@ -33,14 +37,65 @@ const appointmentSchema = new mongoose.Schema({
     enum: ['video', 'chat', 'in-person'],
     required: true
   },
-  notes: {
-    type: String
+  sessionUrl: {
+    type: String // For video/chat sessions
   },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'completed', 'refunded'],
-    default: 'pending'
+  amount: {
+    type: Number,
+    required: true
+  },
+  payment: {
+    id: String,
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'refunded', 'failed'],
+      default: 'pending'
+    },
+    method: String,
+    timestamp: Date
+  },
+  cancellation: {
+    reason: String,
+    cancelledBy: {
+      type: String,
+      enum: ['client', 'counsellor', 'admin']
+    },
+    timestamp: Date,
+    refundStatus: {
+      type: String,
+      enum: ['not-applicable', 'pending', 'processed', 'rejected'],
+      default: 'not-applicable'
+    }
+  },
+  feedback: {
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5
+    },
+    comment: String,
+    timestamp: Date
+  },
+  reminderSent: {
+    type: Boolean,
+    default: false
   }
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual for session notes
+appointmentSchema.virtual('sessionNotes', {
+  ref: 'SessionNote',
+  localField: '_id',
+  foreignField: 'appointment'
+});
+
+// Index for faster queries
+appointmentSchema.index({ client: 1, date: 1 });
+appointmentSchema.index({ counsellor: 1, date: 1 });
+appointmentSchema.index({ status: 1, date: 1 });
 
 module.exports = mongoose.model('Appointment', appointmentSchema);
