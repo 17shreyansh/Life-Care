@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Modal } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import '../client/Dashboard.css';
+import './AdminStyles.css';
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -114,7 +116,7 @@ const Appointments = () => {
     switch (status) {
       case 'pending': return 'warning';
       case 'confirmed': return 'primary';
-      case 'completed': return 'success';
+      case 'completed': return 'primary';
       case 'cancelled': return 'danger';
       case 'no-show': return 'secondary';
       default: return 'info';
@@ -124,7 +126,7 @@ const Appointments = () => {
   // Get payment badge color
   const getPaymentBadge = (status) => {
     switch (status) {
-      case 'completed': return 'success';
+      case 'completed': return 'primary';
       case 'refunded': return 'info';
       case 'failed': return 'danger';
       default: return 'warning';
@@ -133,19 +135,33 @@ const Appointments = () => {
 
   return (
     <div>
-      <h2 className="mb-4">Appointment Management</h2>
+      <div className="d-flex align-items-center mb-4">
+        <div className="stat-icon me-3">
+          <i className="bi bi-calendar-check"></i>
+        </div>
+        <h2 className="text-gradient mb-0">Appointment Management</h2>
+      </div>
       
-      <Card className="shadow-sm mb-4">
-        <Card.Body>
+      <Card className="dashboard-card mb-4">
+        <Card.Header className="d-flex justify-content-between align-items-center py-2">
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-funnel"></i>
+            </div>
+            <h5 className="mb-0">Filter Appointments</h5>
+          </div>
+        </Card.Header>
+        <Card.Body className="py-2">
           <Form onSubmit={handleFilterSubmit}>
             <Row>
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
+                  <Form.Label className="small">Status</Form.Label>
                   <Form.Select 
                     name="status" 
                     value={filter.status} 
                     onChange={handleFilterChange}
+                    size="sm"
                   >
                     <option value="">All</option>
                     <option value="pending">Pending</option>
@@ -156,13 +172,14 @@ const Appointments = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Payment Status</Form.Label>
+                  <Form.Label className="small">Payment Status</Form.Label>
                   <Form.Select 
                     name="paymentStatus" 
                     value={filter.paymentStatus} 
                     onChange={handleFilterChange}
+                    size="sm"
                   >
                     <option value="">All</option>
                     <option value="pending">Pending</option>
@@ -174,37 +191,50 @@ const Appointments = () => {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Start Date</Form.Label>
+                  <Form.Label className="small">Start Date</Form.Label>
                   <Form.Control
                     type="date"
                     name="startDate"
                     value={filter.startDate}
                     onChange={handleFilterChange}
+                    size="sm"
                   />
                 </Form.Group>
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>End Date</Form.Label>
+                  <Form.Label className="small">End Date</Form.Label>
                   <Form.Control
                     type="date"
                     name="endDate"
                     value={filter.endDate}
                     onChange={handleFilterChange}
+                    size="sm"
                   />
                 </Form.Group>
               </Col>
+              <Col md={2}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small">&nbsp;</Form.Label>
+                  <Button type="submit" variant="primary" size="sm" className="w-100">
+                    <i className="bi bi-funnel-fill me-1"></i>Apply
+                  </Button>
+                </Form.Group>
+              </Col>
             </Row>
-            <div className="d-grid">
-              <Button type="submit" variant="primary">
-                Apply Filters
-              </Button>
-            </div>
           </Form>
         </Card.Body>
       </Card>
       
-      <Card className="shadow-sm">
+      <Card className="dashboard-card">
+        <Card.Header>
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-calendar-week"></i>
+            </div>
+            <h5 className="mb-0">Appointments List</h5>
+          </div>
+        </Card.Header>
         <Card.Body>
           {loading ? (
             <div className="text-center py-5">
@@ -242,13 +272,13 @@ const Appointments = () => {
                       </Badge>
                     </td>
                     <td>
-                      <Badge bg={getStatusBadge(appointment.status)}>
+                      <Badge bg={appointment.status === 'completed' ? 'primary' : getStatusBadge(appointment.status)}>
                         {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                       </Badge>
                     </td>
                     <td>{formatCurrency(appointment.amount)}</td>
                     <td>
-                      <Badge bg={getPaymentBadge(appointment.payment?.status || 'pending')}>
+                      <Badge bg={appointment.payment?.status === 'completed' ? 'primary' : getPaymentBadge(appointment.payment?.status || 'pending')}>
                         {(appointment.payment?.status || 'pending').charAt(0).toUpperCase() + 
                          (appointment.payment?.status || 'pending').slice(1)}
                       </Badge>
@@ -263,7 +293,7 @@ const Appointments = () => {
                         <i className="bi bi-eye"></i>
                       </Button>
                       <Button 
-                        variant="outline-success" 
+                        variant="outline-primary" 
                         size="sm"
                         onClick={() => openPaymentModal(appointment)}
                       >
@@ -283,7 +313,7 @@ const Appointments = () => {
       </Card>
       
       {/* Payment Modal */}
-      <Modal show={showPaymentModal} onHide={() => setShowPaymentModal(false)}>
+      <Modal show={showPaymentModal} onHide={() => setShowPaymentModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Update Payment Status</Modal.Title>
         </Modal.Header>

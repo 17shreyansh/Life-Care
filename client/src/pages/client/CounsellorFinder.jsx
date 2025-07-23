@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import './Counsellors.css';
+import './CounsellorFinder.css';
 
-const Counsellors = () => {
+const CounsellorFinder = () => {
   const [loading, setLoading] = useState(true);
   const [counsellors, setCounsellors] = useState([]);
   const [filteredCounsellors, setFilteredCounsellors] = useState([]);
@@ -159,8 +158,8 @@ const Counsellors = () => {
   }
 
   return (
-    <div className="counsellors-page">
-      <div className="counsellors-header">
+    <div className="finder-page">
+      <div className="finder-header">
         <h1>Find Your Perfect Match</h1>
         <p>Browse our network of qualified mental health professionals and start your wellness journey today</p>
       </div>
@@ -322,4 +321,4 @@ const Counsellors = () => {
   );
 };
 
-export default Counsellors;
+export default CounsellorFinder;

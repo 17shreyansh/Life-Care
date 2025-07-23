@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Row, Col, Form, Alert, Modal } from 'react-bootstrap';
 import { counsellorAPI } from '../../services/api';
+import './Earnings.css';
 
 const Earnings = () => {
   const [earnings, setEarnings] = useState({
@@ -55,7 +56,7 @@ const Earnings = () => {
     }
 
     if (amount > earnings.pending) {
-      setWithdrawalError('Withdrawal amount cannot exceed your pending balance');
+      setWithdrawalError('Withdrawal amount cannot exceed your available balance');
       setSubmitting(false);
       return;
     }
@@ -94,119 +95,160 @@ const Earnings = () => {
     });
   };
 
-  // Get badge color based on status
-  const getStatusBadge = (status) => {
+  // Get status class
+  const getStatusClass = (status) => {
     switch (status) {
-      case 'pending': return 'warning';
-      case 'approved': return 'info';
-      case 'processed': return 'success';
-      case 'rejected': return 'danger';
-      default: return 'secondary';
+      case 'pending': return 'status-pending';
+      case 'approved': return 'status-approved';
+      case 'processed': return 'status-processed';
+      case 'rejected': return 'status-rejected';
+      default: return '';
     }
   };
 
   return (
-    <div>
-      <h2 className="mb-4">Earnings & Withdrawals</h2>
+    <div className="earnings-page">
+      <div className="earnings-header">
+        <div className="d-flex align-items-center mb-2">
+          <div className="stat-icon me-3">
+            <i className="bi bi-wallet2"></i>
+          </div>
+          <h1>Earnings & Withdrawals</h1>
+        </div>
+        <p>Manage your earnings and request withdrawals</p>
+      </div>
       
       <Row className="g-4 mb-4">
         <Col md={4}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body className="d-flex flex-column">
+          <Card className="stat-card">
+            <Card.Body className="">
               <div className="d-flex align-items-center mb-3">
-                <div className="icon-box bg-success-light me-3">
-                  <i className="bi bi-wallet2 text-success"></i>
+                <div className="stat-icon">
+                  <i className="bi bi-wallet2"></i>
                 </div>
-                <h5 className="card-title mb-0">Total Earnings</h5>
+                <div>
+                  <h5 className="mb-0">Total Earnings</h5>
+                  <small className="text-muted">Lifetime earnings</small>
+                </div>
               </div>
-              <h2 className="mb-0">{formatCurrency(earnings.total)}</h2>
+              <h2 className="stat-value">{formatCurrency(earnings.total)}</h2>
             </Card.Body>
           </Card>
         </Col>
         
         <Col md={4}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body className="d-flex flex-column">
+          <Card className="stat-card">
+            <Card.Body className="">
               <div className="d-flex align-items-center mb-3">
-                <div className="icon-box bg-primary-light me-3">
-                  <i className="bi bi-cash-coin text-primary"></i>
+                <div className="stat-icon">
+                  <i className="bi bi-cash-coin"></i>
                 </div>
-                <h5 className="card-title mb-0">Available Balance</h5>
+                <div>
+                  <h5 className="mb-0">Available Balance</h5>
+                  <small className="text-muted">Ready to withdraw</small>
+                </div>
               </div>
-              <h2 className="mb-0">{formatCurrency(earnings.pending)}</h2>
+              <h2 className="stat-value">{formatCurrency(earnings.pending)}</h2>
             </Card.Body>
           </Card>
         </Col>
         
         <Col md={4}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body className="d-flex flex-column">
+          <Card className="stat-card">
+            <Card.Body className="">
               <div className="d-flex align-items-center mb-3">
-                <div className="icon-box bg-info-light me-3">
-                  <i className="bi bi-bank text-info"></i>
+                <div className="stat-icon">
+                  <i className="bi bi-bank"></i>
                 </div>
-                <h5 className="card-title mb-0">Withdrawn</h5>
+                <div>
+                  <h5 className="mb-0">Withdrawn</h5>
+                  <small className="text-muted">Total withdrawn amount</small>
+                </div>
               </div>
-              <h2 className="mb-0">{formatCurrency(earnings.withdrawn)}</h2>
+              <h2 className="stat-value">{formatCurrency(earnings.withdrawn)}</h2>
             </Card.Body>
           </Card>
         </Col>
       </Row>
       
-      <Card className="shadow-sm mb-4">
-        <Card.Header className="bg-white d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">Withdrawal Requests</h5>
+      <Card className="earnings-card">
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-cash-stack"></i>
+            </div>
+            <h5 className="mb-0">Withdrawal Requests</h5>
+          </div>
           <Button 
-            variant="primary" 
+            className="withdraw-button"
             onClick={() => setShowWithdrawModal(true)}
             disabled={earnings.pending < 100}
           >
+            <i className="bi bi-bank"></i>
             Request Withdrawal
           </Button>
         </Card.Header>
-        <Card.Body>
+        <Card.Body className="p-0">
           {loading ? (
-            <div className="text-center py-5">
+            <div className="loading-state">
               <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
-              <p className="mt-2">Loading your earnings...</p>
+              <p className="mt-3">Loading your earnings...</p>
             </div>
           ) : withdrawalRequests.length > 0 ? (
-            <Table responsive hover>
-              <thead>
-                <tr>
-                  <th>Request Date</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Processed Date</th>
-                  <th>Transaction ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {withdrawalRequests.map((request) => (
-                  <tr key={request._id}>
-                    <td>{formatDate(request.createdAt)}</td>
-                    <td>{formatCurrency(request.amount)}</td>
-                    <td>
-                      <Badge bg={getStatusBadge(request.status)}>
-                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                      </Badge>
-                    </td>
-                    <td>{formatDate(request.processedAt)}</td>
-                    <td>
-                      {request.transactionId || 
-                        (request.status === 'rejected' ? 
-                          <span className="text-danger">Rejected: {request.rejectionReason}</span> : 
-                          'N/A')}
-                    </td>
+            <div className="table-responsive">
+              <table className="earnings-table">
+                <thead>
+                  <tr>
+                    <th>Request Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Processed Date</th>
+                    <th>Transaction ID</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {withdrawalRequests.map((request) => (
+                    <tr key={request._id}>
+                      <td>{formatDate(request.createdAt)}</td>
+                      <td><strong>{formatCurrency(request.amount)}</strong></td>
+                      <td>
+                        <span className={`status-badge ${getStatusClass(request.status)}`}>
+                          {request.status === 'pending' && <i className="bi bi-clock"></i>}
+                          {request.status === 'approved' && <i className="bi bi-check-circle"></i>}
+                          {request.status === 'processed' && <i className="bi bi-check-all"></i>}
+                          {request.status === 'rejected' && <i className="bi bi-x-circle"></i>}
+                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        </span>
+                      </td>
+                      <td>{formatDate(request.processedAt)}</td>
+                      <td>
+                        {request.transactionId || 
+                          (request.status === 'rejected' ? 
+                            <span className="text-danger">Rejected: {request.rejectionReason}</span> : 
+                            'N/A')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <div className="text-center py-5">
-              <p className="mb-0">No withdrawal requests found</p>
+            <div className="empty-state">
+              <div className="empty-icon">
+                <i className="bi bi-cash"></i>
+              </div>
+              <h3>No withdrawal requests</h3>
+              <p>You haven't made any withdrawal requests yet</p>
+              <Button 
+                className="withdraw-button"
+                onClick={() => setShowWithdrawModal(true)}
+                disabled={earnings.pending < 100}
+              >
+                <i className="bi bi-bank"></i>
+                Request Withdrawal
+              </Button>
             </div>
           )}
         </Card.Body>
@@ -248,8 +290,22 @@ const Earnings = () => {
             </Form.Group>
             
             <div className="d-grid">
-              <Button variant="primary" type="submit" disabled={submitting}>
-                {submitting ? 'Processing...' : 'Submit Request'}
+              <Button 
+                className="withdraw-button w-100"
+                type="submit" 
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-send"></i>
+                    Submit Request
+                  </>
+                )}
               </Button>
             </div>
           </Form>

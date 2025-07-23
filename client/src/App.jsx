@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import NotFound from './pages/public/NotFound';
+import TestApi from './pages/TestApi';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
@@ -29,6 +30,7 @@ import VerifyOTP from './pages/auth/VerifyOTP';
 // Client Pages
 import ClientDashboard from './pages/client/Dashboard';
 import Counsellors from './pages/client/Counsellors';
+import CounsellorFinder from './pages/client/CounsellorFinder';
 import BookAppointment from './pages/client/BookAppointment';
 import MyAppointments from './pages/client/MyAppointments';
 import ChatVideo from './pages/client/ChatVideo';
@@ -73,12 +75,13 @@ function App() {
           <Route path="verify-otp" element={<VerifyOTP />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password/:resetToken" element={<ResetPassword />} />
+          <Route path="test-api" element={<TestApi />} />
 
           {/* Client Routes with DashboardLayout */}
           <Route element={<ProtectedRoute allowedRoles={['client']} />}>
             <Route path="/client" element={<DashboardLayout role="client" />}>
               <Route path="dashboard" element={<ClientDashboard />} />
-              <Route path="counsellors" element={<Counsellors />} />
+              <Route path="counsellors" element={<CounsellorFinder />} />
               <Route path="book-appointment/:counsellorId" element={<BookAppointment />} />
               <Route path="appointments" element={<MyAppointments />} />
               <Route path="chat-video" element={<ChatVideo />} />

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Modal } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import '../client/Dashboard.css';
+import './AdminStyles.css';
 
 const Withdrawals = () => {
   const [withdrawals, setWithdrawals] = useState([]);
@@ -108,7 +110,7 @@ const Withdrawals = () => {
     switch (status) {
       case 'pending': return 'warning';
       case 'approved': return 'info';
-      case 'processed': return 'success';
+      case 'processed': return 'primary';
       case 'rejected': return 'danger';
       default: return 'secondary';
     }
@@ -116,19 +118,33 @@ const Withdrawals = () => {
 
   return (
     <div>
-      <h2 className="mb-4">Withdrawal Requests</h2>
+      <div className="d-flex align-items-center mb-4">
+        <div className="stat-icon me-3">
+          <i className="bi bi-cash-coin"></i>
+        </div>
+        <h2 className="text-gradient mb-0">Withdrawal Requests</h2>
+      </div>
       
-      <Card className="shadow-sm mb-4">
-        <Card.Body>
+      <Card className="dashboard-card mb-4">
+        <Card.Header className="d-flex justify-content-between align-items-center py-2">
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-funnel"></i>
+            </div>
+            <h5 className="mb-0">Filter Withdrawals</h5>
+          </div>
+        </Card.Header>
+        <Card.Body className="py-2">
           <Form onSubmit={handleFilterSubmit}>
             <Row>
-              <Col md={6}>
+              <Col md={10}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
+                  <Form.Label className="small">Status</Form.Label>
                   <Form.Select 
                     name="status" 
                     value={filter.status} 
                     onChange={handleFilterChange}
+                    size="sm"
                   >
                     <option value="">All</option>
                     <option value="pending">Pending</option>
@@ -138,17 +154,28 @@ const Withdrawals = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col md={6} className="d-flex align-items-end">
-                <Button type="submit" variant="primary" className="mb-3 w-100">
-                  Apply Filters
-                </Button>
+              <Col md={2}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small">&nbsp;</Form.Label>
+                  <Button type="submit" variant="primary" size="sm" className="w-100">
+                    <i className="bi bi-funnel-fill me-1"></i>Apply
+                  </Button>
+                </Form.Group>
               </Col>
             </Row>
           </Form>
         </Card.Body>
       </Card>
       
-      <Card className="shadow-sm">
+      <Card className="dashboard-card">
+        <Card.Header>
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-bank"></i>
+            </div>
+            <h5 className="mb-0">Withdrawal Requests List</h5>
+          </div>
+        </Card.Header>
         <Card.Body>
           {loading ? (
             <div className="text-center py-5">
@@ -219,7 +246,7 @@ const Withdrawals = () => {
       </Card>
       
       {/* Process Modal */}
-      <Modal show={showProcessModal} onHide={() => setShowProcessModal(false)}>
+      <Modal show={showProcessModal} onHide={() => setShowProcessModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Process Withdrawal Request</Modal.Title>
         </Modal.Header>
@@ -285,7 +312,7 @@ const Withdrawals = () => {
             Cancel
           </Button>
           <Button 
-            variant={processData.status === 'processed' ? 'success' : 'danger'} 
+            variant={processData.status === 'processed' ? 'primary' : 'danger'} 
             onClick={handleProcessWithdrawal}
             disabled={processing}
           >

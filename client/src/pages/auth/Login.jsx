@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
 import heroImage from '../../assets/woman-psychologist.jpg';
+import './Auth.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -27,7 +28,9 @@ const Login = () => {
     setLoading(true);
 
     try {
+      console.log('Login attempt with:', formData.email);
       const result = await login(formData);
+      console.log('Login result:', result);
       
       // Check if OTP verification is required
       if (result.requireOTP) {
@@ -46,6 +49,8 @@ const Login = () => {
         navigate('/');
       }
     } catch (err) {
+      console.error('Login error:', err);
+      console.error('Response data:', err.response?.data);
       setError(err.response?.data?.message || 'Failed to login');
     } finally {
       setLoading(false);

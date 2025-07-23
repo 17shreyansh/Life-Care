@@ -1,4 +1,5 @@
 import React from 'react';
+import './Payments.css';
 
 const Payments = () => {
   // Mock payment data
@@ -29,24 +30,79 @@ const Payments = () => {
     }
   ];
 
-  const getStatusBadgeClass = (status) => {
+  const getStatusClass = (status) => {
     switch (status) {
-      case 'Paid': return 'bg-success';
-      case 'Pending': return 'bg-warning';
-      case 'Failed': return 'bg-danger';
-      case 'Refunded': return 'bg-info';
-      default: return 'bg-secondary';
+      case 'Paid': return 'status-paid';
+      case 'Pending': return 'status-pending';
+      case 'Failed': return 'status-failed';
+      case 'Refunded': return 'status-refunded';
+      default: return '';
     }
   };
+  
+  // Calculate totals
+  const totalSpent = payments.reduce((sum, payment) => 
+    payment.status !== 'Refunded' ? sum + payment.amount : sum, 0
+  );
+  
+  const sessionsAttended = payments.filter(payment => 
+    payment.status === 'Paid'
+  ).length;
+  
+  const averageCost = sessionsAttended > 0 ? 
+    Math.round(totalSpent / sessionsAttended) : 0;
 
   return (
-    <div className="dashboard-card">
-      <div className="dashboard-card-header">
-        <h5 className="mb-0">Payment History</h5>
+    <div className="payments-page">
+      <div className="payments-header">
+        <h1>Payment History</h1>
+        <p>View and manage your payment transactions</p>
       </div>
-      <div className="dashboard-card-body">
+      
+      <div className="payment-cards">
+        <div className="stat-card">
+          <div className="stat-title">
+            <div className="stat-icon-pay">
+              <i className="bi bi-wallet2"></i>
+            </div>
+            <span>Total Spent</span>
+          </div>
+          <div className="stat-value">₹{totalSpent}</div>
+        </div>
+        
+        <div className="stat-card">
+          <div className="stat-title">
+            <div className="stat-icon-pay">
+              <i className="bi bi-calendar-check"></i>
+            </div>
+            <span>Sessions Attended</span>
+          </div>
+          <div className="stat-value">{sessionsAttended}</div>
+        </div>
+        
+        <div className="stat-card">
+          <div className="stat-title">
+            <div className="stat-icon-pay">
+              <i className="bi bi-graph-up"></i>
+            </div>
+            <span>Average Cost</span>
+          </div>
+          <div className="stat-value">₹{averageCost}</div>
+        </div>
+      </div>
+      
+      <div className="payments-table-container">
+        <div className="payments-table-header">
+          <h5 className="payments-table-title">
+            <div className="table-icon-pay">
+              <i className="bi bi-receipt"></i>
+            </div>
+            <span>Transaction History</span>
+          </h5>
+        </div>
+        
         <div className="table-responsive">
-          <table className="table table-hover">
+          <table className="payments-table">
             <thead>
               <tr>
                 <th>Invoice #</th>
@@ -67,49 +123,24 @@ const Payments = () => {
                   <td>{payment.sessionType}</td>
                   <td>₹{payment.amount}</td>
                   <td>
-                    <span className={`badge ${getStatusBadgeClass(payment.status)}`}>
+                    <span className={`status-badge ${getStatusClass(payment.status)}`}>
+                      <i className={`bi ${
+                        payment.status === 'Paid' ? 'bi-check-circle' : 
+                        payment.status === 'Pending' ? 'bi-clock' :
+                        payment.status === 'Failed' ? 'bi-x-circle' : 'bi-arrow-repeat'
+                      }`}></i>
                       {payment.status}
                     </span>
                   </td>
                   <td>
-                    <button className="btn btn-sm btn-outline-primary">
-                      <i className="bi bi-download me-1"></i> Download
+                    <button className="download-button">
+                      <i className="bi bi-download"></i> Invoice
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-        
-        <div className="mt-4">
-          <h6>Payment Summary</h6>
-          <div className="row">
-            <div className="col-md-4">
-              <div className="card bg-light mb-3">
-                <div className="card-body">
-                  <h6 className="card-title text-muted">Total Spent</h6>
-                  <h3 className="mb-0 text-gradient">₹4,500</h3>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card bg-light mb-3">
-                <div className="card-body">
-                  <h6 className="card-title text-muted">Sessions Attended</h6>
-                  <h3 className="mb-0 text-gradient">3</h3>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card bg-light mb-3">
-                <div className="card-body">
-                  <h6 className="card-title text-muted">Average Cost</h6>
-                  <h3 className="mb-0 text-gradient">₹1,500</h3>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

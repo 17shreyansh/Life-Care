@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Feedback.css';
 
 const Feedback = () => {
   const [rating, setRating] = useState(0);
@@ -28,66 +29,78 @@ const Feedback = () => {
     setSubmitted(true);
   };
 
+  const getRatingText = (rating) => {
+    switch(rating) {
+      case 1: return 'Poor';
+      case 2: return 'Fair';
+      case 3: return 'Good';
+      case 4: return 'Very Good';
+      case 5: return 'Excellent';
+      default: return '';
+    }
+  };
+
   return (
-    <>
+    <div className="feedback-page">
+      <div className="feedback-header">
+        <h1>Session Feedback</h1>
+        <p>Share your experience and help us improve our services</p>
+      </div>
+      
       {!submitted ? (
-        <div className="dashboard-card">
-          <div className="dashboard-card-header">
+        <div className="feedback-card">
+          <div className="feedback-card-header">
+            <div className="header-icon">
+              <i className="bi bi-star"></i>
+            </div>
             <h5 className="mb-0">Leave Feedback</h5>
           </div>
-          <div className="dashboard-card-body">
-            <div className="mb-4">
-              <h6>Session with {pastSessions[0].counsellor}</h6>
-              <p className="text-muted">
-                Date: {new Date(pastSessions[0].date).toLocaleDateString()}
-              </p>
+          <div className="feedback-card-body">
+            <div className="session-info">
+              <h6 className="session-title">Session with {pastSessions[0].counsellor}</h6>
+              <div className="session-date">
+                <i className="bi bi-calendar"></i>
+                <span>{new Date(pastSessions[0].date).toLocaleDateString()}</span>
+              </div>
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="form-label">How would you rate your session?</label>
-                <div className="rating-stars mb-2">
+              <div className="rating-container">
+                <label className="rating-label">How would you rate your session?</label>
+                <div className="rating-stars">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <i
                       key={star}
-                      className={`bi ${star <= rating ? 'bi-star-fill' : 'bi-star'} fs-3 me-2`}
-                      style={{ 
-                        cursor: 'pointer',
-                        color: star <= rating ? '#ffc107' : '#ccc'
-                      }}
+                      className={`bi ${star <= rating ? 'bi-star-fill star-filled' : 'bi-star star-empty'} star`}
                       onClick={() => setRating(star)}
                     ></i>
                   ))}
                 </div>
                 {rating > 0 && (
-                  <div className="text-muted">
-                    {rating === 1 && 'Poor'}
-                    {rating === 2 && 'Fair'}
-                    {rating === 3 && 'Good'}
-                    {rating === 4 && 'Very Good'}
-                    {rating === 5 && 'Excellent'}
+                  <div className="rating-text">
+                    {getRatingText(rating)}
                   </div>
                 )}
               </div>
               
-              <div className="mb-4">
+              <div className="feedback-form">
                 <label htmlFor="feedback" className="form-label">Your Feedback</label>
                 <textarea
                   id="feedback"
-                  className="form-control"
-                  rows="5"
+                  className="form-textarea"
                   placeholder="Please share your experience with this counsellor..."
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                 ></textarea>
               </div>
               
-              <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+              <div className="form-actions">
                 <button 
                   type="submit" 
-                  className="btn btn-primary"
+                  className="submit-button"
                   disabled={rating === 0}
                 >
+                  <i className="bi bi-send"></i>
                   Submit Feedback
                 </button>
               </div>
@@ -95,28 +108,32 @@ const Feedback = () => {
           </div>
         </div>
       ) : (
-        <div className="dashboard-card">
-          <div className="dashboard-card-body text-center py-5">
-            <i className="bi bi-check-circle-fill text-success fs-1 mb-3"></i>
-            <h4>Thank You for Your Feedback!</h4>
-            <p className="text-muted">Your feedback helps us improve our services.</p>
+        <div className="feedback-card">
+          <div className="feedback-card-body success-message">
+            <i className="bi bi-check-circle-fill success-icon"></i>
+            <h4 className="success-title">Thank You for Your Feedback!</h4>
+            <p className="success-text">Your feedback helps us improve our services and provide better mental health support.</p>
             <button 
-              className="btn btn-primary mt-3"
+              className="back-button"
               onClick={() => setSubmitted(false)}
             >
+              <i className="bi bi-arrow-left"></i>
               Leave Another Feedback
             </button>
           </div>
         </div>
       )}
       
-      <div className="dashboard-card mt-4">
-        <div className="dashboard-card-header">
+      <div className="sessions-card">
+        <div className="feedback-card-header">
+          <div className="header-icon">
+            <i className="bi bi-clock-history"></i>
+          </div>
           <h5 className="mb-0">Past Sessions</h5>
         </div>
-        <div className="dashboard-card-body">
-          <div className="table-responsive">
-            <table className="table table-hover">
+        <div className="feedback-card-body p-0">
+          <div className="sessions-table-container">
+            <table className="sessions-table">
               <thead>
                 <tr>
                   <th>Counsellor</th>
@@ -132,19 +149,25 @@ const Feedback = () => {
                     <td>{new Date(session.date).toLocaleDateString()}</td>
                     <td>
                       {session.feedbackSubmitted ? (
-                        <span className="badge bg-success">Feedback Submitted</span>
+                        <span className="status-badge status-submitted">
+                          <i className="bi bi-check-circle"></i>
+                          Feedback Submitted
+                        </span>
                       ) : (
-                        <span className="badge bg-warning">Feedback Pending</span>
+                        <span className="status-badge status-pending">
+                          <i className="bi bi-clock"></i>
+                          Feedback Pending
+                        </span>
                       )}
                     </td>
                     <td>
                       {!session.feedbackSubmitted ? (
-                        <button className="btn btn-sm btn-outline-primary">
-                          <i className="bi bi-star me-1"></i> Leave Feedback
+                        <button className="action-button action-primary">
+                          <i className="bi bi-star"></i> Leave Feedback
                         </button>
                       ) : (
-                        <button className="btn btn-sm btn-outline-secondary" disabled>
-                          <i className="bi bi-check-circle me-1"></i> Completed
+                        <button className="action-button action-secondary" disabled>
+                          <i className="bi bi-check-circle"></i> Completed
                         </button>
                       )}
                     </td>
@@ -155,7 +178,7 @@ const Feedback = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { clientAPI } from '../../services/api';
+import './Dashboard.css';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -48,51 +49,57 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
-      <h2 className="mb-4">Client Dashboard</h2>
+    <div className="client-dashboard">
+      <h2 className="mb-4 text-gradient">Welcome to Your Wellness Journey</h2>
       
       <Row className="g-4 mb-4">
         <Col md={4}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body className="d-flex flex-column">
-              <div className="d-flex align-items-center mb-3">
-                <div className="icon-box bg-primary-light me-3">
-                  <i className="bi bi-calendar-check text-primary"></i>
-                </div>
-                <h5 className="card-title mb-0">Upcoming Sessions</h5>
+          <Card className="stat-card">
+            <Card.Body className="d-flex align-items-center p-3">
+              <div className="stat-icon">
+                <i className="bi bi-calendar-check"></i>
               </div>
-              <h2 className="mb-3">{stats.upcomingAppointments.length}</h2>
-              <Link to="/client/appointments" className="btn btn-outline-primary mt-auto">View All</Link>
+              <div className="stat-content">
+                <h5 className="stat-title">Upcoming Sessions</h5>
+                <h2 className="stat-value">{stats.upcomingAppointments.length}</h2>
+              </div>
+              <Link to="/client/appointments" className="stat-link">
+                <i className="bi bi-arrow-right"></i>
+              </Link>
             </Card.Body>
           </Card>
         </Col>
         
         <Col md={4}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body className="d-flex flex-column">
-              <div className="d-flex align-items-center mb-3">
-                <div className="icon-box bg-success-light me-3">
-                  <i className="bi bi-check-circle text-success"></i>
-                </div>
-                <h5 className="card-title mb-0">Completed Sessions</h5>
+          <Card className="stat-card">
+            <Card.Body className="d-flex align-items-center p-3">
+              <div className="stat-icon">
+                <i className="bi bi-check-circle"></i>
               </div>
-              <h2 className="mb-3">{stats.completedAppointments}</h2>
-              <Link to="/client/appointments?status=completed" className="btn btn-outline-success mt-auto">View History</Link>
+              <div className="stat-content">
+                <h5 className="stat-title">Completed Sessions</h5>
+                <h2 className="stat-value">{stats.completedAppointments}</h2>
+              </div>
+              <Link to="/client/appointments?status=completed" className="stat-link">
+                <i className="bi bi-arrow-right"></i>
+              </Link>
             </Card.Body>
           </Card>
         </Col>
         
         <Col md={4}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body className="d-flex flex-column">
-              <div className="d-flex align-items-center mb-3">
-                <div className="icon-box bg-info-light me-3">
-                  <i className="bi bi-people text-info"></i>
-                </div>
-                <h5 className="card-title mb-0">Find Counsellors</h5>
+          <Card className="stat-card">
+            <Card.Body className="d-flex align-items-center p-3">
+              <div className="stat-icon">
+                <i className="bi bi-people"></i>
               </div>
-              <p className="text-muted">Connect with certified counsellors for your mental health needs</p>
-              <Link to="/client/counsellors" className="btn btn-outline-info mt-auto">Browse Counsellors</Link>
+              <div className="stat-content">
+                <h5 className="stat-title">Find Counsellors</h5>
+                <p className="stat-subtitle">Connect with professionals</p>
+              </div>
+              <Link to="/client/counsellors" className="stat-link">
+                <i className="bi bi-arrow-right"></i>
+              </Link>
             </Card.Body>
           </Card>
         </Col>
@@ -100,54 +107,66 @@ const Dashboard = () => {
       
       <Row>
         <Col lg={8}>
-          <Card className="shadow-sm mb-4">
-            <Card.Header className="bg-white">
-              <h5 className="mb-0">Upcoming Appointments</h5>
+          <Card className="dashboard-card mb-4">
+            <Card.Header>
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-calendar-check"></i>
+                </div>
+                <h5 className="mb-0">Upcoming Appointments</h5>
+              </div>
             </Card.Header>
-            <Card.Body>
+            <Card.Body className="p-0">
               {loading ? (
-                <p className="text-center py-3">Loading appointments...</p>
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-3">Loading your appointments...</p>
+                </div>
               ) : stats.upcomingAppointments.length > 0 ? (
-                stats.upcomingAppointments.map((appointment) => (
-                  <div key={appointment._id} className="appointment-item mb-3 p-3 border rounded">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h6 className="mb-1">
-                          Session with {appointment.counsellor?.user?.name || 'Counsellor'}
-                        </h6>
-                        <p className="text-muted mb-1">
-                          <i className="bi bi-calendar me-2"></i>
-                          {formatDate(appointment.date)}
-                        </p>
-                        <p className="text-muted mb-0">
-                          <i className="bi bi-clock me-2"></i>
-                          {appointment.startTime} - {appointment.endTime}
-                        </p>
-                      </div>
-                      <div>
-                        <span className={`badge bg-${appointment.sessionType === 'video' ? 'primary' : 'info'} mb-2 d-block`}>
-                          {appointment.sessionType === 'video' ? 'Video Call' : 'Chat Session'}
-                        </span>
-                        <Link to={`/client/appointments/${appointment._id}`} className="btn btn-sm btn-outline-primary">
-                          View Details
-                        </Link>
+                <div className="appointment-list">
+                  {stats.upcomingAppointments.map((appointment) => (
+                    <div key={appointment._id} className="appointment-item">
+                      <div className="appointment-content">
+                        <div className="appointment-info">
+                          <h6 className="appointment-title">
+                            Session with {appointment.counsellor?.user?.name || 'Counsellor'}
+                          </h6>
+                          <div className="appointment-meta">
+                            <span><i className="bi bi-calendar me-2"></i>{formatDate(appointment.date)}</span>
+                            <span><i className="bi bi-clock me-2"></i>{appointment.startTime} - {appointment.endTime}</span>
+                          </div>
+                        </div>
+                        <div className="appointment-actions">
+                          <span className={`session-type ${appointment.sessionType === 'video' ? 'video' : 'chat'}`}>
+                            {appointment.sessionType === 'video' ? 'Video Call' : 'Chat Session'}
+                          </span>
+                          <Link to={`/client/appointments/${appointment._id}`} className="appointment-link">
+                            <i className="bi bi-arrow-right"></i>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
-                <div className="text-center py-4">
-                  <p className="mb-3">No upcoming appointments</p>
-                  <Link to="/client/counsellors" className="btn btn-primary">
-                    Book a Session
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <i className="bi bi-calendar-x"></i>
+                  </div>
+                  <h6>No upcoming appointments</h6>
+                  <p>Schedule a session with one of our counsellors</p>
+                  <Link to="/client/counsellors" className="btn btn-primary btn-sm">
+                    <i className="bi bi-plus-circle me-2"></i>Book a Session
                   </Link>
                 </div>
               )}
               
               {stats.upcomingAppointments.length > 0 && (
-                <div className="text-center mt-3">
-                  <Link to="/client/appointments" className="btn btn-outline-primary">
-                    View All Appointments
+                <div className="card-footer text-center">
+                  <Link to="/client/appointments" className="view-all">
+                    View All Appointments <i className="bi bi-arrow-right ms-1"></i>
                   </Link>
                 </div>
               )}
@@ -156,49 +175,81 @@ const Dashboard = () => {
         </Col>
         
         <Col lg={4}>
-          <Card className="shadow-sm mb-4">
-            <Card.Header className="bg-white">
-              <h5 className="mb-0">Quick Actions</h5>
+          <Card className="dashboard-card action-card mb-4">
+            <Card.Header>
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-lightning"></i>
+                </div>
+                <h5 className="mb-0">Quick Actions</h5>
+              </div>
             </Card.Header>
             <Card.Body>
-              <div className="d-grid gap-2">
-                <Link to="/client/counsellors" className="btn btn-primary">
-                  <i className="bi bi-calendar-plus me-2"></i>Book New Session
+              <div className="action-buttons">
+                <Link to="/client/counsellors" className="action-button primary">
+                  <div className="action-icon">
+                    <i className="bi bi-calendar-plus"></i>
+                  </div>
+                  <div className="action-text">
+                    <span>Book New Session</span>
+                    <small>Find available counsellors</small>
+                  </div>
                 </Link>
-                <Link to="/client/chat-video" className="btn btn-outline-primary">
-                  <i className="bi bi-camera-video me-2"></i>Join Video Session
+                <Link to="/client/chat-video" className="action-button secondary">
+                  <div className="action-icon">
+                    <i className="bi bi-camera-video"></i>
+                  </div>
+                  <div className="action-text">
+                    <span>Join Video Session</span>
+                    <small>Connect with your counsellor</small>
+                  </div>
                 </Link>
-                <Link to="/client/profile" className="btn btn-outline-secondary">
-                  <i className="bi bi-person me-2"></i>Update Profile
+                <Link to="/client/profile" className="action-button tertiary">
+                  <div className="action-icon">
+                    <i className="bi bi-person"></i>
+                  </div>
+                  <div className="action-text">
+                    <span>Update Profile</span>
+                    <small>Manage your information</small>
+                  </div>
                 </Link>
               </div>
             </Card.Body>
           </Card>
           
-          <Card className="shadow-sm">
-            <Card.Header className="bg-white">
-              <h5 className="mb-0">Mental Health Tips</h5>
+          <Card className="dashboard-card tips-card">
+            <Card.Header>
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-lightbulb"></i>
+                </div>
+                <h5 className="mb-0">Wellness Tips</h5>
+              </div>
             </Card.Header>
-            <Card.Body>
-              <ul className="list-unstyled">
-                <li className="mb-2">
-                  <i className="bi bi-check-circle-fill text-success me-2"></i>
-                  Practice mindfulness for 10 minutes daily
-                </li>
-                <li className="mb-2">
-                  <i className="bi bi-check-circle-fill text-success me-2"></i>
-                  Stay hydrated and maintain a balanced diet
-                </li>
-                <li className="mb-2">
-                  <i className="bi bi-check-circle-fill text-success me-2"></i>
-                  Get 7-8 hours of quality sleep
+            <Card.Body className="p-0">
+              <ul className="tips-list">
+                <li>
+                  <i className="bi bi-check-circle-fill"></i>
+                  <span>Practice mindfulness for 10 minutes daily</span>
                 </li>
                 <li>
-                  <i className="bi bi-check-circle-fill text-success me-2"></i>
-                  Take short breaks during work hours
+                  <i className="bi bi-check-circle-fill"></i>
+                  <span>Stay hydrated and maintain a balanced diet</span>
+                </li>
+                <li>
+                  <i className="bi bi-check-circle-fill"></i>
+                  <span>Get 7-8 hours of quality sleep</span>
+                </li>
+                <li>
+                  <i className="bi bi-check-circle-fill"></i>
+                  <span>Take short breaks during work hours</span>
                 </li>
               </ul>
-              <Link to="/blog" className="btn btn-link p-0">Read more health tips</Link>
+              <div className="card-footer text-end">
+                <Link to="/blog" className="view-all">
+                  Read more wellness tips <i className="bi bi-arrow-right ms-1"></i>
+                </Link>
+              </div>
             </Card.Body>
           </Card>
         </Col>

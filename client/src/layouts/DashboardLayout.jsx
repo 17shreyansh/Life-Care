@@ -54,6 +54,7 @@ const DashboardLayout = ({ role }) => {
         <button 
           className="mobile-sidebar-toggle dashboard-toggle" 
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle Sidebar"
         >
           <i className="bi bi-list"></i>
         </button>

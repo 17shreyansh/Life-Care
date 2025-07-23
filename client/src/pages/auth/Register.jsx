@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
 import groupImage from '../../assets/group.jpg';
+import './Auth.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({

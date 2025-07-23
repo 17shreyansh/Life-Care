@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Tab, Nav } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import '../client/Dashboard.css';
+import './AdminStyles.css';
 
 const Content = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('blogs');
   const [filter, setFilter] = useState({
     status: '',
     isFeatured: '',
@@ -81,7 +84,7 @@ const Content = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'draft': return 'secondary';
-      case 'published': return 'success';
+      case 'published': return 'primary';
       case 'archived': return 'danger';
       default: return 'info';
     }
@@ -89,35 +92,51 @@ const Content = () => {
 
   return (
     <div>
-      <h2 className="mb-4">Content Management</h2>
+      <div className="d-flex align-items-center mb-4">
+        <div className="stat-icon me-3">
+          <i className="bi bi-file-earmark-text"></i>
+        </div>
+        <h2 className="text-gradient mb-0">Content Management</h2>
+      </div>
       
-      <Tab.Container defaultActiveKey="blogs">
-        <Card className="shadow-sm mb-4">
-          <Card.Header className="bg-white">
-            <Nav variant="tabs">
-              <Nav.Item>
-                <Nav.Link eventKey="blogs">Blogs</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="videos">Videos</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="gallery">Gallery</Nav.Link>
-              </Nav.Item>
-            </Nav>
+      <div>
+        <Card className="dashboard-card mb-4">
+          <Card.Header className="pb-0 border-bottom-0">
+            <div className="content-tabs-wrapper">
+              <div className={`content-tabs ${activeTab === 'videos' ? 'videos-active' : activeTab === 'gallery' ? 'gallery-active' : ''}`}>
+                <button 
+                  className={`content-tab ${activeTab === 'blogs' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('blogs')}
+                >
+                  <i className="bi bi-journal-text"></i>Blogs
+                </button>
+                <button 
+                  className={`content-tab ${activeTab === 'videos' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('videos')}
+                >
+                  <i className="bi bi-camera-video"></i>Videos
+                </button>
+                <button 
+                  className={`content-tab ${activeTab === 'gallery' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('gallery')}
+                >
+                  <i className="bi bi-images"></i>Gallery
+                </button>
+              </div>
+            </div>
           </Card.Header>
           <Card.Body>
-            <Tab.Content>
-              <Tab.Pane eventKey="blogs">
+            {activeTab === 'blogs' && (
                 <Form onSubmit={handleFilterSubmit}>
                   <Row>
-                    <Col md={4}>
+                    <Col md={3}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Status</Form.Label>
+                        <Form.Label className="small">Status</Form.Label>
                         <Form.Select 
                           name="status" 
                           value={filter.status} 
                           onChange={handleFilterChange}
+                          size="sm"
                         >
                           <option value="">All</option>
                           <option value="draft">Draft</option>
@@ -126,13 +145,14 @@ const Content = () => {
                         </Form.Select>
                       </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={3}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Featured</Form.Label>
+                        <Form.Label className="small">Featured</Form.Label>
                         <Form.Select 
                           name="isFeatured" 
                           value={filter.isFeatured} 
                           onChange={handleFilterChange}
+                          size="sm"
                         >
                           <option value="">All</option>
                           <option value="true">Featured</option>
@@ -142,41 +162,52 @@ const Content = () => {
                     </Col>
                     <Col md={4}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Search</Form.Label>
+                        <Form.Label className="small">Search</Form.Label>
                         <Form.Control
                           type="text"
                           name="search"
                           value={filter.search}
                           onChange={handleFilterChange}
                           placeholder="Search by title or content"
+                          size="sm"
                         />
                       </Form.Group>
                     </Col>
+                    <Col md={2}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="small">&nbsp;</Form.Label>
+                        <Button type="submit" variant="primary" size="sm" className="w-100">
+                          <i className="bi bi-funnel-fill me-1"></i>Apply
+                        </Button>
+                      </Form.Group>
+                    </Col>
                   </Row>
-                  <div className="d-grid">
-                    <Button type="submit" variant="primary">
-                      Apply Filters
-                    </Button>
-                  </div>
+
                 </Form>
-              </Tab.Pane>
-              <Tab.Pane eventKey="videos">
-                <div className="text-center py-5">
-                  <p>Video management coming soon</p>
-                </div>
-              </Tab.Pane>
-              <Tab.Pane eventKey="gallery">
-                <div className="text-center py-5">
-                  <p>Gallery management coming soon</p>
-                </div>
-              </Tab.Pane>
-            </Tab.Content>
+            )}
+            {activeTab === 'videos' && (
+              <div className="text-center py-5">
+                <p>Video management coming soon</p>
+              </div>
+            )}
+            {activeTab === 'gallery' && (
+              <div className="text-center py-5">
+                <p>Gallery management coming soon</p>
+              </div>
+            )}
           </Card.Body>
         </Card>
         
-        <Tab.Content>
-          <Tab.Pane eventKey="blogs">
-            <Card className="shadow-sm">
+        {activeTab === 'blogs' && (
+            <Card className="dashboard-card">
+              <Card.Header>
+                <div className="d-flex align-items-center">
+                  <div className="card-icon">
+                    <i className="bi bi-journal-text"></i>
+                  </div>
+                  <h5 className="mb-0">Blog Posts</h5>
+                </div>
+              </Card.Header>
               <Card.Body>
                 {loading ? (
                   <div className="text-center py-5">
@@ -220,42 +251,43 @@ const Content = () => {
                           <td>{formatDate(blog.publishedAt)}</td>
                           <td>{blog.viewCount}</td>
                           <td>
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm" 
-                              className="me-1"
-                              href={`/blog/${blog.slug}`}
-                              target="_blank"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </Button>
-                            {blog.status === 'draft' && (
+                            <div className="d-flex gap-2">
                               <Button 
-                                variant="outline-success" 
-                                size="sm"
-                                onClick={() => handleUpdateBlogStatus(blog._id, 'published')}
+                                variant="outline-primary" 
+                                size="sm" 
+                                href={`/blog/${blog.slug}`}
+                                target="_blank"
                               >
-                                Publish
+                                <i className="bi bi-eye"></i>
                               </Button>
-                            )}
-                            {blog.status === 'published' && (
-                              <Button 
-                                variant="outline-secondary" 
-                                size="sm"
-                                onClick={() => handleUpdateBlogStatus(blog._id, 'archived')}
-                              >
-                                Archive
-                              </Button>
-                            )}
-                            {blog.status === 'archived' && (
-                              <Button 
-                                variant="outline-info" 
-                                size="sm"
-                                onClick={() => handleUpdateBlogStatus(blog._id, 'published')}
-                              >
-                                Restore
-                              </Button>
-                            )}
+                              {blog.status === 'draft' && (
+                                <Button 
+                                  variant="outline-primary" 
+                                  size="sm"
+                                  onClick={() => handleUpdateBlogStatus(blog._id, 'published')}
+                                >
+                                  Publish
+                                </Button>
+                              )}
+                              {blog.status === 'published' && (
+                                <Button 
+                                  variant="outline-secondary" 
+                                  size="sm"
+                                  onClick={() => handleUpdateBlogStatus(blog._id, 'archived')}
+                                >
+                                  Archive
+                                </Button>
+                              )}
+                              {blog.status === 'archived' && (
+                                <Button 
+                                  variant="outline-primary" 
+                                  size="sm"
+                                  onClick={() => handleUpdateBlogStatus(blog._id, 'published')}
+                                >
+                                  Restore
+                                </Button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -268,9 +300,8 @@ const Content = () => {
                 )}
               </Card.Body>
             </Card>
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
+        )}
+      </div>
     </div>
   );
 };

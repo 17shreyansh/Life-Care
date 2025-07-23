@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Modal } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import '../client/Dashboard.css';
+import './AdminStyles.css';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -84,26 +86,37 @@ const Users = () => {
 
   return (
     <div>
-      <h2 className="mb-4">User Management</h2>
+      <div className="d-flex align-items-center mb-4">
+        <div className="stat-icon me-3">
+          <i className="bi bi-people"></i>
+        </div>
+        <h2 className="text-gradient mb-0">User Management</h2>
+      </div>
       
-      <Card className="shadow-sm mb-4">
-        <Card.Body>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="mb-0">Users</h5>
-            <Button variant="primary" onClick={handleCreateUser}>
-              <i className="bi bi-plus-circle me-2"></i>Add User
-            </Button>
+      <Card className="dashboard-card mb-4">
+        <Card.Header className="d-flex justify-content-between align-items-center py-2">
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-funnel"></i>
+            </div>
+            <h5 className="mb-0">Filter Users</h5>
           </div>
+          <Button variant="primary" size="sm" onClick={handleCreateUser}>
+            <i className="bi bi-plus-circle me-2"></i>Add User
+          </Button>
+        </Card.Header>
+        <Card.Body className="py-2">
           
           <Form onSubmit={handleFilterSubmit}>
             <Row>
-              <Col md={4}>
+              <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Role</Form.Label>
+                  <Form.Label className="small">Role</Form.Label>
                   <Form.Select 
                     name="role" 
                     value={filter.role} 
                     onChange={handleFilterChange}
+                    size="sm"
                   >
                     <option value="">All Roles</option>
                     <option value="client">Client</option>
@@ -112,13 +125,14 @@ const Users = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col md={4}>
+              <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
+                  <Form.Label className="small">Status</Form.Label>
                   <Form.Select 
                     name="active" 
                     value={filter.active} 
                     onChange={handleFilterChange}
+                    size="sm"
                   >
                     <option value="">All</option>
                     <option value="true">Active</option>
@@ -128,27 +142,40 @@ const Users = () => {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Search</Form.Label>
+                  <Form.Label className="small">Search</Form.Label>
                   <Form.Control
                     type="text"
                     name="search"
                     value={filter.search}
                     onChange={handleFilterChange}
                     placeholder="Search by name or email"
+                    size="sm"
                   />
                 </Form.Group>
               </Col>
+              <Col md={2}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small">&nbsp;</Form.Label>
+                  <Button type="submit" variant="primary" size="sm" className="w-100">
+                    <i className="bi bi-funnel-fill me-1"></i>Apply
+                  </Button>
+                </Form.Group>
+              </Col>
             </Row>
-            <div className="d-grid">
-              <Button type="submit" variant="primary">
-                Apply Filters
-              </Button>
-            </div>
+
           </Form>
         </Card.Body>
       </Card>
       
-      <Card className="shadow-sm">
+      <Card className="dashboard-card">
+        <Card.Header>
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-table"></i>
+            </div>
+            <h5 className="mb-0">Users List</h5>
+          </div>
+        </Card.Header>
         <Card.Body>
           {loading ? (
             <div className="text-center py-5">
@@ -176,17 +203,17 @@ const Users = () => {
                     <td>{user.name}</td>
                     <td>{user.email}</td>
                     <td>
-                      <Badge bg={getRoleBadge(user.role)}>
+                      <Badge bg="primary">
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </Badge>
                     </td>
                     <td>
-                      <Badge bg={user.active ? 'success' : 'danger'}>
+                      <Badge bg={user.active ? 'primary' : 'danger'}>
                         {user.active ? 'Active' : 'Inactive'}
                       </Badge>
                     </td>
                     <td>
-                      <Badge bg={user.isEmailVerified ? 'success' : 'warning'}>
+                      <Badge bg={user.isEmailVerified ? 'primary' : 'warning'}>
                         {user.isEmailVerified ? 'Verified' : 'Unverified'}
                       </Badge>
                     </td>
@@ -221,7 +248,7 @@ const Users = () => {
       </Card>
       
       {/* User Modal */}
-      <Modal show={showUserModal} onHide={() => setShowUserModal(false)} size="lg">
+      <Modal show={showUserModal} onHide={() => setShowUserModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
             {modalAction === 'view' ? 'User Details' : 

@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import './ChatVideo.css';
 
 const ChatVideo = () => {
   const [activeTab, setActiveTab] = useState('chat');
   const [message, setMessage] = useState('');
+  const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([
     { id: 1, sender: 'counsellor', text: 'Hello! How are you feeling today?', time: '10:01 AM' },
     { id: 2, sender: 'client', text: 'I\'m feeling a bit anxious about my upcoming presentation.', time: '10:02 AM' },
     { id: 3, sender: 'counsellor', text: 'That\'s completely normal. Let\'s talk about some techniques that might help you manage that anxiety.', time: '10:03 AM' }
   ]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -24,102 +34,95 @@ const ChatVideo = () => {
   };
 
   return (
-    <div className="row">
-      <div className="col-md-8">
-        <div className="dashboard-card" style={{ height: 'calc(100vh - 200px)' }}>
-          <div className="dashboard-card-header">
-            <ul className="nav nav-tabs card-header-tabs">
-              <li className="nav-item">
-                <button 
-                  className={`nav-link ${activeTab === 'chat' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('chat')}
-                >
-                  <i className="bi bi-chat-dots me-2"></i>Chat
-                </button>
-              </li>
-              <li className="nav-item">
-                <button 
-                  className={`nav-link ${activeTab === 'video' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('video')}
-                >
-                  <i className="bi bi-camera-video me-2"></i>Video
-                </button>
-              </li>
-            </ul>
-          </div>
-          <div className="dashboard-card-body d-flex flex-column p-0" style={{ height: 'calc(100% - 50px)' }}>
-            {activeTab === 'chat' ? (
-              <>
-                <div className="chat-messages p-3" style={{ flexGrow: 1, overflowY: 'auto' }}>
-                  {messages.map(msg => (
-                    <div 
-                      key={msg.id} 
-                      className={`chat-message mb-3 ${msg.sender === 'client' ? 'text-end' : ''}`}
-                    >
-                      <div 
-                        className={`d-inline-block p-3 rounded-3 ${
-                          msg.sender === 'client' 
-                            ? 'bg-primary text-white' 
-                            : 'bg-light'
-                        }`}
-                        style={{ maxWidth: '80%', textAlign: 'left' }}
-                      >
-                        {msg.text}
-                        <div className="text-end mt-1">
-                          <small className={msg.sender === 'client' ? 'text-white-50' : 'text-muted'}>
-                            {msg.time}
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="chat-input p-3 border-top">
-                  <form onSubmit={handleSendMessage} className="d-flex">
-                    <input
-                      type="text"
-                      className="form-control me-2"
-                      placeholder="Type your message..."
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                    />
-                    <button type="submit" className="btn btn-primary">
-                      <i className="bi bi-send"></i>
-                    </button>
-                  </form>
-                </div>
-              </>
-            ) : (
-              <div className="video-placeholder d-flex flex-column align-items-center justify-content-center h-100">
-                <i className="bi bi-camera-video-off fs-1 text-muted mb-3"></i>
-                <h5>Video Call Not Started</h5>
-                <p className="text-muted">Your counsellor hasn't started the video call yet.</p>
-                <button className="btn btn-primary mt-3">
-                  <i className="bi bi-camera-video me-2"></i>Join Video Call
-                </button>
-              </div>
-            )}
+    <div className="chat-container">
+      <div className="chat-main">
+        <div className="chat-header">
+          <div className={`chat-tabs ${activeTab === 'video' ? 'video-active' : ''}`}>
+            <button 
+              className={`chat-tab ${activeTab === 'chat' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chat')}
+            >
+              <i className="bi bi-chat-dots"></i>Chat
+            </button>
+            <button 
+              className={`chat-tab ${activeTab === 'video' ? 'active' : ''}`}
+              onClick={() => setActiveTab('video')}
+            >
+              <i className="bi bi-camera-video"></i>Video
+            </button>
           </div>
         </div>
-      </div>
-      <div className="col-md-4">
-        <div className="dashboard-card" style={{ height: 'calc(100vh - 200px)' }}>
-          <div className="dashboard-card-header">
-            <h5 className="mb-0">Session Notes</h5>
-          </div>
-          <div className="dashboard-card-body" style={{ overflowY: 'auto', height: 'calc(100% - 60px)' }}>
-            <div className="alert alert-info">
-              <i className="bi bi-info-circle me-2"></i>
-              These are notes shared by your counsellor for this session.
+        
+        {activeTab === 'chat' ? (
+          <>
+            <div className="chat-messages">
+              {messages.map(msg => (
+                <div 
+                  key={msg.id} 
+                  className={`message-container ${msg.sender === 'client' ? 'outgoing' : 'incoming'}`}
+                >
+                  <div className="message-bubble">
+                    {msg.text}
+                  </div>
+                  <div className="message-time">
+                    {msg.time}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
             </div>
-            <h6>Anxiety Management Techniques</h6>
-            <ul>
+            <div className="chat-input">
+              <form onSubmit={handleSendMessage} className="input-form">
+                <input
+                  type="text"
+                  className="message-input"
+                  placeholder="Type your message..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <button type="submit" className="send-button">
+                  <i className="bi bi-send"></i>
+                </button>
+              </form>
+            </div>
+          </>
+        ) : (
+          <div className="video-placeholder">
+            <i className="bi bi-camera-video-off video-icon"></i>
+            <h5 className="video-title">Video Call Not Started</h5>
+            <p className="video-text">Your counsellor hasn't started the video call yet.</p>
+            <button className="video-button">
+              <i className="bi bi-camera-video"></i>Join Video Call
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <div className="chat-sidebar">
+        <div className="notes-header">
+          <div className="notes-icon">
+            <i className="bi bi-journal-text"></i>
+          </div>
+          <h5 className="mb-0">Session Notes</h5>
+        </div>
+        <div className="notes-content">
+          <div className="notes-alert">
+            <i className="bi bi-info-circle"></i>
+            <span>These are notes shared by your counsellor for this session.</span>
+          </div>
+          
+          <div className="notes-section">
+            <h6 className="notes-title">Anxiety Management Techniques</h6>
+            <ul className="notes-list">
               <li>Deep breathing exercises - 4-7-8 technique</li>
               <li>Progressive muscle relaxation</li>
               <li>Visualization of successful presentation</li>
               <li>Preparation and practice strategies</li>
             </ul>
-            <h6>Homework</h6>
+          </div>
+          
+          <div className="notes-section">
+            <h6 className="notes-title">Homework</h6>
             <p>Practice deep breathing twice daily and record your anxiety levels before and after.</p>
           </div>
         </div>

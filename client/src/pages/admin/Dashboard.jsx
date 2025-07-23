@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Row, Col, Card, Table, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { adminAPI } from '../../services/api';
+import '../client/Dashboard.css';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -57,61 +58,66 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h2 className="mb-4">Admin Dashboard</h2>
+      <div className="d-flex align-items-center mb-4">
+        <div className="stat-icon me-3">
+          <i className="bi bi-speedometer2"></i>
+        </div>
+        <h2 className="text-gradient mb-0">Admin Dashboard</h2>
+      </div>
       
       <Row className="g-4 mb-4">
         <Col md={3}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="icon-box bg-primary-light me-3">
-                  <i className="bi bi-people text-primary"></i>
-                </div>
-                <h6 className="card-title mb-0">Total Users</h6>
+          <Card className="stat-card">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stat-icon">
+                <i className="bi bi-people"></i>
               </div>
-              <h3 className="mb-0">{stats.users.total}</h3>
+              <div className="stat-content">
+                <h5 className="stat-title">Total Users</h5>
+                <h2 className="stat-value">{stats.users.total}</h2>
+              </div>
             </Card.Body>
           </Card>
         </Col>
         
         <Col md={3}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="icon-box bg-success-light me-3">
-                  <i className="bi bi-calendar-check text-success"></i>
-                </div>
-                <h6 className="card-title mb-0">Appointments</h6>
+          <Card className="stat-card">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stat-icon">
+                <i className="bi bi-calendar-check"></i>
               </div>
-              <h3 className="mb-0">{stats.appointments.total}</h3>
+              <div className="stat-content">
+                <h5 className="stat-title">Appointments</h5>
+                <h2 className="stat-value">{stats.appointments.total}</h2>
+              </div>
             </Card.Body>
           </Card>
         </Col>
         
         <Col md={3}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="icon-box bg-info-light me-3">
-                  <i className="bi bi-cash-coin text-info"></i>
-                </div>
-                <h6 className="card-title mb-0">Total Revenue</h6>
+          <Card className="stat-card">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stat-icon">
+                <i className="bi bi-cash-coin"></i>
               </div>
-              <h3 className="mb-0">{formatCurrency(stats.finances.totalRevenue)}</h3>
+              <div className="stat-content">
+                <h5 className="stat-title">Total Revenue</h5>
+                <h2 className="stat-value">{formatCurrency(stats.finances.totalRevenue)}</h2>
+              </div>
             </Card.Body>
           </Card>
         </Col>
         
         <Col md={3}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="icon-box bg-warning-light me-3">
-                  <i className="bi bi-wallet2 text-warning"></i>
-                </div>
-                <h6 className="card-title mb-0">Pending Withdrawals</h6>
+          <Card className="stat-card">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stat-icon">
+                <i className="bi bi-wallet2"></i>
               </div>
-              <h3 className="mb-0">{stats.finances.pendingWithdrawals}</h3>
+              <div className="stat-content">
+                <h5 className="stat-title">Pending Withdrawals</h5>
+                <h2 className="stat-value">{stats.finances.pendingWithdrawals}</h2>
+              </div>
             </Card.Body>
           </Card>
         </Col>
@@ -119,9 +125,14 @@ const Dashboard = () => {
       
       <Row className="g-4 mb-4">
         <Col md={8}>
-          <Card className="shadow-sm h-100">
-            <Card.Header className="bg-white d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Pending Counsellor Verifications</h5>
+          <Card className="dashboard-card h-100">
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-person-check"></i>
+                </div>
+                <h5 className="mb-0">Pending Counsellor Verifications</h5>
+              </div>
               <Link to="/admin/counsellors?isVerified=false" className="btn btn-sm btn-outline-primary">View All</Link>
             </Card.Header>
             <Card.Body>
@@ -166,18 +177,23 @@ const Dashboard = () => {
         </Col>
         
         <Col md={4}>
-          <Card className="shadow-sm h-100">
-            <Card.Header className="bg-white">
-              <h5 className="mb-0">User Statistics</h5>
+          <Card className="dashboard-card h-100">
+            <Card.Header>
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-bar-chart"></i>
+                </div>
+                <h5 className="mb-0">User Statistics</h5>
+              </div>
             </Card.Header>
             <Card.Body>
               <div className="mb-4">
                 <h6 className="mb-3">User Distribution</h6>
-                <div className="progress mb-2" style={{ height: '25px' }}>
+                <div className="progress mb-3" style={{ height: '25px' }}>
                   <div 
-                    className="progress-bar bg-primary" 
+                    className="progress-bar" 
                     role="progressbar" 
-                    style={{ width: `${(stats.users.clients / stats.users.total) * 100}%` }}
+                    style={{ width: `${(stats.users.clients / stats.users.total) * 100}%`, backgroundColor: '#2563eb' }}
                     aria-valuenow={(stats.users.clients / stats.users.total) * 100} 
                     aria-valuemin="0" 
                     aria-valuemax="100"
@@ -185,9 +201,9 @@ const Dashboard = () => {
                     Clients
                   </div>
                   <div 
-                    className="progress-bar bg-success" 
+                    className="progress-bar" 
                     role="progressbar" 
-                    style={{ width: `${(stats.users.counsellors / stats.users.total) * 100}%` }}
+                    style={{ width: `${(stats.users.counsellors / stats.users.total) * 100}%`, backgroundColor: '#3b82f6' }}
                     aria-valuenow={(stats.users.counsellors / stats.users.total) * 100} 
                     aria-valuemin="0" 
                     aria-valuemax="100"
@@ -195,23 +211,32 @@ const Dashboard = () => {
                     Counsellors
                   </div>
                 </div>
-                <div className="d-flex justify-content-between">
-                  <small>Clients: {stats.users.clients}</small>
-                  <small>Counsellors: {stats.users.counsellors}</small>
+                <div className="d-flex justify-content-between mb-3">
+                  <div className="d-flex align-items-center">
+                    <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#2563eb', marginRight: '8px', borderRadius: '2px' }}></span>
+                    <small>Clients: {stats.users.clients}</small>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#3b82f6', marginRight: '8px', borderRadius: '2px' }}></span>
+                    <small>Counsellors: {stats.users.counsellors}</small>
+                  </div>
                 </div>
               </div>
               
               <div>
                 <h6 className="mb-3">Appointment Status</h6>
                 <div className="d-flex justify-content-between mb-1">
-                  <span>Pending</span>
+                  <div className="d-flex align-items-center">
+                    <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#f59e0b', marginRight: '8px', borderRadius: '2px' }}></span>
+                    <span>Pending</span>
+                  </div>
                   <span>{stats.appointments.pending}</span>
                 </div>
-                <div className="progress mb-2">
+                <div className="progress mb-3">
                   <div 
-                    className="progress-bar bg-warning" 
+                    className="progress-bar" 
                     role="progressbar" 
-                    style={{ width: `${(stats.appointments.pending / stats.appointments.total) * 100}%` }}
+                    style={{ width: `${(stats.appointments.pending / stats.appointments.total) * 100}%`, backgroundColor: '#f59e0b' }}
                     aria-valuenow={(stats.appointments.pending / stats.appointments.total) * 100} 
                     aria-valuemin="0" 
                     aria-valuemax="100"
@@ -219,14 +244,17 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="d-flex justify-content-between mb-1">
-                  <span>Completed</span>
+                  <div className="d-flex align-items-center">
+                    <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#1d4ed8', marginRight: '8px', borderRadius: '2px' }}></span>
+                    <span>Completed</span>
+                  </div>
                   <span>{stats.appointments.completed}</span>
                 </div>
                 <div className="progress">
                   <div 
-                    className="progress-bar bg-success" 
+                    className="progress-bar" 
                     role="progressbar" 
-                    style={{ width: `${(stats.appointments.completed / stats.appointments.total) * 100}%` }}
+                    style={{ width: `${(stats.appointments.completed / stats.appointments.total) * 100}%`, backgroundColor: '#1d4ed8' }}
                     aria-valuenow={(stats.appointments.completed / stats.appointments.total) * 100} 
                     aria-valuemin="0" 
                     aria-valuemax="100"
@@ -240,9 +268,14 @@ const Dashboard = () => {
       
       <Row className="g-4">
         <Col md={12}>
-          <Card className="shadow-sm">
-            <Card.Header className="bg-white">
-              <h5 className="mb-0">Quick Actions</h5>
+          <Card className="dashboard-card">
+            <Card.Header>
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-lightning"></i>
+                </div>
+                <h5 className="mb-0">Quick Actions</h5>
+              </div>
             </Card.Header>
             <Card.Body>
               <Row>
@@ -252,17 +285,17 @@ const Dashboard = () => {
                   </Link>
                 </Col>
                 <Col md={3}>
-                  <Link to="/admin/counsellors" className="btn btn-outline-success d-block mb-2">
+                  <Link to="/admin/counsellors" className="btn btn-outline-primary d-block mb-2">
                     <i className="bi bi-person-badge me-2"></i>Manage Counsellors
                   </Link>
                 </Col>
                 <Col md={3}>
-                  <Link to="/admin/appointments" className="btn btn-outline-info d-block mb-2">
+                  <Link to="/admin/appointments" className="btn btn-outline-primary d-block mb-2">
                     <i className="bi bi-calendar-check me-2"></i>View Appointments
                   </Link>
                 </Col>
                 <Col md={3}>
-                  <Link to="/admin/withdrawals" className="btn btn-outline-warning d-block mb-2">
+                  <Link to="/admin/withdrawals" className="btn btn-outline-primary d-block mb-2">
                     <i className="bi bi-cash-coin me-2"></i>Process Withdrawals
                   </Link>
                 </Col>

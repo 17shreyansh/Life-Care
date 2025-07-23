@@ -266,7 +266,7 @@ body {
   justify-content: center;
   font-size: 1.5rem;
   color: var(--primary-color);
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
   transition: all 0.3s ease;
 }
 

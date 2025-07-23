@@ -1,28 +1,30 @@
 import { useState, useEffect } from 'react';
-import { Card, Table, Badge, Form, Button, Row, Col } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { counsellorAPI } from '../../services/api';
+import './Appointments.css';
+import '../client/Dashboard.css';
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({
-    status: '',
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState({
     startDate: '',
     endDate: ''
   });
 
   useEffect(() => {
     fetchAppointments();
-  }, []);
+  }, [activeFilter]);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
       const params = {};
       
-      if (filter.status) params.status = filter.status;
-      if (filter.startDate) params.startDate = filter.startDate;
-      if (filter.endDate) params.endDate = filter.endDate;
+      if (activeFilter !== 'all') params.status = activeFilter;
+      if (dateFilter.startDate) params.startDate = dateFilter.startDate;
+      if (dateFilter.endDate) params.endDate = dateFilter.endDate;
       
       const response = await counsellorAPI.getAppointments(params);
       setAppointments(response.data.data);
@@ -33,14 +35,14 @@ const Appointments = () => {
     }
   };
 
-  const handleFilterChange = (e) => {
-    setFilter({
-      ...filter,
+  const handleDateFilterChange = (e) => {
+    setDateFilter({
+      ...dateFilter,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleFilterSubmit = (e) => {
+  const handleDateFilterSubmit = (e) => {
     e.preventDefault();
     fetchAppointments();
   };
@@ -51,139 +53,161 @@ const Appointments = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Get badge color based on status
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'pending': return 'warning';
-      case 'confirmed': return 'primary';
-      case 'completed': return 'success';
-      case 'cancelled': return 'danger';
-      case 'no-show': return 'secondary';
-      default: return 'info';
+  // Get status class
+  const getStatusClass = (status) => {
+    switch (status.toLowerCase()) {
+      case 'confirmed': return 'status-confirmed';
+      case 'completed': return 'status-completed';
+      case 'cancelled': return 'status-cancelled';
+      case 'pending': return 'status-pending';
+      case 'no-show': return 'status-no-show';
+      default: return '';
     }
   };
 
   return (
-    <div>
-      <h2 className="mb-4">Appointments</h2>
+    <div className="appointments-page">
+      <div className="appointments-header">
+        <div className="d-flex align-items-center mb-2">
+          <div className="stat-icon me-3">
+            <i className="bi bi-calendar-check"></i>
+          </div>
+          <h1>Appointments</h1>
+        </div>
+        <p>Manage your scheduled sessions with clients</p>
+      </div>
       
-      <Card className="shadow-sm mb-4">
-        <Card.Body>
-          <Form onSubmit={handleFilterSubmit}>
-            <Row>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
-                  <Form.Select 
-                    name="status" 
-                    value={filter.status} 
-                    onChange={handleFilterChange}
-                  >
-                    <option value="">All</option>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="no-show">No Show</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Start Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="startDate"
-                    value={filter.startDate}
-                    onChange={handleFilterChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Label>End Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="endDate"
-                    value={filter.endDate}
-                    onChange={handleFilterChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={3} className="d-flex align-items-end">
-                <Button type="submit" variant="primary" className="mb-3 w-100">
-                  Filter
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-        </Card.Body>
-      </Card>
+      <div className={`filter-tabs tab-${activeFilter === 'all' ? '1' : activeFilter === 'confirmed' ? '2' : activeFilter === 'completed' ? '3' : '4'}`}>
+        <button 
+          className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('all')}
+        >
+          All
+        </button>
+        <button 
+          className={`filter-tab ${activeFilter === 'confirmed' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('confirmed')}
+        >
+          Upcoming
+        </button>
+        <button 
+          className={`filter-tab ${activeFilter === 'completed' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('completed')}
+        >
+          Completed
+        </button>
+        <button 
+          className={`filter-tab ${activeFilter === 'cancelled' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('cancelled')}
+        >
+          Cancelled
+        </button>
+      </div>
       
-      <Card className="shadow-sm">
-        <Card.Body>
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
+      <div className="filter-card">
+        <div className="p-4">
+          <form onSubmit={handleDateFilterSubmit} className="filter-form">
+            <div>
+              <label htmlFor="startDate" className="form-label">Start Date</label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                className="form-control"
+                value={dateFilter.startDate}
+                onChange={handleDateFilterChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="endDate" className="form-label">End Date</label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                className="form-control"
+                value={dateFilter.endDate}
+                onChange={handleDateFilterChange}
+              />
+            </div>
+            <div>
+              <button type="submit" className="btn btn-primary w-100">
+                <i className="bi bi-funnel me-2"></i>Apply Filter
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div className="appointments-list">
+        {loading ? (
+          <div className="empty-state">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3">Loading appointments...</p>
+          </div>
+        ) : appointments.length > 0 ? (
+          appointments.map((appointment) => (
+            <div key={appointment._id} className="appointment-card">
+              <div className="appointment-content">
+                <div className="appointment-info">
+                  <h3 className="appointment-client">{appointment.client?.name || 'Client'}</h3>
+                  <div className="appointment-meta">
+                    <div className="meta-item">
+                      <i className="bi bi-calendar"></i>
+                      <span>{formatDate(appointment.date)}</span>
+                    </div>
+                    <div className="meta-item">
+                      <i className="bi bi-clock"></i>
+                      <span>{appointment.startTime} - {appointment.endTime}</span>
+                    </div>
+                  </div>
+                  <div className="appointment-status">
+                    <span className={`status-badge ${getStatusClass(appointment.status)}`}>
+                      {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                    </span>
+                    <span className="appointment-type">
+                      {appointment.sessionType === 'video' ? 'Video Call' : 'Chat Session'}
+                    </span>
+                    {appointment.payment && (
+                      <span className={`status-badge ${appointment.payment.status === 'completed' ? 'status-completed' : 'status-pending'}`}>
+                        Payment: {appointment.payment.status.charAt(0).toUpperCase() + appointment.payment.status.slice(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="appointment-actions">
+                  {appointment.status === 'confirmed' && (
+                    <Link to={`/counsellor/chat-video/${appointment._id}`} className="btn-action btn-primary-action">
+                      <i className="bi bi-camera-video"></i> Start Session
+                    </Link>
+                  )}
+                  <Link to={`/counsellor/appointments/${appointment._id}`} className="btn-action btn-secondary-action">
+                    <i className="bi bi-eye"></i> View Details
+                  </Link>
+                </div>
               </div>
-              <p className="mt-2">Loading appointments...</p>
             </div>
-          ) : appointments.length > 0 ? (
-            <Table responsive hover>
-              <thead>
-                <tr>
-                  <th>Client</th>
-                  <th>Date & Time</th>
-                  <th>Session Type</th>
-                  <th>Status</th>
-                  <th>Payment</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {appointments.map((appointment) => (
-                  <tr key={appointment._id}>
-                    <td>{appointment.client?.name || 'Client'}</td>
-                    <td>
-                      <div>{formatDate(appointment.date)}</div>
-                      <small className="text-muted">{appointment.startTime} - {appointment.endTime}</small>
-                    </td>
-                    <td>
-                      <Badge bg={appointment.sessionType === 'video' ? 'primary' : 'info'}>
-                        {appointment.sessionType === 'video' ? 'Video' : 'Chat'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <Badge bg={getStatusBadge(appointment.status)}>
-                        {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                      </Badge>
-                    </td>
-                    <td>
-                      <Badge bg={appointment.payment?.status === 'completed' ? 'success' : 'warning'}>
-                        {appointment.payment?.status || 'Pending'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <Button 
-                        variant="outline-primary" 
-                        size="sm" 
-                        href={`/counsellor/appointments/${appointment._id}`}
-                      >
-                        View
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          ) : (
-            <div className="text-center py-5">
-              <p className="mb-0">No appointments found</p>
+          ))
+        ) : (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <i className="bi bi-calendar-x"></i>
             </div>
-          )}
-        </Card.Body>
-      </Card>
+            <h3>No appointments found</h3>
+            <p>You don't have any {activeFilter !== 'all' ? activeFilter : ''} appointments</p>
+            {activeFilter !== 'all' && (
+              <button 
+                className="btn-action btn-primary-action"
+                onClick={() => setActiveFilter('all')}
+              >
+                View All Appointments
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

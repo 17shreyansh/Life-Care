@@ -1,14 +1,38 @@
 import axios from 'axios';
 
 // Create axios instance with base URL
+const baseURL = import.meta.env.VITE_API_URL || '/api';
 const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   },
   withCredentials: true // Important for cookies/CORS
 });
+
+// For debugging
+console.log('API Base URL:', baseURL);
+
+// Add request logging
+api.interceptors.request.use(request => {
+  console.log('Starting API Request:', request.method, request.url);
+  console.log('Request data:', request.data);
+  return request;
+});
+
+// Add response logging
+api.interceptors.response.use(
+  response => {
+    console.log('API Response:', response.status, response.config.url);
+    return response;
+  },
+  error => {
+    console.error('API Error:', error.response?.status, error.config?.url);
+    console.error('Error details:', error.response?.data);
+    return Promise.reject(error);
+  }
+);
 
 // Add request interceptor to include auth token
 api.interceptors.request.use(

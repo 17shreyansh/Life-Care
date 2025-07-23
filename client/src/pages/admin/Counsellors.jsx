@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import '../client/Dashboard.css';
+import './AdminStyles.css';
 
 const Counsellors = () => {
   const [counsellors, setCounsellors] = useState([]);
@@ -59,19 +61,33 @@ const Counsellors = () => {
 
   return (
     <div>
-      <h2 className="mb-4">Counsellor Management</h2>
+      <div className="d-flex align-items-center mb-4">
+        <div className="stat-icon me-3">
+          <i className="bi bi-person-badge"></i>
+        </div>
+        <h2 className="text-gradient mb-0">Counsellor Management</h2>
+      </div>
       
-      <Card className="shadow-sm mb-4">
-        <Card.Body>
+      <Card className="dashboard-card mb-4">
+        <Card.Header className="d-flex justify-content-between align-items-center py-2">
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-funnel"></i>
+            </div>
+            <h5 className="mb-0">Filter Counsellors</h5>
+          </div>
+        </Card.Header>
+        <Card.Body className="py-2">
           <Form onSubmit={handleFilterSubmit}>
             <Row>
-              <Col md={4}>
+              <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Verification Status</Form.Label>
+                  <Form.Label className="small">Verification Status</Form.Label>
                   <Form.Select 
                     name="isVerified" 
                     value={filter.isVerified} 
                     onChange={handleFilterChange}
+                    size="sm"
                   >
                     <option value="">All</option>
                     <option value="true">Verified</option>
@@ -79,13 +95,14 @@ const Counsellors = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col md={4}>
+              <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
+                  <Form.Label className="small">Status</Form.Label>
                   <Form.Select 
                     name="active" 
                     value={filter.active} 
                     onChange={handleFilterChange}
+                    size="sm"
                   >
                     <option value="">All</option>
                     <option value="true">Active</option>
@@ -95,27 +112,39 @@ const Counsellors = () => {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Search</Form.Label>
+                  <Form.Label className="small">Search</Form.Label>
                   <Form.Control
                     type="text"
                     name="search"
                     value={filter.search}
                     onChange={handleFilterChange}
                     placeholder="Search by name or specialization"
+                    size="sm"
                   />
                 </Form.Group>
               </Col>
+              <Col md={2}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small">&nbsp;</Form.Label>
+                  <Button type="submit" variant="primary" size="sm" className="w-100">
+                    <i className="bi bi-funnel-fill me-1"></i>Apply
+                  </Button>
+                </Form.Group>
+              </Col>
             </Row>
-            <div className="d-grid">
-              <Button type="submit" variant="primary">
-                Apply Filters
-              </Button>
-            </div>
           </Form>
         </Card.Body>
       </Card>
       
-      <Card className="shadow-sm">
+      <Card className="dashboard-card">
+        <Card.Header>
+          <div className="d-flex align-items-center">
+            <div className="card-icon">
+              <i className="bi bi-people"></i>
+            </div>
+            <h5 className="mb-0">Counsellors List</h5>
+          </div>
+        </Card.Header>
         <Card.Body>
           {loading ? (
             <div className="text-center py-5">
@@ -144,12 +173,12 @@ const Counsellors = () => {
                     <td>{counsellor.specializations?.join(', ') || 'N/A'}</td>
                     <td>{counsellor.experience} years</td>
                     <td>
-                      <Badge bg={counsellor.isVerified ? 'success' : 'warning'}>
+                      <Badge bg={counsellor.isVerified ? 'primary' : 'warning'}>
                         {counsellor.isVerified ? 'Verified' : 'Pending'}
                       </Badge>
                     </td>
                     <td>
-                      <Badge bg={counsellor.active ? 'success' : 'danger'}>
+                      <Badge bg={counsellor.active ? 'primary' : 'danger'}>
                         {counsellor.active ? 'Active' : 'Inactive'}
                       </Badge>
                     </td>
@@ -174,7 +203,7 @@ const Counsellors = () => {
                       </Button>
                       {!counsellor.isVerified ? (
                         <Button 
-                          variant="outline-success" 
+                          variant="outline-primary" 
                           size="sm"
                           onClick={() => handleVerifyCounsellor(counsellor._id, true)}
                         >

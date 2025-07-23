@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import logoImage from '../../assets/logo.png';
+import './Sidebar.css';
 
 const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -63,22 +65,19 @@ const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
     <div className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <Link to="/" className="sidebar-brand">
-          {collapsed ? (
-            <span className="logo-short">SS</span>
-          ) : (
-            <>
-              <span className="logo-text">S S Psychologist</span>
-              <span className="logo-subtext">Life Care</span>
-            </>
-          )}
+          <img src={logoImage} alt="Life Care" className="logo-image" />
+          <div className="logo-text-container text-center">
+            <span className="logo-text">S S Psychologist</span>
+            <span className="logo-subtext">Life Care</span>
+          </div>
         </Link>
-        <button className="sidebar-toggle d-none d-md-block" onClick={toggleSidebar}>
-          <i className={`bi ${collapsed ? 'bi-chevron-right' : 'bi-chevron-left'}`}></i>
-        </button>
-        <button className="sidebar-close d-md-none" onClick={closeMobileSidebar}>
+        <button className="sidebar-close d-md-none" onClick={closeMobileSidebar} title="Close">
           <i className="bi bi-x-lg"></i>
         </button>
       </div>
+      <button className="sidebar-toggle d-none d-md-block" onClick={toggleSidebar} title={collapsed ? 'Expand' : 'Collapse'}>
+        <i className={`bi ${collapsed ? 'bi-chevron-right' : 'bi-chevron-left'}`} style={{fontSize: '14px'}}></i>
+      </button>
 
       <div className="sidebar-user">
         <div className="user-avatar">
@@ -86,7 +85,7 @@ const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
             <img src={user.avatar} alt={user.name} />
           ) : (
             <div className="avatar-placeholder">
-              {user?.name?.charAt(0) || 'U'}
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
         </div>
@@ -102,9 +101,10 @@ const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
         <ul className="menu-items">
           {getMenuItems().map((item) => (
             <li key={item.path} className={isActive(item.path) ? 'active' : ''}>
-              <Link to={item.path} onClick={closeMobileSidebar}>
+              <Link to={item.path} onClick={closeMobileSidebar} title={item.label}>
                 <i className={`bi ${item.icon}`}></i>
                 {!collapsed && <span>{item.label}</span>}
+                {isActive(item.path) && collapsed && <span className="active-dot"></span>}
               </Link>
             </li>
           ))}
@@ -112,7 +112,7 @@ const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
       </div>
 
       <div className="sidebar-footer">
-        <button className="logout-btn" onClick={logout}>
+        <button className="logout-btn" onClick={logout} title="Logout">
           <i className="bi bi-box-arrow-right"></i>
           {!collapsed && <span>Logout</span>}
         </button>

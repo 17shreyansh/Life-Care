@@ -97,7 +97,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Sending login request with:', credentials.email);
       const response = await authAPI.login(credentials);
+      console.log('Login API response:', response.data);
       
       // Check if OTP verification is required
       if (response.data.requireOTP) {
@@ -114,6 +116,8 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       return userData;
     } catch (err) {
+      console.error('Login API error:', err);
+      console.error('Error response:', err.response?.data);
       setError(err.response?.data?.message || 'Login failed');
       throw err;
     } finally {
