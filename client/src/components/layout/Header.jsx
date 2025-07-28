@@ -1,13 +1,18 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import Logo from '../../assets/logo.png';
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout, isAuthenticated, loading } = useAuth();
+
+  // Debug logging
+  console.log('Header - user:', user);
+  console.log('Header - isAuthenticated:', isAuthenticated);
+  console.log('Header - loading:', loading);
 
   // Check if current route is active
   const isActive = (path) => {
@@ -28,24 +33,10 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    // Check if user is logged in from localStorage
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('userRole');
-    
-    if (token) {
-      setIsLoggedIn(true);
-      setUserRole(role);
-    }
-  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    setIsLoggedIn(false);
-    setUserRole(null);
-    navigate('/');
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -103,16 +94,16 @@ const Header = () => {
           </ul>
           
           <div className="d-flex">
-            {isLoggedIn ? (
+            {!loading && isAuthenticated && user ? (
               <>
-                <Link to={`/${userRole}/dashboard`} className="btn btn-outline-primary me-2">
+                <Link to={`/${user.role}/dashboard`} className="btn btn-outline-primary me-2">
                   <i className="bi bi-speedometer2 me-1"></i> Dashboard
                 </Link>
                 <button onClick={handleLogout} className="btn btn-primary">
                   <i className="bi bi-box-arrow-right me-1"></i> Logout
                 </button>
               </>
-            ) : (
+            ) : !loading ? (
               <>
                 <Link to="/login" className="btn btn-outline-primary me-2">
                   <i className="bi bi-box-arrow-in-right me-1"></i> Login
