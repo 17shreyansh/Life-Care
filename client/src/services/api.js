@@ -21,15 +21,27 @@ api.interceptors.request.use(request => {
   return request;
 });
 
-// Add response logging
+// Add response logging and validation
 api.interceptors.response.use(
   response => {
     console.log('API Response:', response.status, response.config.url);
+    
+    // Validate response data
+    if (response.data === undefined || response.data === null) {
+      console.warn('API returned undefined/null data:', response.config.url);
+    }
+    
     return response;
   },
   error => {
     console.error('API Error:', error.response?.status, error.config?.url);
     console.error('Error details:', error.response?.data);
+    
+    // Handle cases where response is not JSON
+    if (error.response && typeof error.response.data === 'string') {
+      console.error('Non-JSON response received:', error.response.data.substring(0, 200));
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -37,9 +49,13 @@ api.interceptors.response.use(
 // Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = localStorage.getItem('token');
+      if (token && token !== 'undefined' && token !== 'null') {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Error getting token from localStorage:', error);
     }
     return config;
   },
@@ -61,7 +77,7 @@ api.interceptors.response.use(
       try {
         // Try to refresh the token
         const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
+        if (!refreshToken || refreshToken === 'undefined' || refreshToken === 'null') {
           // No refresh token, redirect to login
           window.location.href = '/login';
           return Promise.reject(error);
@@ -84,9 +100,13 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         // If refresh token is invalid, redirect to login
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        try {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+        } catch (error) {
+          console.error('Error clearing localStorage:', error);
+        }
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

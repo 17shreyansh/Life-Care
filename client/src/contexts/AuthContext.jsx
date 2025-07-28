@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { storage } from '../utils/storage';
 
 const AuthContext = createContext();
 
@@ -14,9 +15,9 @@ export const AuthProvider = ({ children }) => {
 
   // Load user from localStorage on initial render
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = storage.get('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      setUser(storedUser);
     }
     setLoading(false);
   }, []);
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.getMe();
       const userData = response.data.data;
       setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      storage.set('user', userData);
       return userData;
     } catch (err) {
       console.error('Error fetching user:', err);
@@ -63,9 +64,9 @@ export const AuthProvider = ({ children }) => {
       const { accessToken, refreshToken, user: userData } = response.data;
       
       // Save tokens and user data
-      localStorage.setItem('token', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('user', JSON.stringify(userData));
+      storage.set('token', accessToken);
+      storage.set('refreshToken', refreshToken);
+      storage.set('user', userData);
       
       setUser(userData);
       return userData;
@@ -109,9 +110,9 @@ export const AuthProvider = ({ children }) => {
       const { accessToken, refreshToken, user: userData } = response.data;
       
       // Save tokens and user data
-      localStorage.setItem('token', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('user', JSON.stringify(userData));
+      storage.set('token', accessToken);
+      storage.set('refreshToken', refreshToken);
+      storage.set('user', userData);
       
       setUser(userData);
       return userData;
@@ -134,9 +135,9 @@ export const AuthProvider = ({ children }) => {
       const { accessToken, refreshToken, user: userData } = response.data;
       
       // Save tokens and user data
-      localStorage.setItem('token', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('user', JSON.stringify(userData));
+      storage.set('token', accessToken);
+      storage.set('refreshToken', refreshToken);
+      storage.set('user', userData);
       
       setUser(userData);
       return userData;
@@ -157,9 +158,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', err);
     } finally {
       // Clear local storage and state regardless of API response
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      storage.remove('token');
+      storage.remove('refreshToken');
+      storage.remove('user');
       setUser(null);
       setLoading(false);
       navigate('/login');
@@ -175,7 +176,7 @@ export const AuthProvider = ({ children }) => {
       const updatedUser = response.data.data;
       
       // Update local storage and state
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      storage.set('user', updatedUser);
       setUser(updatedUser);
       
       return updatedUser;
