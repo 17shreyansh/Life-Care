@@ -9,7 +9,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'https://life-care-sqr5.onrender.com',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
