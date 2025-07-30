@@ -74,15 +74,15 @@ const DashboardLayout = ({ role }) => {
           <div className="d-flex justify-content-between align-items-center">
             <div>
               <h1 className="h3 mb-0">Welcome, <span className="text-gradient">{user?.name || 'User'}</span></h1>
-              <p className="text-muted mb-0">Here's what's happening with your account today.</p>
+              {/* <p className="text-muted mb-0">Here's what's happening with your account today.</p> */}
             </div>
             <div className="d-flex">
               <Link to="/" className="btn btn-outline-primary me-2">
                 <i className="bi bi-house-door me-1"></i>Home
               </Link>
-              <button onClick={handleLogout} className="btn btn-outline-danger">
+              {/* <button onClick={handleLogout} className="btn btn-outline-danger">
                 <i className="bi bi-box-arrow-right me-1"></i>Logout
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

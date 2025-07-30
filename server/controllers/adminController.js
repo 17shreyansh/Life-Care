@@ -173,7 +173,7 @@ exports.deleteUser = async (req, res, next) => {
     }
     
     // Delete user
-    await user.remove();
+    await User.findByIdAndDelete(req.params.id);
     
     res.status(200).json({
       success: true,
@@ -260,6 +260,61 @@ exports.getCounsellor = async (req, res, next) => {
       success: true,
       data: counsellor
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create counsellor with profile
+// @route   POST /api/admin/counsellors
+// @access  Private (Admin only)
+exports.createCounsellor = async (req, res, next) => {
+  try {
+    const { 
+      name, email, password, phone, profilePicture,
+      specializations, experience, qualifications, 
+      bio, fees, languages 
+    } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return next(new ErrorResponse('Email already registered', 400));
+    }
+    
+    // Create user first
+    const user = await User.create({
+      name,
+      email,
+      password,
+      phone,
+      role: 'counsellor',
+      avatar: profilePicture,
+      isEmailVerified: true // Admin-created users are automatically verified
+    });
+    
+    try {
+      // Create counsellor profile
+      const counsellor = await Counsellor.create({
+        user: user._id,
+        specializations: Array.isArray(specializations) ? specializations : (specializations ? specializations.split(',').map(s => s.trim()) : []),
+        experience: parseInt(experience) || 0,
+        qualifications: qualifications || [],
+        bio,
+        fees: fees || { video: 0, chat: 0 },
+        languages: Array.isArray(languages) ? languages : (languages ? languages.split(',').map(l => l.trim()) : []),
+        isVerified: true // Admin-created counsellors are automatically verified
+      });
+      
+      res.status(201).json({
+        success: true,
+        data: counsellor
+      });
+    } catch (counsellorError) {
+      // If counsellor creation fails, delete the user to maintain consistency
+      await User.findByIdAndDelete(user._id);
+      throw counsellorError;
+    }
   } catch (error) {
     next(error);
   }
@@ -601,21 +656,32 @@ exports.getBlogs = async (req, res, next) => {
   }
 };
 
-// @desc    Update blog status
+// @desc    Create blog
+// @route   POST /api/admin/cms/blogs
+// @access  Private (Admin only)
+exports.createBlog = async (req, res, next) => {
+  try {
+    req.body.author = req.user.id;
+    const blog = await Blog.create(req.body);
+    
+    res.status(201).json({
+      success: true,
+      data: blog
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update blog
 // @route   PUT /api/admin/cms/blogs/:id
 // @access  Private (Admin only)
 exports.updateBlog = async (req, res, next) => {
   try {
-    const { status, isFeatured } = req.body;
-    
-    const updateFields = {};
-    if (status) updateFields.status = status;
-    if (isFeatured !== undefined) updateFields.isFeatured = isFeatured;
-    
     const blog = await Blog.findByIdAndUpdate(
       req.params.id,
-      updateFields,
-      { new: true }
+      req.body,
+      { new: true, runValidators: true }
     );
     
     if (!blog) {
@@ -631,6 +697,375 @@ exports.updateBlog = async (req, res, next) => {
   }
 };
 
+// @desc    Delete blog
+// @route   DELETE /api/admin/cms/blogs/:id
+// @access  Private (Admin only)
+exports.deleteBlog = async (req, res, next) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    
+    if (!blog) {
+      return next(new ErrorResponse(`Blog not found with id of ${req.params.id}`, 404));
+    }
+    
+    await Blog.findByIdAndDelete(req.params.id);
+    
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get all videos
+// @route   GET /api/admin/cms/videos
+// @access  Private (Admin only)
+exports.getVideos = async (req, res, next) => {
+  try {
+    let query = {};
+    
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+    
+    if (req.query.isFeatured !== undefined) {
+      query.isFeatured = req.query.isFeatured === 'true';
+    }
+    
+    if (req.query.search) {
+      query.$or = [
+        { title: { $regex: req.query.search, $options: 'i' } },
+        { description: { $regex: req.query.search, $options: 'i' } }
+      ];
+    }
+    
+    const sortBy = req.query.sortBy || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    
+    const videos = await Video.find(query)
+      .populate('author', 'name avatar')
+      .sort({ [sortBy]: sortOrder })
+      .skip(startIndex)
+      .limit(limit);
+    
+    const total = await Video.countDocuments(query);
+    
+    res.status(200).json({
+      success: true,
+      count: videos.length,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit)
+      },
+      data: videos
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create video
+// @route   POST /api/admin/cms/videos
+// @access  Private (Admin only)
+exports.createVideo = async (req, res, next) => {
+  try {
+    req.body.author = req.user.id;
+    const video = await Video.create(req.body);
+    
+    res.status(201).json({
+      success: true,
+      data: video
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update video
+// @route   PUT /api/admin/cms/videos/:id
+// @access  Private (Admin only)
+exports.updateVideo = async (req, res, next) => {
+  try {
+    const video = await Video.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    
+    if (!video) {
+      return next(new ErrorResponse(`Video not found with id of ${req.params.id}`, 404));
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: video
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete video
+// @route   DELETE /api/admin/cms/videos/:id
+// @access  Private (Admin only)
+exports.deleteVideo = async (req, res, next) => {
+  try {
+    const video = await Video.findById(req.params.id);
+    
+    if (!video) {
+      return next(new ErrorResponse(`Video not found with id of ${req.params.id}`, 404));
+    }
+    
+    await Video.findByIdAndDelete(req.params.id);
+    
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get all gallery images
+// @route   GET /api/admin/cms/gallery
+// @access  Private (Admin only)
+exports.getGallery = async (req, res, next) => {
+  try {
+    let query = {};
+    
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+    
+    if (req.query.search) {
+      query.$or = [
+        { title: { $regex: req.query.search, $options: 'i' } },
+        { description: { $regex: req.query.search, $options: 'i' } }
+      ];
+    }
+    
+    const sortBy = req.query.sortBy || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 12;
+    const startIndex = (page - 1) * limit;
+    
+    const images = await GalleryImage.find(query)
+      .populate('uploadedBy', 'name')
+      .sort({ [sortBy]: sortOrder })
+      .skip(startIndex)
+      .limit(limit);
+    
+    const total = await GalleryImage.countDocuments(query);
+    
+    res.status(200).json({
+      success: true,
+      count: images.length,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit)
+      },
+      data: images
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Upload gallery image
+// @route   POST /api/admin/cms/gallery
+// @access  Private (Admin only)
+exports.uploadGalleryImage = async (req, res, next) => {
+  try {
+    req.body.uploadedBy = req.user.id;
+    const image = await GalleryImage.create(req.body);
+    
+    res.status(201).json({
+      success: true,
+      data: image
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete gallery image
+// @route   DELETE /api/admin/cms/gallery/:id
+// @access  Private (Admin only)
+exports.deleteGalleryImage = async (req, res, next) => {
+  try {
+    const image = await GalleryImage.findById(req.params.id);
+    
+    if (!image) {
+      return next(new ErrorResponse(`Image not found with id of ${req.params.id}`, 404));
+    }
+    
+    await GalleryImage.findByIdAndDelete(req.params.id);
+    
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get analytics/reports
+// @route   GET /api/admin/reports
+// @access  Private (Admin only)
+exports.getReports = async (req, res, next) => {
+  try {
+    const { type, startDate, endDate } = req.query;
+    
+    let dateFilter = {};
+    if (startDate && endDate) {
+      dateFilter = {
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        }
+      };
+    }
+    
+    let reportData = {};
+    
+    switch (type) {
+      case 'users':
+        reportData = await generateUserReport(dateFilter);
+        break;
+      case 'appointments':
+        reportData = await generateAppointmentReport(dateFilter);
+        break;
+      case 'revenue':
+        reportData = await generateRevenueReport(dateFilter);
+        break;
+      case 'content':
+        reportData = await generateContentReport(dateFilter);
+        break;
+      default:
+        reportData = await generateOverallReport(dateFilter);
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: reportData
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Helper functions for reports
+const generateUserReport = async (dateFilter) => {
+  const totalUsers = await User.countDocuments(dateFilter);
+  const newUsers = await User.countDocuments({ ...dateFilter, createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } });
+  const activeUsers = await User.countDocuments({ ...dateFilter, active: true });
+  const usersByRole = await User.aggregate([
+    { $match: dateFilter },
+    { $group: { _id: '$role', count: { $sum: 1 } } }
+  ]);
+  
+  return {
+    totalUsers,
+    newUsers,
+    activeUsers,
+    usersByRole
+  };
+};
+
+const generateAppointmentReport = async (dateFilter) => {
+  const totalAppointments = await Appointment.countDocuments(dateFilter);
+  const appointmentsByStatus = await Appointment.aggregate([
+    { $match: dateFilter },
+    { $group: { _id: '$status', count: { $sum: 1 } } }
+  ]);
+  const appointmentsByMonth = await Appointment.aggregate([
+    { $match: dateFilter },
+    { $group: { _id: { $month: '$createdAt' }, count: { $sum: 1 } } },
+    { $sort: { '_id': 1 } }
+  ]);
+  
+  return {
+    totalAppointments,
+    appointmentsByStatus,
+    appointmentsByMonth
+  };
+};
+
+const generateRevenueReport = async (dateFilter) => {
+  const revenueData = await Appointment.aggregate([
+    { $match: { ...dateFilter, 'payment.status': 'completed' } },
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: '$amount' },
+        averageAmount: { $avg: '$amount' },
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+  
+  const monthlyRevenue = await Appointment.aggregate([
+    { $match: { ...dateFilter, 'payment.status': 'completed' } },
+    {
+      $group: {
+        _id: { $month: '$createdAt' },
+        revenue: { $sum: '$amount' },
+        count: { $sum: 1 }
+      }
+    },
+    { $sort: { '_id': 1 } }
+  ]);
+  
+  return {
+    ...revenueData[0],
+    monthlyRevenue
+  };
+};
+
+const generateContentReport = async (dateFilter) => {
+  const blogStats = await Blog.aggregate([
+    { $match: dateFilter },
+    { $group: { _id: '$status', count: { $sum: 1 } } }
+  ]);
+  
+  const videoStats = await Video.aggregate([
+    { $match: dateFilter },
+    { $group: { _id: '$status', count: { $sum: 1 } } }
+  ]);
+  
+  const galleryStats = await GalleryImage.countDocuments(dateFilter);
+  
+  return {
+    blogStats,
+    videoStats,
+    galleryStats
+  };
+};
+
+const generateOverallReport = async (dateFilter) => {
+  const userReport = await generateUserReport(dateFilter);
+  const appointmentReport = await generateAppointmentReport(dateFilter);
+  const revenueReport = await generateRevenueReport(dateFilter);
+  const contentReport = await generateContentReport(dateFilter);
+  
+  return {
+    users: userReport,
+    appointments: appointmentReport,
+    revenue: revenueReport,
+    content: contentReport
+  };
+};
+
 // @desc    Get dashboard stats
 // @route   GET /api/admin/dashboard
 // @access  Private (Admin only)
@@ -640,11 +1075,20 @@ exports.getDashboardStats = async (req, res, next) => {
     const totalUsers = await User.countDocuments();
     const totalClients = await User.countDocuments({ role: 'client' });
     const totalCounsellors = await User.countDocuments({ role: 'counsellor' });
+    const newUsersThisMonth = await User.countDocuments({
+      createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
+    });
     
     // Get appointment counts
     const totalAppointments = await Appointment.countDocuments();
     const pendingAppointments = await Appointment.countDocuments({ status: 'pending' });
     const completedAppointments = await Appointment.countDocuments({ status: 'completed' });
+    const todayAppointments = await Appointment.countDocuments({
+      date: {
+        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        $lt: new Date(new Date().setHours(23, 59, 59, 999))
+      }
+    });
     
     // Get payment stats
     const completedPayments = await Appointment.find({
@@ -658,10 +1102,36 @@ exports.getDashboardStats = async (req, res, next) => {
     
     // Get pending withdrawals
     const pendingWithdrawals = await WithdrawalRequest.countDocuments({ status: 'pending' });
+    const pendingWithdrawalAmount = await WithdrawalRequest.aggregate([
+      { $match: { status: 'pending' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
     
     // Get content stats
     const totalBlogs = await Blog.countDocuments();
+    const publishedBlogs = await Blog.countDocuments({ status: 'published' });
     const totalVideos = await Video.countDocuments();
+    const publishedVideos = await Video.countDocuments({ status: 'published' });
+    const totalGalleryImages = await GalleryImage.countDocuments();
+    
+    // Get counsellor verification stats
+    const pendingCounsellors = await Counsellor.countDocuments({ isVerified: false });
+    const verifiedCounsellors = await Counsellor.countDocuments({ isVerified: true });
+    
+    // Get recent activity
+    const recentUsers = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('name email role createdAt');
+    
+    const recentAppointments = await Appointment.find()
+      .populate('client', 'name')
+      .populate({
+        path: 'counsellor',
+        populate: { path: 'user', select: 'name' }
+      })
+      .sort({ createdAt: -1 })
+      .limit(5);
     
     res.status(200).json({
       success: true,
@@ -669,22 +1139,167 @@ exports.getDashboardStats = async (req, res, next) => {
         users: {
           total: totalUsers,
           clients: totalClients,
-          counsellors: totalCounsellors
+          counsellors: totalCounsellors,
+          newThisMonth: newUsersThisMonth
         },
         appointments: {
           total: totalAppointments,
           pending: pendingAppointments,
-          completed: completedAppointments
+          completed: completedAppointments,
+          today: todayAppointments
         },
         finances: {
           totalRevenue,
-          pendingWithdrawals
+          pendingWithdrawals,
+          pendingWithdrawalAmount: pendingWithdrawalAmount[0]?.total || 0
         },
         content: {
           blogs: totalBlogs,
-          videos: totalVideos
+          publishedBlogs,
+          videos: totalVideos,
+          publishedVideos,
+          galleryImages: totalGalleryImages
+        },
+        counsellors: {
+          pending: pendingCounsellors,
+          verified: verifiedCounsellors
+        },
+        recentActivity: {
+          users: recentUsers,
+          appointments: recentAppointments
         }
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get platform settings
+// @route   GET /api/admin/settings
+// @access  Private (Admin only)
+exports.getSettings = async (req, res, next) => {
+  try {
+    // This would typically come from a Settings model
+    // For now, return default settings
+    const settings = {
+      platform: {
+        name: 'S S Psychologist Life Care',
+        description: 'Mental Health Support Platform',
+        logo: '/assets/logo.png',
+        favicon: '/assets/favicon.ico',
+        primaryColor: '#2563eb',
+        secondaryColor: '#10b981'
+      },
+      email: {
+        smtpHost: process.env.SMTP_HOST || '',
+        smtpPort: process.env.SMTP_PORT || 587,
+        smtpUser: process.env.SMTP_EMAIL || '',
+        supportEmail: process.env.SUPPORT_EMAIL || 'support@lifecare.com'
+      },
+      payment: {
+        razorpayEnabled: !!process.env.RAZORPAY_KEY_ID,
+        stripeEnabled: !!process.env.STRIPE_PUBLISHABLE_KEY,
+        currency: 'INR',
+        taxRate: 18
+      },
+      features: {
+        videoCallEnabled: true,
+        chatEnabled: true,
+        blogEnabled: true,
+        galleryEnabled: true,
+        reviewsEnabled: true
+      }
+    };
+    
+    res.status(200).json({
+      success: true,
+      data: settings
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update platform settings
+// @route   PUT /api/admin/settings
+// @access  Private (Admin only)
+exports.updateSettings = async (req, res, next) => {
+  try {
+    // In a real application, you would save these to a Settings model
+    // For now, just return success
+    res.status(200).json({
+      success: true,
+      message: 'Settings updated successfully',
+      data: req.body
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Ban/Unban user
+// @route   PUT /api/admin/users/:id/ban
+// @access  Private (Admin only)
+exports.banUser = async (req, res, next) => {
+  try {
+    const { banned, reason } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { 
+        active: !banned,
+        banReason: banned ? reason : undefined
+      },
+      { new: true }
+    );
+    
+    if (!user) {
+      return next(new ErrorResponse(`User not found with id of ${req.params.id}`, 404));
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Handle dispute
+// @route   PUT /api/admin/disputes/:id
+// @access  Private (Admin only)
+exports.handleDispute = async (req, res, next) => {
+  try {
+    const { status, resolution, refundAmount } = req.body;
+    
+    // Find the appointment related to the dispute
+    const appointment = await Appointment.findById(req.params.id);
+    
+    if (!appointment) {
+      return next(new ErrorResponse(`Appointment not found with id of ${req.params.id}`, 404));
+    }
+    
+    // Update dispute status
+    appointment.dispute = {
+      status,
+      resolution,
+      resolvedBy: req.user.id,
+      resolvedAt: Date.now()
+    };
+    
+    // Handle refund if applicable
+    if (refundAmount && refundAmount > 0) {
+      appointment.payment.status = 'refunded';
+      appointment.payment.refundAmount = refundAmount;
+    }
+    
+    await appointment.save();
+    
+    res.status(200).json({
+      success: true,
+      data: appointment
     });
   } catch (error) {
     next(error);

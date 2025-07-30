@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Card, Table, Badge, Button, Form, Row, Col } from 'react-bootstrap';
+import { Card, Table, Badge, Button, Form, Row, Col, Modal, Alert } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import ImagePicker from '../../components/shared/ImagePicker';
+import TagsInput from '../../components/shared/TagsInput';
 import '../client/Dashboard.css';
 import './AdminStyles.css';
 
@@ -12,6 +14,38 @@ const Counsellors = () => {
     active: '',
     search: ''
   });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedCounsellor, setSelectedCounsellor] = useState(null);
+  const [newCounsellor, setNewCounsellor] = useState({
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    profilePicture: '',
+    specializations: '',
+    experience: '',
+    qualifications: [{
+      degree: '',
+      institution: '',
+      year: '',
+      certificate: ''
+    }],
+    bio: '',
+    videoFee: '',
+    chatFee: '',
+    languages: '',
+    gender: '',
+    dateOfBirth: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: ''
+  });
+  const [errors, setErrors] = useState({});
+  const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
 
   useEffect(() => {
     fetchCounsellors();
@@ -50,12 +84,125 @@ const Counsellors = () => {
   const handleVerifyCounsellor = async (id, isVerified) => {
     try {
       await adminAPI.verifyCounsellor(id, isVerified);
-      // Update the counsellor in the list
       setCounsellors(counsellors.map(counsellor => 
         counsellor._id === id ? { ...counsellor, isVerified } : counsellor
       ));
+      showAlert('Counsellor verification updated successfully');
     } catch (error) {
       console.error('Error updating counsellor verification:', error);
+      showAlert('Error updating verification status', 'danger');
+    }
+  };
+
+  const showAlert = (message, type = 'success') => {
+    setAlert({ show: true, message, type });
+    setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewCounsellor({ ...newCounsellor, [field]: value });
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!newCounsellor.name.trim()) newErrors.name = 'Name is required';
+    if (!newCounsellor.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(newCounsellor.email)) {
+      newErrors.email = 'Email format is invalid';
+    }
+    if (!newCounsellor.password.trim()) {
+      newErrors.password = 'Password is required';
+    } else if (newCounsellor.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    if (!newCounsellor.profilePicture) newErrors.profilePicture = 'Profile picture is required';
+    if (!newCounsellor.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^[0-9]{10}$/.test(newCounsellor.phone.replace(/\D/g, ''))) {
+      newErrors.phone = 'Phone number must be 10 digits';
+    }
+    if (!newCounsellor.gender) newErrors.gender = 'Gender is required';
+    if (!newCounsellor.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+    if (!newCounsellor.qualifications[0].degree.trim()) newErrors.degree = 'Degree is required';
+    if (!newCounsellor.qualifications[0].institution.trim()) newErrors.institution = 'Institution is required';
+    if (!newCounsellor.qualifications[0].year) newErrors.graduationYear = 'Graduation year is required';
+    if (!newCounsellor.specializations.trim()) newErrors.specializations = 'Specializations are required';
+    if (!newCounsellor.bio.trim()) newErrors.bio = 'Bio is required';
+    if (!newCounsellor.videoFee.trim()) newErrors.videoFee = 'Video session fee is required';
+    if (!newCounsellor.chatFee.trim()) newErrors.chatFee = 'Chat session fee is required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleAddCounsellor = async () => {
+    try {
+      // Validate form
+      if (!validateForm()) {
+        return;
+      }
+
+      // Prepare data for backend
+      const counsellorData = {
+        ...newCounsellor,
+        specializations: typeof newCounsellor.specializations === 'string' ? newCounsellor.specializations.split(',').map(s => s.trim()).filter(s => s) : newCounsellor.specializations,
+        languages: typeof newCounsellor.languages === 'string' ? newCounsellor.languages.split(',').map(s => s.trim()).filter(s => s) : newCounsellor.languages,
+        fees: {
+          chat: parseInt(newCounsellor.chatFee) || 0,
+          video: parseInt(newCounsellor.videoFee) || 0
+        },
+        qualifications: newCounsellor.qualifications.map(qual => ({
+          degree: qual.degree,
+          institution: qual.institution,
+          year: parseInt(qual.year) || new Date().getFullYear(),
+          certificate: qual.certificate || ''
+        }))
+      };
+      
+      // Create counsellor with profile
+      await adminAPI.createCounsellor(counsellorData);
+      
+      // Reset form and close modal
+      setNewCounsellor({
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        profilePicture: '',
+        specializations: '',
+        experience: '',
+        qualifications: [{
+          degree: '',
+          institution: '',
+          year: '',
+          certificate: ''
+        }],
+        bio: '',
+        videoFee: '',
+        chatFee: '',
+        languages: '',
+        gender: '',
+        dateOfBirth: '',
+        address: '',
+        city: '',
+        state: '',
+        pincode: ''
+      });
+      setErrors({});
+      setShowAddModal(false);
+      
+      // Refresh counsellors list
+      fetchCounsellors();
+      showAlert('Counsellor added successfully');
+    } catch (error) {
+      console.error('Error adding counsellor:', error);
+      showAlert(error.response?.data?.message || 'Error adding counsellor', 'danger');
     }
   };
 
@@ -76,6 +223,9 @@ const Counsellors = () => {
             </div>
             <h5 className="mb-0">Filter Counsellors</h5>
           </div>
+          <Button variant="primary" size="sm" onClick={() => setShowAddModal(true)}>
+            <i className="bi bi-plus-circle me-2"></i>Add Counsellor
+          </Button>
         </Card.Header>
         <Card.Body className="py-2">
           <Form onSubmit={handleFilterSubmit}>
@@ -146,6 +296,12 @@ const Counsellors = () => {
           </div>
         </Card.Header>
         <Card.Body>
+          {alert.show && (
+            <Alert variant={alert.type} dismissible onClose={() => setAlert({ show: false, message: '', type: 'success' })}>
+              {alert.message}
+            </Alert>
+          )}
+          
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border text-primary" role="status">
@@ -154,7 +310,8 @@ const Counsellors = () => {
               <p className="mt-2">Loading counsellors...</p>
             </div>
           ) : counsellors.length > 0 ? (
-            <Table responsive hover>
+            <div className="table-container">
+              <Table responsive hover>
               <thead>
                 <tr>
                   <th>Name</th>
@@ -197,7 +354,10 @@ const Counsellors = () => {
                         variant="outline-primary" 
                         size="sm" 
                         className="me-1"
-                        href={`/admin/counsellors/${counsellor._id}`}
+                        onClick={() => {
+                          setSelectedCounsellor(counsellor);
+                          setShowProfileModal(true);
+                        }}
                       >
                         <i className="bi bi-eye"></i>
                       </Button>
@@ -222,7 +382,8 @@ const Counsellors = () => {
                   </tr>
                 ))}
               </tbody>
-            </Table>
+              </Table>
+            </div>
           ) : (
             <div className="text-center py-5">
               <p className="mb-0">No counsellors found</p>
@@ -230,6 +391,469 @@ const Counsellors = () => {
           )}
         </Card.Body>
       </Card>
+      
+      {/* Add Counsellor Modal */}
+      <Modal 
+        show={showAddModal} 
+        onHide={() => setShowAddModal(false)} 
+        size="xl" 
+        centered 
+        dialogClassName="counsellor-modal-wide"
+        backdrop="static"
+        style={{ zIndex: 9999 }}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add New Counsellor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+          <div className="profile-card-style">
+            <Form.Group className="mb-3">
+              <Form.Label>Profile Picture <span className="text-danger">*</span></Form.Label>
+              <div className="profile-upload-section">
+                <div 
+                  className={`profile-image-box ${errors.profilePicture ? 'error' : ''}`}
+                  onClick={() => setShowImagePicker(true)}
+                >
+                  {newCounsellor.profilePicture ? (
+                    <>
+                      <img
+                        src={newCounsellor.profilePicture}
+                        alt="Profile preview"
+                        className="profile-selected-image"
+                      />
+                      <div className="profile-overlay">
+                        <i className="bi bi-camera"></i>
+                        <span>Change Photo</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="profile-upload-placeholder">
+                      <i className="bi bi-camera-fill"></i>
+                      <span>Select Photo</span>
+                    </div>
+                  )}
+                </div>
+                {errors.profilePicture && (
+                  <div className="text-danger small mt-2">{errors.profilePicture}</div>
+                )}
+                <Form.Text className="text-muted mt-2 d-block">
+                  Click to upload a professional profile picture (JPG, PNG)
+                </Form.Text>
+              </div>
+            </Form.Group>
+
+            <Form>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Full Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={newCounsellor.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Enter full name"
+                    isInvalid={!!errors.name}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.name}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={newCounsellor.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="Enter email address"
+                    isInvalid={!!errors.email}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.email}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Password <span className="text-danger">*</span></Form.Label>
+                  <div className="position-relative">
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      value={newCounsellor.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      placeholder="Create password (min 6 characters)"
+                      isInvalid={!!errors.password}
+                      required
+                      style={{ paddingRight: '45px' }}
+                    />
+                    <Button
+                      variant="link"
+                      className="position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent"
+                      style={{ zIndex: 10, padding: '0 12px' }}
+                      onClick={() => setShowPassword(!showPassword)}
+                      type="button"
+                    >
+                      <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                    </Button>
+                  </div>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.password}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Phone Number <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="tel"
+                    value={newCounsellor.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    placeholder="Enter 10-digit phone number"
+                    isInvalid={!!errors.phone}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.phone}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Gender <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    value={newCounsellor.gender}
+                    onChange={(e) => handleInputChange('gender', e.target.value)}
+                    isInvalid={!!errors.gender}
+                    required
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.gender}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Date of Birth <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={newCounsellor.dateOfBirth}
+                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                    isInvalid={!!errors.dateOfBirth}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.dateOfBirth}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Specializations <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={typeof newCounsellor.specializations === 'string' ? newCounsellor.specializations : newCounsellor.specializations.join(', ')}
+                    onChange={(e) => handleInputChange('specializations', e.target.value)}
+                    placeholder="e.g., Anxiety, Depression, Couples Therapy"
+                    isInvalid={!!errors.specializations}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.specializations}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Experience (Years) <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    value={newCounsellor.experience}
+                    onChange={(e) => handleInputChange('experience', e.target.value)}
+                    placeholder="Years of experience"
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Languages</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={typeof newCounsellor.languages === 'string' ? newCounsellor.languages : newCounsellor.languages.join(', ')}
+                    onChange={(e) => handleInputChange('languages', e.target.value)}
+                    placeholder="e.g., English, Hindi, Tamil"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <h6 className="mb-3 text-primary">Qualification Details</h6>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Degree <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={newCounsellor.qualifications[0].degree}
+                    onChange={(e) => {
+                      const updatedQualifications = [...newCounsellor.qualifications];
+                      updatedQualifications[0].degree = e.target.value;
+                      handleInputChange('qualifications', updatedQualifications);
+                    }}
+                    placeholder="e.g., Ph.D. in Psychology"
+                    isInvalid={!!errors.degree}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.degree}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Institution <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={newCounsellor.qualifications[0].institution}
+                    onChange={(e) => {
+                      const updatedQualifications = [...newCounsellor.qualifications];
+                      updatedQualifications[0].institution = e.target.value;
+                      handleInputChange('qualifications', updatedQualifications);
+                    }}
+                    placeholder="University/Institution name"
+                    isInvalid={!!errors.institution}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.institution}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Graduation Year <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="1950"
+                    max={new Date().getFullYear()}
+                    value={newCounsellor.qualifications[0].year}
+                    onChange={(e) => {
+                      const updatedQualifications = [...newCounsellor.qualifications];
+                      updatedQualifications[0].year = e.target.value;
+                      handleInputChange('qualifications', updatedQualifications);
+                    }}
+                    placeholder="Year of graduation"
+                    isInvalid={!!errors.graduationYear}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.graduationYear}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Bio <span className="text-danger">*</span></Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={newCounsellor.bio}
+                onChange={(e) => handleInputChange('bio', e.target.value)}
+                placeholder="Brief professional bio"
+                isInvalid={!!errors.bio}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.bio}
+              </Form.Control.Feedback>
+            </Form.Group>
+            
+            <h6 className="mb-3 text-primary">Session Fees</h6>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Video Session Fee (₹) <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    value={newCounsellor.videoFee}
+                    onChange={(e) => handleInputChange('videoFee', e.target.value)}
+                    placeholder="Fee for video sessions"
+                    isInvalid={!!errors.videoFee}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.videoFee}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Chat Session Fee (₹) <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    value={newCounsellor.chatFee}
+                    onChange={(e) => handleInputChange('chatFee', e.target.value)}
+                    placeholder="Fee for chat sessions"
+                    isInvalid={!!errors.chatFee}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.chatFee}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAddModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleAddCounsellor}>
+            Add Counsellor
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      
+      {/* Counsellor Profile Modal */}
+      <Modal show={showProfileModal} onHide={() => setShowProfileModal(false)} size="lg" centered style={{ zIndex: 10010 }}>
+        <Modal.Header closeButton>
+          <Modal.Title>Counsellor Profile</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedCounsellor && (
+            <div className="counsellor-profile">
+              <div className="text-center mb-4">
+                <img
+                  src={selectedCounsellor.profilePicture || '/default-avatar.png'}
+                  alt={selectedCounsellor.user?.name || selectedCounsellor.name}
+                  className="rounded-circle"
+                  style={{ width: '120px', height: '120px', objectFit: 'cover' }}
+                />
+                <h4 className="mt-3">{selectedCounsellor.user?.name || selectedCounsellor.name}</h4>
+                <p className="text-muted">{selectedCounsellor.user?.email}</p>
+              </div>
+              
+              <Row>
+                <Col md={6}>
+                  <div className="mb-3">
+                    <strong>Phone:</strong>
+                    <p>{selectedCounsellor.phone || 'Not provided'}</p>
+                  </div>
+                  <div className="mb-3">
+                    <strong>Gender:</strong>
+                    <p>{selectedCounsellor.gender || 'Not specified'}</p>
+                  </div>
+                  <div className="mb-3">
+                    <strong>Experience:</strong>
+                    <p>{selectedCounsellor.experience} years</p>
+                  </div>
+                  <div className="mb-3">
+                    <strong>License Number:</strong>
+                    <p>{selectedCounsellor.licenseNumber || 'Not provided'}</p>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="mb-3">
+                    <strong>Specializations:</strong>
+                    <p>{Array.isArray(selectedCounsellor.specializations) ? selectedCounsellor.specializations.join(', ') : selectedCounsellor.specializations || 'Not specified'}</p>
+                  </div>
+                  <div className="mb-3">
+                    <strong>Languages:</strong>
+                    <p>{Array.isArray(selectedCounsellor.languages) ? selectedCounsellor.languages.join(', ') : selectedCounsellor.languages || 'Not specified'}</p>
+                  </div>
+                  <div className="mb-3">
+                    <strong>Consultation Fee:</strong>
+                    <p>₹{selectedCounsellor.consultationFee || selectedCounsellor.fees?.video || 'Not set'}</p>
+                  </div>
+                  <div className="mb-3">
+                    <strong>Status:</strong>
+                    <div>
+                      <Badge bg={selectedCounsellor.isVerified ? 'success' : 'warning'} className="me-2">
+                        {selectedCounsellor.isVerified ? 'Verified' : 'Pending'}
+                      </Badge>
+                      <Badge bg={selectedCounsellor.active ? 'primary' : 'danger'}>
+                        {selectedCounsellor.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+              
+              {selectedCounsellor.bio && (
+                <div className="mb-3">
+                  <strong>Bio:</strong>
+                  <p>{selectedCounsellor.bio}</p>
+                </div>
+              )}
+              
+              {selectedCounsellor.qualifications && (
+                <div className="mb-3">
+                  <strong>Qualifications:</strong>
+                  <div>
+                    {Array.isArray(selectedCounsellor.qualifications) 
+                      ? selectedCounsellor.qualifications.map((qual, index) => (
+                          <p key={index}>
+                            {typeof qual === 'object' 
+                              ? `${qual.degree} from ${qual.institution} (${qual.year})`
+                              : qual
+                            }
+                          </p>
+                        ))
+                      : <p>{selectedCounsellor.qualifications}</p>
+                    }
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowProfileModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      
+      {/* Image Picker Modal */}
+      <ImagePicker
+        show={showImagePicker}
+        onHide={() => setShowImagePicker(false)}
+        onImageSelect={(imageUrl) => {
+          console.log('Selected image URL:', imageUrl);
+          handleInputChange('profilePicture', imageUrl);
+          setShowImagePicker(false);
+        }}
+        currentImage={newCounsellor.profilePicture}
+      />
     </div>
   );
 };

@@ -198,7 +198,7 @@ const Dashboard = () => {
                     aria-valuemin="0" 
                     aria-valuemax="100"
                   >
-                    Clients
+                    {/* Clients */}
                   </div>
                   <div 
                     className="progress-bar" 
@@ -208,7 +208,7 @@ const Dashboard = () => {
                     aria-valuemin="0" 
                     aria-valuemax="100"
                   >
-                    Counsellors
+                    {/* Counsellors */}
                   </div>
                 </div>
                 <div className="d-flex justify-content-between mb-3">

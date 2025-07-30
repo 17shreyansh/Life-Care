@@ -31,7 +31,8 @@ exports.register = async (req, res, next) => {
     // Generate OTP for verification
     let otp;
     if (process.env.NODE_ENV === 'development' && process.env.MOCK_OTP === 'true') {
-      otp = mockOTP();
+      otp = mockOTP(user);
+      await user.save({ validateBeforeSave: false });
     } else {
       try {
         otp = await generateAndSendOTP(user, email);
@@ -109,7 +110,8 @@ exports.resendOTP = async (req, res, next) => {
     // Generate new OTP
     let otp;
     if (process.env.NODE_ENV === 'development' && process.env.MOCK_OTP === 'true') {
-      otp = mockOTP();
+      otp = mockOTP(user);
+      await user.save({ validateBeforeSave: false });
     } else {
       try {
         otp = await generateAndSendOTP(user, email);
@@ -168,7 +170,8 @@ exports.login = async (req, res, next) => {
       // Generate OTP for verification
       let otp;
       if (process.env.NODE_ENV === 'development' && process.env.MOCK_OTP === 'true') {
-        otp = mockOTP();
+        otp = mockOTP(user);
+        await user.save({ validateBeforeSave: false });
       } else {
         try {
           otp = await generateAndSendOTP(user, email);

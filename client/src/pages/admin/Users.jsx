@@ -15,7 +15,10 @@ const Users = () => {
   
   const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [modalAction, setModalAction] = useState('view'); // view, edit, create
+  const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
 
   useEffect(() => {
     fetchUsers();
@@ -32,8 +35,10 @@ const Users = () => {
       
       const response = await adminAPI.getUsers(params);
       setUsers(response.data.data);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error('Error fetching users:', error);
+      showAlert('Error fetching users', 'danger');
     } finally {
       setLoading(false);
     }
@@ -67,11 +72,67 @@ const Users = () => {
     setSelectedUser({
       name: '',
       email: '',
+      password: '',
       role: 'client',
       active: true
     });
     setModalAction('create');
     setShowUserModal(true);
+  };
+
+  const showAlert = (message, type = 'success') => {
+    setAlert({ show: true, message, type });
+    setTimeout(() => setAlert({ show: false, message: '', type: 'success' }), 3000);
+  };
+
+  const handleSaveUser = async () => {
+    try {
+      if (modalAction === 'create') {
+        await adminAPI.createUser(selectedUser);
+        showAlert('User created successfully');
+      } else if (modalAction === 'edit') {
+        await adminAPI.updateUser(selectedUser._id, selectedUser);
+        showAlert('User updated successfully');
+      }
+      setShowUserModal(false);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error saving user:', error);
+      showAlert('Error saving user', 'danger');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    
+    try {
+      await adminAPI.deleteUser(userId);
+      showAlert('User deleted successfully');
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      showAlert('Error deleting user', 'danger');
+    }
+  };
+
+  const handleBanUser = async (userId, banned, reason = '') => {
+    try {
+      await adminAPI.banUser(userId, { banned, reason });
+      showAlert(`User ${banned ? 'banned' : 'unbanned'} successfully`);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      showAlert('Error updating user status', 'danger');
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setSelectedUser({ ...selectedUser, [field]: value });
+  };
+
+  const handlePageChange = (page) => {
+    setFilter({ ...filter, page });
+    fetchUsers();
   };
 
   // Get badge color based on role
@@ -169,14 +230,22 @@ const Users = () => {
       
       <Card className="dashboard-card">
         <Card.Header>
-          <div className="d-flex align-items-center">
-            <div className="card-icon">
-              <i className="bi bi-table"></i>
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="d-flex align-items-center">
+              <div className="card-icon">
+                <i className="bi bi-table"></i>
+              </div>
+              <h5 className="mb-0">Users List ({pagination.total} total)</h5>
             </div>
-            <h5 className="mb-0">Users List</h5>
           </div>
         </Card.Header>
         <Card.Body>
+          {alert.show && (
+            <div className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert">
+              {alert.message}
+              <button type="button" className="btn-close" onClick={() => setAlert({ show: false, message: '', type: 'success' })}></button>
+            </div>
+          )}
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border text-primary" role="status">
@@ -185,7 +254,8 @@ const Users = () => {
               <p className="mt-2">Loading users...</p>
             </div>
           ) : users.length > 0 ? (
-            <Table responsive hover>
+            <div className="table-container">
+              <Table responsive hover>
               <thead>
                 <tr>
                   <th>Name</th>
@@ -230,25 +300,84 @@ const Users = () => {
                       <Button 
                         variant="outline-secondary" 
                         size="sm"
+                        className="me-1"
                         onClick={() => handleEditUser(user)}
                       >
                         <i className="bi bi-pencil"></i>
                       </Button>
+                      {user.role !== 'admin' && (
+                        <>
+                          <Button 
+                            variant={user.active ? 'outline-warning' : 'outline-success'} 
+                            size="sm"
+                            className="me-1"
+                            onClick={() => handleBanUser(user._id, user.active, 'Admin action')}
+                          >
+                            <i className={`bi bi-${user.active ? 'ban' : 'check-circle'}`}></i>
+                          </Button>
+                          <Button 
+                            variant="outline-danger" 
+                            size="sm"
+                            onClick={() => handleDeleteUser(user._id)}
+                          >
+                            <i className="bi bi-trash"></i>
+                          </Button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
-            </Table>
+              </Table>
+            </div>
           ) : (
             <div className="text-center py-5">
               <p className="mb-0">No users found</p>
+            </div>
+          )}
+          
+          {/* Pagination */}
+          {pagination.pages > 1 && (
+            <div className="d-flex justify-content-center mt-4">
+              <nav>
+                <ul className="pagination">
+                  <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link" 
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      disabled={pagination.page === 1}
+                    >
+                      Previous
+                    </button>
+                  </li>
+                  {[...Array(pagination.pages)].map((_, i) => (
+                    <li key={i + 1} className={`page-item ${pagination.page === i + 1 ? 'active' : ''}`}>
+                      <button 
+                        className="page-link" 
+                        onClick={() => handlePageChange(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    </li>
+                  ))}
+                  <li className={`page-item ${pagination.page === pagination.pages ? 'disabled' : ''}`}>
+                    <button 
+                      className="page-link" 
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      disabled={pagination.page === pagination.pages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                </ul>
+              </nav>
             </div>
           )}
         </Card.Body>
       </Card>
       
       {/* User Modal */}
-      <Modal show={showUserModal} onHide={() => setShowUserModal(false)} size="lg" centered>
+      <Modal show={showUserModal} onHide={() => setShowUserModal(false)} size="xl" centered style={{ zIndex: 10010 }} dialogClassName="modal-90w">
         <Modal.Header closeButton>
           <Modal.Title>
             {modalAction === 'view' ? 'User Details' : 
@@ -265,7 +394,9 @@ const Users = () => {
                     <Form.Control
                       type="text"
                       value={selectedUser.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                       readOnly={modalAction === 'view'}
+                      required
                     />
                   </Form.Group>
                 </Col>
@@ -275,7 +406,9 @@ const Users = () => {
                     <Form.Control
                       type="email"
                       value={selectedUser.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                       readOnly={modalAction === 'view'}
+                      required
                     />
                   </Form.Group>
                 </Col>
@@ -287,6 +420,7 @@ const Users = () => {
                     <Form.Label>Role</Form.Label>
                     <Form.Select
                       value={selectedUser.role}
+                      onChange={(e) => handleInputChange('role', e.target.value)}
                       disabled={modalAction === 'view'}
                     >
                       <option value="client">Client</option>
@@ -300,6 +434,7 @@ const Users = () => {
                     <Form.Label>Status</Form.Label>
                     <Form.Select
                       value={selectedUser.active ? 'active' : 'inactive'}
+                      onChange={(e) => handleInputChange('active', e.target.value === 'active')}
                       disabled={modalAction === 'view'}
                     >
                       <option value="active">Active</option>
@@ -314,10 +449,25 @@ const Users = () => {
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label>Password</Form.Label>
-                      <Form.Control
-                        type="password"
-                        placeholder={modalAction === 'edit' ? 'Leave blank to keep current' : 'Enter password'}
-                      />
+                      <div className="position-relative">
+                        <Form.Control
+                          type={showPassword ? "text" : "password"}
+                          value={selectedUser.password || ''}
+                          onChange={(e) => handleInputChange('password', e.target.value)}
+                          placeholder={modalAction === 'edit' ? 'Leave blank to keep current' : 'Enter password'}
+                          required={modalAction === 'create'}
+                          style={{ paddingRight: '45px' }}
+                        />
+                        <Button
+                          variant="link"
+                          className="position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent"
+                          style={{ zIndex: 10, padding: '0 12px' }}
+                          onClick={() => setShowPassword(!showPassword)}
+                          type="button"
+                        >
+                          <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                        </Button>
+                      </div>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -357,7 +507,7 @@ const Users = () => {
             {modalAction === 'view' ? 'Close' : 'Cancel'}
           </Button>
           {modalAction !== 'view' && (
-            <Button variant="primary">
+            <Button variant="primary" onClick={handleSaveUser}>
               {modalAction === 'edit' ? 'Save Changes' : 'Create User'}
             </Button>
           )}

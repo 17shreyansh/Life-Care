@@ -164,6 +164,46 @@
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
+/* OTP Modal Styles */
+.otp-modal .modal-dialog {
+  max-width: 400px;
+}
+
+.otp-modal .modal-content {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.otp-modal .modal-backdrop {
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.otp-input {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+  transform: scale(1.02);
+}
+
+.otp-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 /* Mobile styles */
 @media (max-width: 768px) {
   .auth-container {
@@ -186,5 +226,9 @@
   
   .step-circle p {
     font-size: 0.7rem;
+  }
+  
+  .otp-modal .modal-dialog {
+    margin: 20px;
   }
 }

@@ -53,6 +53,9 @@ import AdminCounsellors from './pages/admin/Counsellors';
 import AdminAppointments from './pages/admin/Appointments';
 import AdminWithdrawals from './pages/admin/Withdrawals';
 import AdminContent from './pages/admin/Content';
+import AdminReports from './pages/admin/Reports';
+import AdminSettings from './pages/admin/Settings';
+import AdminDisputes from './pages/admin/Disputes';
 
 function App() {
   return (
@@ -112,6 +115,9 @@ function App() {
               <Route path="appointments" element={<AdminAppointments />} />
               <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="content" element={<AdminContent />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="disputes" element={<AdminDisputes />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Route>
           

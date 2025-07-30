@@ -162,21 +162,55 @@ export const counsellorAPI = {
 
 // Admin API
 export const adminAPI = {
+  // Dashboard
   getDashboardStats: () => api.get('/admin/dashboard'),
+  
+  // Users
   getUsers: (params) => api.get('/admin/users', { params }),
   getUser: (id) => api.get(`/admin/users/${id}`),
   createUser: (userData) => api.post('/admin/users', userData),
   updateUser: (id, userData) => api.put(`/admin/users/${id}`, userData),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  banUser: (id, banData) => api.put(`/admin/users/${id}/ban`, banData),
+  
+  // Counsellors
   getCounsellors: (params) => api.get('/admin/counsellors', { params }),
   getCounsellor: (id) => api.get(`/admin/counsellors/${id}`),
+  createCounsellor: (counsellorData) => api.post('/admin/counsellors', counsellorData),
   verifyCounsellor: (id, isVerified) => api.put(`/admin/counsellors/${id}/verify`, { isVerified }),
+  
+  // Appointments
   getAppointments: (params) => api.get('/admin/appointments', { params }),
   updatePaymentStatus: (id, paymentData) => api.put(`/admin/appointments/${id}/payment`, paymentData),
+  handleDispute: (id, disputeData) => api.put(`/admin/disputes/${id}`, disputeData),
+  
+  // Withdrawals
   getWithdrawals: (params) => api.get('/admin/withdrawals', { params }),
   processWithdrawal: (id, withdrawalData) => api.put(`/admin/withdrawals/${id}`, withdrawalData),
+  
+  // CMS - Blogs
   getBlogs: (params) => api.get('/admin/cms/blogs', { params }),
-  updateBlog: (id, blogData) => api.put(`/admin/cms/blogs/${id}`, blogData)
+  createBlog: (blogData) => api.post('/admin/cms/blogs', blogData),
+  updateBlog: (id, blogData) => api.put(`/admin/cms/blogs/${id}`, blogData),
+  deleteBlog: (id) => api.delete(`/admin/cms/blogs/${id}`),
+  
+  // CMS - Videos
+  getVideos: (params) => api.get('/admin/cms/videos', { params }),
+  createVideo: (videoData) => api.post('/admin/cms/videos', videoData),
+  updateVideo: (id, videoData) => api.put(`/admin/cms/videos/${id}`, videoData),
+  deleteVideo: (id) => api.delete(`/admin/cms/videos/${id}`),
+  
+  // CMS - Gallery
+  getGallery: (params) => api.get('/admin/cms/gallery', { params }),
+  uploadGalleryImage: (imageData) => api.post('/admin/cms/gallery', imageData),
+  deleteGalleryImage: (id) => api.delete(`/admin/cms/gallery/${id}`),
+  
+  // Reports
+  getReports: (params) => api.get('/admin/reports', { params }),
+  
+  // Settings
+  getSettings: () => api.get('/admin/settings'),
+  updateSettings: (settingsData) => api.put('/admin/settings', settingsData)
 };
 
 // CMS API (Public)

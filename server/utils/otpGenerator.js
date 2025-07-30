@@ -46,8 +46,24 @@ exports.generateAndSendOTP = async (user, email) => {
 
 /**
  * Mock OTP generation for development
+ * @param {Object} user - User object
  * @returns {String} - Generated OTP
  */
-exports.mockOTP = () => {
-  return '123456'; // Fixed OTP for development/testing
+exports.mockOTP = (user) => {
+  const otp = '123456'; // Fixed OTP for development/testing
+  
+  // Hash OTP and set in user model (same as generateOTP method)
+  const crypto = require('crypto');
+  const hashedOTP = crypto
+    .createHash('sha256')
+    .update(otp)
+    .digest('hex');
+  
+  // Set OTP and expiry
+  user.otp = {
+    code: hashedOTP,
+    expiresAt: Date.now() + (process.env.OTP_EXPIRE || 10) * 60 * 1000
+  };
+  
+  return otp;
 };

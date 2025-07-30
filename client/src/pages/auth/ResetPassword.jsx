@@ -11,6 +11,8 @@ const ResetPassword = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { resetToken } = useParams();
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
@@ -71,14 +73,26 @@ const ResetPassword = () => {
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label>New Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter new password"
-                  />
+                  <div className="position-relative">
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      placeholder="Enter new password"
+                      style={{ paddingRight: '45px' }}
+                    />
+                    <Button
+                      variant="link"
+                      className="position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent"
+                      style={{ zIndex: 10, padding: '0 12px' }}
+                      onClick={() => setShowPassword(!showPassword)}
+                      type="button"
+                    >
+                      <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                    </Button>
+                  </div>
                   <Form.Text className="text-muted">
                     Password must be at least 6 characters long
                   </Form.Text>
@@ -86,14 +100,26 @@ const ResetPassword = () => {
 
                 <Form.Group className="mb-4">
                   <Form.Label>Confirm New Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    placeholder="Confirm new password"
-                  />
+                  <div className="position-relative">
+                    <Form.Control
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      placeholder="Confirm new password"
+                      style={{ paddingRight: '45px' }}
+                    />
+                    <Button
+                      variant="link"
+                      className="position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent"
+                      style={{ zIndex: 10, padding: '0 12px' }}
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      type="button"
+                    >
+                      <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''}`}></i>
+                    </Button>
+                  </div>
                 </Form.Group>
 
                 <Button
