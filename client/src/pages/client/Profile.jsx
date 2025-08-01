@@ -1,21 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
-import ImageUpload from '../../components/shared/ImageUpload';
+import { authAPI, uploadAPI } from '../../services/api';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState('personal');
+  const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    avatar: user?.avatar || '',
+    name: '',
+    email: '',
+    phone: '',
+    avatar: '',
+    gender: '',
+    dateOfBirth: '',
+    address: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        avatar: user.avatar || '',
+        gender: user.gender || '',
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : '',
+        address: user.address || '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    }
+  }, [user]);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,27 +47,73 @@ const Profile = () => {
   const handlePersonalInfoSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateProfile(formData);
+      setLoading(true);
+      const updateData = {
+        name: formData.name,
+        phone: formData.phone,
+        avatar: formData.avatar,
+        gender: formData.gender,
+        dateOfBirth: formData.dateOfBirth,
+        address: formData.address
+      };
+      
+      await authAPI.updateProfile(updateData);
+      // Update the user context
+      updateUser({ ...user, ...updateData });
       alert('Profile updated successfully!');
     } catch (error) {
-      alert('Failed to update profile');
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (file) => {
+    try {
+      const response = await uploadAPI.uploadAvatar(file);
+      const avatarUrl = response.data.data.url;
+      setFormData(prev => ({ ...prev, avatar: avatarUrl }));
+      return avatarUrl;
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      throw error;
     }
   };
   
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would update the user's password
+    
     if (formData.newPassword !== formData.confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
-    alert('Password updated successfully!');
-    setFormData(prev => ({
-      ...prev,
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    }));
+    
+    if (formData.newPassword.length < 6) {
+      alert('New password must be at least 6 characters long!');
+      return;
+    }
+    
+    try {
+      setPasswordLoading(true);
+      await authAPI.updatePassword({
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword
+      });
+      
+      alert('Password updated successfully!');
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }));
+    } catch (error) {
+      console.error('Error updating password:', error);
+      alert(error.response?.data?.message || 'Failed to update password. Please check your current password.');
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   return (
@@ -80,12 +148,57 @@ const Profile = () => {
             <form onSubmit={handlePersonalInfoSubmit}>
               <Row className="mb-4">
                 <Col md={3} className="text-center">
-                  <ImageUpload
-                    type="avatar"
-                    currentImage={formData.avatar}
-                    onImageUploaded={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
-                    size="150px"
-                  />
+                  <div className="avatar-upload-section" style={{ position: 'relative', display: 'inline-block' }}>
+                    <img
+                      src={formData.avatar || '/default-avatar.png'}
+                      alt="Profile"
+                      className="avatar-image"
+                      style={{ 
+                        width: '150px', 
+                        height: '150px', 
+                        objectFit: 'cover', 
+                        borderRadius: '50%',
+                        border: '4px solid #e9ecef'
+                      }}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          try {
+                            await handleAvatarUpload(file);
+                          } catch (error) {
+                            alert('Failed to upload image');
+                          }
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                      id="avatar-upload"
+                    />
+                    <label 
+                      htmlFor="avatar-upload" 
+                      style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        right: '10px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        border: '2px solid white',
+                        fontSize: '16px'
+                      }}
+                    >
+                      <i className="bi bi-camera"></i>
+                    </label>
+                  </div>
                   <h5 className="mt-2">{formData.name}</h5>
                   <p className="text-muted">{formData.email}</p>
                 </Col>
@@ -142,13 +255,13 @@ const Profile = () => {
                       </select>
                     </Col>
                     <Col md={4}>
-                      <label htmlFor="dob" className="form-label">Date of Birth</label>
+                      <label htmlFor="dateOfBirth" className="form-label">Date of Birth</label>
                       <input
                         type="date"
                         className="form-control"
-                        id="dob"
-                        name="dob"
-                        value={formData.dob}
+                        id="dateOfBirth"
+                        name="dateOfBirth"
+                        value={formData.dateOfBirth}
                         onChange={handleChange}
                       />
                     </Col>
@@ -167,8 +280,19 @@ const Profile = () => {
                 </Col>
               </Row>
               <div className="d-flex justify-content-end">
-                <button type="submit" className="btn btn-primary">
-                  <i className="bi bi-save me-2"></i>Save Changes
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-save me-2"></i>Save Changes
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -220,8 +344,19 @@ const Profile = () => {
                           required
                         />
                       </div>
-                      <button type="submit" className="btn btn-primary">
-                        <i className="bi bi-shield-check me-2"></i>Update Password
+                      <button type="submit" className="btn btn-primary" disabled={passwordLoading}>
+                        {passwordLoading ? (
+                          <>
+                            <div className="spinner-border spinner-border-sm me-2" role="status">
+                              <span className="visually-hidden">Loading...</span>
+                            </div>
+                            Updating...
+                          </>
+                        ) : (
+                          <>
+                            <i className="bi bi-shield-check me-2"></i>Update Password
+                          </>
+                        )}
                       </button>
                     </form>
                   </div>

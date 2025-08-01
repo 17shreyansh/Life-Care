@@ -181,7 +181,7 @@ counsellorSchema.virtual('completedAppointments', {
 
 // Method to check availability for a specific date and time
 counsellorSchema.methods.isAvailableAt = function(date, startTime, endTime) {
-  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
+  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
   const dayAvailability = this.availability[dayOfWeek];
   
   if (!dayAvailability.isAvailable) {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Modal, Alert } from 'react-bootstrap';
-import { adminAPI } from '../../services/api';
-import ImagePicker from '../../components/shared/ImagePicker';
+import { adminAPI, uploadAPI } from '../../services/api';
+
 import TagsInput from '../../components/shared/TagsInput';
 import '../client/Dashboard.css';
 import './AdminStyles.css';
@@ -15,10 +15,12 @@ const Counsellors = () => {
     search: ''
   });
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showImagePicker, setShowImagePicker] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCounsellor, setSelectedCounsellor] = useState(null);
+  const [editCounsellor, setEditCounsellor] = useState({});
   const [newCounsellor, setNewCounsellor] = useState({
     name: '',
     email: '',
@@ -91,6 +93,72 @@ const Counsellors = () => {
     } catch (error) {
       console.error('Error updating counsellor verification:', error);
       showAlert('Error updating verification status', 'danger');
+    }
+  };
+
+  const handleEditCounsellor = (counsellor) => {
+    setEditCounsellor({
+      name: counsellor.user?.name || '',
+      email: counsellor.user?.email || '',
+      phone: counsellor.user?.phone || '',
+      profilePicture: counsellor.user?.avatar || '',
+      specializations: Array.isArray(counsellor.specializations) ? counsellor.specializations.join(', ') : counsellor.specializations || '',
+      experience: counsellor.experience || '',
+      qualifications: counsellor.qualifications || [{ degree: '', institution: '', year: '', certificate: '' }],
+      bio: counsellor.bio || '',
+      videoFee: counsellor.fees?.video || '',
+      chatFee: counsellor.fees?.chat || '',
+      languages: Array.isArray(counsellor.languages) ? counsellor.languages.join(', ') : counsellor.languages || '',
+      gender: counsellor.gender || '',
+      dateOfBirth: counsellor.dateOfBirth || '',
+      address: counsellor.address || '',
+      city: counsellor.city || '',
+      state: counsellor.state || '',
+      pincode: counsellor.pincode || ''
+    });
+    setSelectedCounsellor(counsellor);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateCounsellor = async () => {
+    try {
+      // Update user data first
+      const userData = {
+        name: editCounsellor.name,
+        email: editCounsellor.email,
+        phone: editCounsellor.phone,
+        avatar: editCounsellor.profilePicture
+      };
+      
+      await adminAPI.updateUser(selectedCounsellor.user._id, userData);
+      
+      // Update counsellor data
+      const counsellorData = {
+        specializations: editCounsellor.specializations,
+        experience: parseInt(editCounsellor.experience) || 0,
+        qualifications: editCounsellor.qualifications,
+        bio: editCounsellor.bio,
+        fees: {
+          video: parseInt(editCounsellor.videoFee) || 0,
+          chat: parseInt(editCounsellor.chatFee) || 0
+        },
+        languages: editCounsellor.languages,
+        gender: editCounsellor.gender,
+        dateOfBirth: editCounsellor.dateOfBirth,
+        address: editCounsellor.address,
+        city: editCounsellor.city,
+        state: editCounsellor.state,
+        pincode: editCounsellor.pincode
+      };
+      
+      await adminAPI.updateCounsellor(selectedCounsellor._id, counsellorData);
+      
+      setShowEditModal(false);
+      fetchCounsellors(); // Refresh the list
+      showAlert('Counsellor updated successfully');
+    } catch (error) {
+      console.error('Error updating counsellor:', error);
+      showAlert('Error updating counsellor', 'danger');
     }
   };
 
@@ -314,6 +382,7 @@ const Counsellors = () => {
               <Table responsive hover>
               <thead>
                 <tr>
+                  <th>Avatar</th>
                   <th>Name</th>
                   <th>Specializations</th>
                   <th>Experience</th>
@@ -326,6 +395,14 @@ const Counsellors = () => {
               <tbody>
                 {counsellors.map((counsellor) => (
                   <tr key={counsellor._id}>
+                    <td>
+                      <img
+                        src={counsellor.user?.avatar || '/default-avatar.png'}
+                        alt={counsellor.user?.name || counsellor.name}
+                        className="rounded-circle"
+                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                      />
+                    </td>
                     <td>{counsellor.user?.name || counsellor.name}</td>
                     <td>{counsellor.specializations?.join(', ') || 'N/A'}</td>
                     <td>{counsellor.experience} years</td>
@@ -360,6 +437,14 @@ const Counsellors = () => {
                         }}
                       >
                         <i className="bi bi-eye"></i>
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm" 
+                        className="me-1"
+                        onClick={() => handleEditCounsellor(counsellor)}
+                      >
+                        <i className="bi bi-pencil"></i>
                       </Button>
                       {!counsellor.isVerified ? (
                         <Button 
@@ -412,7 +497,7 @@ const Counsellors = () => {
               <div className="profile-upload-section">
                 <div 
                   className={`profile-image-box ${errors.profilePicture ? 'error' : ''}`}
-                  onClick={() => setShowImagePicker(true)}
+                  onClick={() => document.getElementById('profilePictureInput').click()}
                 >
                   {newCounsellor.profilePicture ? (
                     <>
@@ -433,6 +518,24 @@ const Counsellors = () => {
                     </div>
                   )}
                 </div>
+                <input
+                  id="profilePictureInput"
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const response = await uploadAPI.uploadAvatar(file);
+                        handleInputChange('profilePicture', response.data.data.url);
+                      } catch (error) {
+                        console.error('Error uploading image:', error);
+                        showAlert('Error uploading image', 'danger');
+                      }
+                    }
+                  }}
+                />
                 {errors.profilePicture && (
                   <div className="text-danger small mt-2">{errors.profilePicture}</div>
                 )}
@@ -744,7 +847,7 @@ const Counsellors = () => {
       </Modal>
       
       {/* Counsellor Profile Modal */}
-      <Modal show={showProfileModal} onHide={() => setShowProfileModal(false)} size="lg" centered style={{ zIndex: 10010 }}>
+      <Modal show={showProfileModal} onHide={() => setShowProfileModal(false)} size="lg" centered style={{ zIndex: 10000 }}>
         <Modal.Header closeButton>
           <Modal.Title>Counsellor Profile</Modal.Title>
         </Modal.Header>
@@ -753,7 +856,7 @@ const Counsellors = () => {
             <div className="counsellor-profile">
               <div className="text-center mb-4">
                 <img
-                  src={selectedCounsellor.profilePicture || '/default-avatar.png'}
+                  src={selectedCounsellor.user?.avatar || '/default-avatar.png'}
                   alt={selectedCounsellor.user?.name || selectedCounsellor.name}
                   className="rounded-circle"
                   style={{ width: '120px', height: '120px', objectFit: 'cover' }}
@@ -843,17 +946,329 @@ const Counsellors = () => {
         </Modal.Footer>
       </Modal>
       
-      {/* Image Picker Modal */}
-      <ImagePicker
-        show={showImagePicker}
-        onHide={() => setShowImagePicker(false)}
-        onImageSelect={(imageUrl) => {
-          console.log('Selected image URL:', imageUrl);
-          handleInputChange('profilePicture', imageUrl);
-          setShowImagePicker(false);
-        }}
-        currentImage={newCounsellor.profilePicture}
-      />
+      {/* Edit Counsellor Modal */}
+      <Modal 
+        show={showEditModal} 
+        onHide={() => setShowEditModal(false)} 
+        size="xl" 
+        centered 
+        dialogClassName="counsellor-modal-wide"
+        backdrop="static"
+        style={{ zIndex: 9999 }}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Counsellor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+          <div className="profile-card-style">
+            <Form.Group className="mb-3">
+              <Form.Label>Profile Picture</Form.Label>
+              <div className="profile-upload-section">
+                <div 
+                  className="profile-image-box"
+                  onClick={() => document.getElementById('editProfilePictureInput').click()}
+                >
+                  {editCounsellor.profilePicture ? (
+                    <>
+                      <img
+                        src={editCounsellor.profilePicture}
+                        alt="Profile preview"
+                        className="profile-selected-image"
+                      />
+                      <div className="profile-overlay">
+                        <i className="bi bi-camera"></i>
+                        <span>Change Photo</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="profile-upload-placeholder">
+                      <i className="bi bi-camera-fill"></i>
+                      <span>Select Photo</span>
+                    </div>
+                  )}
+                </div>
+                <input
+                  id="editProfilePictureInput"
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const response = await uploadAPI.uploadAvatar(file);
+                        setEditCounsellor({...editCounsellor, profilePicture: response.data.data.url});
+                      } catch (error) {
+                        console.error('Error uploading image:', error);
+                        showAlert('Error uploading image', 'danger');
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </Form.Group>
+
+            <Form>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Full Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.name || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, name: e.target.value})}
+                      placeholder="Enter full name"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={editCounsellor.email || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, email: e.target.value})}
+                      placeholder="Enter email address"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Phone Number</Form.Label>
+                    <Form.Control
+                      type="tel"
+                      value={editCounsellor.phone || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, phone: e.target.value})}
+                      placeholder="Enter phone number"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Gender</Form.Label>
+                    <Form.Select
+                      value={editCounsellor.gender || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, gender: e.target.value})}
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Date of Birth</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={editCounsellor.dateOfBirth || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, dateOfBirth: e.target.value})}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Experience (Years)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="0"
+                      value={editCounsellor.experience || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, experience: e.target.value})}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Specializations</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.specializations || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, specializations: e.target.value})}
+                      placeholder="e.g., Anxiety, Depression, Couples Therapy"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Languages</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.languages || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, languages: e.target.value})}
+                      placeholder="e.g., English, Hindi, Tamil"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <h6 className="mb-3 text-primary">Qualification Details</h6>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Degree</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.qualifications?.[0]?.degree || ''}
+                      onChange={(e) => {
+                        const updatedQualifications = [...(editCounsellor.qualifications || [{ degree: '', institution: '', year: '', certificate: '' }])];
+                        updatedQualifications[0] = { ...updatedQualifications[0], degree: e.target.value };
+                        setEditCounsellor({...editCounsellor, qualifications: updatedQualifications});
+                      }}
+                      placeholder="e.g., Ph.D. in Psychology"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Institution</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.qualifications?.[0]?.institution || ''}
+                      onChange={(e) => {
+                        const updatedQualifications = [...(editCounsellor.qualifications || [{ degree: '', institution: '', year: '', certificate: '' }])];
+                        updatedQualifications[0] = { ...updatedQualifications[0], institution: e.target.value };
+                        setEditCounsellor({...editCounsellor, qualifications: updatedQualifications});
+                      }}
+                      placeholder="University/Institution name"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Graduation Year</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="1950"
+                      max={new Date().getFullYear()}
+                      value={editCounsellor.qualifications?.[0]?.year || ''}
+                      onChange={(e) => {
+                        const updatedQualifications = [...(editCounsellor.qualifications || [{ degree: '', institution: '', year: '', certificate: '' }])];
+                        updatedQualifications[0] = { ...updatedQualifications[0], year: e.target.value };
+                        setEditCounsellor({...editCounsellor, qualifications: updatedQualifications});
+                      }}
+                      placeholder="Year of graduation"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Form.Group className="mb-3">
+                <Form.Label>Bio</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={editCounsellor.bio || ''}
+                  onChange={(e) => setEditCounsellor({...editCounsellor, bio: e.target.value})}
+                  placeholder="Brief professional bio"
+                />
+              </Form.Group>
+              
+              <h6 className="mb-3 text-primary">Session Fees</h6>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Video Session Fee (₹)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="0"
+                      value={editCounsellor.videoFee || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, videoFee: e.target.value})}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Chat Session Fee (₹)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="0"
+                      value={editCounsellor.chatFee || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, chatFee: e.target.value})}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <h6 className="mb-3 text-primary">Address Details</h6>
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Address</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.address || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, address: e.target.value})}
+                      placeholder="Enter address"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>City</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.city || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, city: e.target.value})}
+                      placeholder="Enter city"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>State</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.state || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, state: e.target.value})}
+                      placeholder="Enter state"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Pincode</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editCounsellor.pincode || ''}
+                      onChange={(e) => setEditCounsellor({...editCounsellor, pincode: e.target.value})}
+                      placeholder="Enter pincode"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Form>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleUpdateCounsellor}>
+            Update Counsellor
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
     </div>
   );
 };

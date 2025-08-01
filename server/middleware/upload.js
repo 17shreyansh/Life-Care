@@ -27,6 +27,7 @@ const storage = multer.diskStorage({
         uploadPath = 'uploads/gallery/';
         break;
       case 'videoThumbnail':
+      case 'video':
         uploadPath = 'uploads/videos/';
         break;
       case 'documents':
@@ -47,24 +48,47 @@ const storage = multer.diskStorage({
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif/;
-  const allowedMimes = /image\/(jpeg|jpg|png|gif)/;
-  
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedMimes.test(file.mimetype);
-  
-  if (extname && mimetype) {
-    return cb(null, true);
+  if (file.fieldname === 'video') {
+    const allowedTypes = /mp4|avi|mov|wmv|flv|webm/;
+    const allowedMimes = /video\/(mp4|avi|mov|wmv|flv|webm)/;
+    
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedMimes.test(file.mimetype);
+    
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed'));
+    }
   } else {
-    cb(new Error('Only image files are allowed'));
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const allowedMimes = /image\/(jpeg|jpg|png|gif)/;
+    
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedMimes.test(file.mimetype);
+    
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
   }
 };
 
-// Create multer instance
+// Create multer instance for images
 const upload = multer({
   storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter
+});
+
+// Create multer instance for videos with larger file size limit
+const videoUpload = multer({
+  storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit for videos
   },
   fileFilter
 });
@@ -76,6 +100,7 @@ module.exports = {
   uploadBlogImage: upload.single('blogImage'),
   uploadGalleryImage: upload.single('galleryImage'),
   uploadVideoThumbnail: upload.single('videoThumbnail'),
+  uploadVideo: videoUpload.single('video'),
   uploadDocuments: upload.array('documents', 5),
   uploadGalleryImages: upload.array('galleryImage', 10),
   uploadBlogContent: upload.fields([

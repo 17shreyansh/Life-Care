@@ -342,6 +342,51 @@ exports.createCounsellor = async (req, res, next) => {
   }
 };
 
+// @desc    Update counsellor
+// @route   PUT /api/admin/counsellors/:id
+// @access  Private (Admin only)
+exports.updateCounsellor = async (req, res, next) => {
+  try {
+    const { 
+      specializations, experience, qualifications, 
+      bio, fees, languages, isVerified, gender,
+      dateOfBirth, address, city, state, pincode
+    } = req.body;
+    
+    const updateFields = {};
+    if (specializations) updateFields.specializations = Array.isArray(specializations) ? specializations : specializations.split(',').map(s => s.trim());
+    if (experience !== undefined) updateFields.experience = parseInt(experience) || 0;
+    if (qualifications) updateFields.qualifications = qualifications;
+    if (bio) updateFields.bio = bio;
+    if (fees) updateFields.fees = fees;
+    if (languages) updateFields.languages = Array.isArray(languages) ? languages : languages.split(',').map(l => l.trim());
+    if (isVerified !== undefined) updateFields.isVerified = isVerified;
+    if (gender) updateFields.gender = gender;
+    if (dateOfBirth) updateFields.dateOfBirth = dateOfBirth;
+    if (address) updateFields.address = address;
+    if (city) updateFields.city = city;
+    if (state) updateFields.state = state;
+    if (pincode) updateFields.pincode = pincode;
+    
+    const counsellor = await Counsellor.findByIdAndUpdate(
+      req.params.id,
+      updateFields,
+      { new: true, runValidators: true }
+    ).populate('user', 'name email avatar phone');
+    
+    if (!counsellor) {
+      return next(new ErrorResponse(`Counsellor not found with id of ${req.params.id}`, 404));
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: counsellor
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Update counsellor verification status
 // @route   PUT /api/admin/counsellors/:id/verify
 // @access  Private (Admin only)
@@ -875,6 +920,17 @@ exports.deleteVideo = async (req, res, next) => {
       return next(new ErrorResponse(`Video not found with id of ${req.params.id}`, 404));
     }
     
+    // Delete file from filesystem
+    if (video.videoUrl) {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(__dirname, '..', video.videoUrl.replace(/^\//,''));
+      
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    
     await Video.findByIdAndDelete(req.params.id);
     
     res.status(200).json({
@@ -959,6 +1015,17 @@ exports.deleteGalleryImage = async (req, res, next) => {
     
     if (!image) {
       return next(new ErrorResponse(`Image not found with id of ${req.params.id}`, 404));
+    }
+    
+    // Delete file from filesystem
+    if (image.imageUrl) {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(__dirname, '..', image.imageUrl.replace(/^\//,''));
+      
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
     
     await GalleryImage.findByIdAndDelete(req.params.id);

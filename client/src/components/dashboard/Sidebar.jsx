@@ -44,7 +44,7 @@ const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
           { path: '/counsellor/appointments', icon: 'bi-calendar-check', label: 'Appointments' },
           { path: '/counsellor/availability', icon: 'bi-clock', label: 'Availability' },
           { path: '/counsellor/earnings', icon: 'bi-wallet2', label: 'Earnings' },
-          { path: '/counsellor/content', icon: 'bi-file-earmark-text', label: 'Content' },
+
           { path: '/counsellor/profile', icon: 'bi-person', label: 'Profile' }
         ];
       case 'admin':

@@ -88,6 +88,11 @@ const Header = () => {
                 Contact
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className={`nav-link ${isActive('/consilar') ? 'active' : ''}`} to="/consilar">
+                Book Session
+              </Link>
+            </li>
           </ul>
           
           <div className="d-flex align-items-center">

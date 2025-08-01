@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { clientAPI } from '../../services/api';
 import './CounsellorFinder.css';
 
 const CounsellorFinder = () => {
@@ -13,78 +14,47 @@ const CounsellorFinder = () => {
     priceRange: 'all',
     availability: 'all'
   });
+  const [specializations, setSpecializations] = useState([]);
 
-  // Mock data for demonstration
+  // Mock data for fallback
   const mockCounsellors = [
     {
-      id: 101,
-      name: 'Dr. Sarah Johnson',
-      photo: 'https://placehold.co/300x300?text=SJ',
+      _id: '101',
+      user: { name: 'Dr. Sarah Johnson', avatar: '/default-avatar.png' },
       gender: 'female',
-      specialization: 'Clinical Psychologist',
-      expertise: ['Depression', 'Anxiety', 'PTSD'],
+      specializations: ['Depression', 'Anxiety', 'PTSD'],
       experience: 8,
       languages: ['English', 'Hindi'],
-      rating: 4.8,
-      reviewCount: 124,
-      fee: 1500,
-      nextAvailable: '2023-06-15',
-      about: 'Dr. Sarah is a licensed clinical psychologist with 8 years of experience helping individuals overcome depression, anxiety, and trauma.'
-    },
-    {
-      id: 102,
-      name: 'Dr. Michael Chen',
-      photo: 'https://placehold.co/300x300?text=MC',
-      gender: 'male',
-      specialization: 'Psychiatrist',
-      expertise: ['Bipolar Disorder', 'Schizophrenia', 'Medication Management'],
-      experience: 12,
-      languages: ['English', 'Mandarin'],
-      rating: 4.9,
-      reviewCount: 98,
-      fee: 1800,
-      nextAvailable: '2023-06-14',
-      about: 'Dr. Chen specializes in medication management for severe mental health conditions with a compassionate approach to treatment.'
-    },
-    {
-      id: 103,
-      name: 'Dr. Emily Rodriguez',
-      photo: 'https://placehold.co/300x300?text=ER',
-      gender: 'female',
-      specialization: 'Therapist',
-      expertise: ['Relationship Issues', 'Self-Esteem', 'Career Counselling'],
-      experience: 5,
-      languages: ['English', 'Spanish'],
-      rating: 4.7,
-      reviewCount: 87,
-      fee: 1200,
-      nextAvailable: '2023-06-13',
-      about: 'Emily helps clients navigate relationship challenges and build self-confidence through evidence-based therapeutic approaches.'
-    },
-    {
-      id: 104,
-      name: 'Dr. Rajesh Kumar',
-      photo: 'https://placehold.co/300x300?text=RK',
-      gender: 'male',
-      specialization: 'Clinical Psychologist',
-      expertise: ['Stress Management', 'Anxiety', 'Depression'],
-      experience: 10,
-      languages: ['English', 'Hindi', 'Punjabi'],
-      rating: 4.6,
-      reviewCount: 112,
-      fee: 1400,
-      nextAvailable: '2023-06-16',
-      about: 'Dr. Kumar combines traditional and modern therapeutic techniques to help clients manage stress and improve mental wellbeing.'
+      ratings: { average: 4.8, count: 124 },
+      fees: { video: 1500 },
+      bio: 'Dr. Sarah is a licensed clinical psychologist with 8 years of experience helping individuals overcome depression, anxiety, and trauma.',
+      isVerified: true
     }
   ];
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setCounsellors(mockCounsellors);
-      setFilteredCounsellors(mockCounsellors);
-      setLoading(false);
-    }, 1000);
+    const fetchCounsellors = async () => {
+      try {
+        setLoading(true);
+        const response = await clientAPI.getCounsellors();
+        const counsellorData = response.data.data || [];
+        setCounsellors(counsellorData);
+        setFilteredCounsellors(counsellorData);
+        
+        // Extract unique specializations for filter
+        const uniqueSpecs = [...new Set(counsellorData.flatMap(c => c.specializations || []))];
+        setSpecializations(uniqueSpecs);
+      } catch (error) {
+        console.error('Error fetching counsellors:', error);
+        // Fallback to mock data if API fails
+        setCounsellors(mockCounsellors);
+        setFilteredCounsellors(mockCounsellors);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCounsellors();
   }, []);
 
   // Handle search input change
@@ -108,9 +78,9 @@ const CounsellorFinder = () => {
     if (query) {
       const searchTerm = query.toLowerCase();
       results = results.filter(counsellor => 
-        counsellor.name.toLowerCase().includes(searchTerm) ||
-        counsellor.specialization.toLowerCase().includes(searchTerm) ||
-        counsellor.expertise.some(exp => exp.toLowerCase().includes(searchTerm))
+        (counsellor.user?.name || counsellor.name || '').toLowerCase().includes(searchTerm) ||
+        (counsellor.specializations || []).some(spec => spec.toLowerCase().includes(searchTerm)) ||
+        (counsellor.bio || '').toLowerCase().includes(searchTerm)
       );
     }
     
@@ -122,7 +92,7 @@ const CounsellorFinder = () => {
     // Apply expertise filter
     if (currentFilters.expertise !== 'all') {
       results = results.filter(counsellor => 
-        counsellor.expertise.some(exp => exp.toLowerCase() === currentFilters.expertise.toLowerCase())
+        (counsellor.specializations || []).some(spec => spec.toLowerCase() === currentFilters.expertise.toLowerCase())
       );
     }
     
@@ -130,13 +100,16 @@ const CounsellorFinder = () => {
     if (currentFilters.priceRange !== 'all') {
       switch (currentFilters.priceRange) {
         case 'under1000':
-          results = results.filter(counsellor => counsellor.fee < 1000);
+          results = results.filter(counsellor => (counsellor.fees?.video || 0) < 1000);
           break;
         case '1000to1500':
-          results = results.filter(counsellor => counsellor.fee >= 1000 && counsellor.fee <= 1500);
+          results = results.filter(counsellor => {
+            const fee = counsellor.fees?.video || 0;
+            return fee >= 1000 && fee <= 1500;
+          });
           break;
         case 'over1500':
-          results = results.filter(counsellor => counsellor.fee > 1500);
+          results = results.filter(counsellor => (counsellor.fees?.video || 0) > 1500);
           break;
         default:
           break;
@@ -198,11 +171,9 @@ const CounsellorFinder = () => {
               className="filter-select"
             >
               <option value="all">All</option>
-              <option value="Depression">Depression</option>
-              <option value="Anxiety">Anxiety</option>
-              <option value="PTSD">PTSD</option>
-              <option value="Relationship Issues">Relationship Issues</option>
-              <option value="Stress Management">Stress Management</option>
+              {specializations.map(spec => (
+                <option key={spec} value={spec}>{spec}</option>
+              ))}
             </select>
           </div>
           
@@ -228,63 +199,69 @@ const CounsellorFinder = () => {
         <div className="counsellors-grid">
           {filteredCounsellors.length > 0 ? (
             filteredCounsellors.map(counsellor => (
-              <div key={counsellor.id} className="counsellor-card">
+              <div key={counsellor._id} className="counsellor-card">
                 <div className="counsellor-header">
                   <img 
-                    src={counsellor.photo} 
-                    alt={counsellor.name} 
+                    src={counsellor.user?.avatar || '/default-avatar.png'} 
+                    alt={counsellor.user?.name || 'Counsellor'} 
                     className="counsellor-photo"
                   />
                   <div className="counsellor-badges">
                     <span className="badge-item badge-experience">
                       <i className="bi bi-clock-history"></i>
-                      {counsellor.experience}+ Years
+                      {counsellor.experience || 0}+ Years
                     </span>
                     <span className="badge-item badge-rating">
                       <i className="bi bi-star-fill"></i>
-                      {counsellor.rating}
+                      {counsellor.ratings?.average || 'New'}
                     </span>
+                    {counsellor.isVerified && (
+                      <span className="badge-item badge-verified">
+                        <i className="bi bi-patch-check-fill"></i>
+                        Verified
+                      </span>
+                    )}
                   </div>
                 </div>
                 
                 <div className="counsellor-content">
-                  <h3 className="counsellor-name">{counsellor.name}</h3>
-                  <p className="counsellor-title">{counsellor.specialization}</p>
+                  <h3 className="counsellor-name">{counsellor.user?.name || 'Counsellor'}</h3>
+                  <p className="counsellor-title">Mental Health Professional</p>
                   
                   <div className="tag-container">
-                    {counsellor.languages.map((lang, index) => (
+                    {(counsellor.languages || []).map((lang, index) => (
                       <span key={index} className="tag tag-language">{lang}</span>
                     ))}
                   </div>
                   
                   <div className="tag-container">
-                    {counsellor.expertise.slice(0, 3).map((exp, index) => (
-                      <span key={index} className="tag tag-expertise">{exp}</span>
+                    {(counsellor.specializations || []).slice(0, 3).map((spec, index) => (
+                      <span key={index} className="tag tag-expertise">{spec}</span>
                     ))}
                   </div>
                   
-                  <p className="counsellor-bio">{counsellor.about.substring(0, 100)}...</p>
+                  <p className="counsellor-bio">{(counsellor.bio || 'Professional counsellor ready to help you.').substring(0, 100)}...</p>
                   
                   <div className="counsellor-details">
                     <div className="fee-info">
-                      <span className="fee-amount">₹{counsellor.fee}</span>
+                      <span className="fee-amount">₹{counsellor.fees?.video || 'Contact'}</span>
                       <span className="fee-label">per session</span>
                     </div>
                     <div className="availability">
                       <i className="bi bi-calendar-check"></i>
-                      Next available: {new Date(counsellor.nextAvailable).toLocaleDateString()}
+                      Available for booking
                     </div>
                   </div>
                   
                   <div className="counsellor-actions">
                     <Link 
-                      to={`/client/counsellors/${counsellor.id}`} 
+                      to={`/client/counsellors/${counsellor._id}`} 
                       className="btn-view"
                     >
                       View Profile
                     </Link>
                     <Link 
-                      to={`/client/book-appointment/${counsellor.id}`} 
+                      to={`/client/book-appointment/${counsellor._id}`} 
                       className="btn-book"
                     >
                       Book Now

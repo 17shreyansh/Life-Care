@@ -1,15 +1,43 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { Alert, Spinner } from 'react-bootstrap';
+import api from '../../services/api';
 import './ChatVideo.css';
 
 const ChatVideo = () => {
+  const { appointmentId } = useParams();
   const [activeTab, setActiveTab] = useState('chat');
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef(null);
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'counsellor', text: 'Hello! How are you feeling today?', time: '10:01 AM' },
-    { id: 2, sender: 'client', text: 'I\'m feeling a bit anxious about my upcoming presentation.', time: '10:02 AM' },
-    { id: 3, sender: 'counsellor', text: 'That\'s completely normal. Let\'s talk about some techniques that might help you manage that anxiety.', time: '10:03 AM' }
-  ]);
+  const [messages, setMessages] = useState([]);
+  const [appointment, setAppointment] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [sessionNotes, setSessionNotes] = useState([]);
+
+  useEffect(() => {
+    if (appointmentId) {
+      fetchAppointmentDetails();
+    }
+  }, [appointmentId]);
+
+  const fetchAppointmentDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/client/appointments/${appointmentId}`);
+      setAppointment(res.data.data);
+      
+      // Load session notes if available
+      if (res.data.data.sessionNotes) {
+        setSessionNotes(res.data.data.sessionNotes);
+      }
+      
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to load appointment details');
+      setLoading(false);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -33,10 +61,32 @@ const ChatVideo = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="chat-container">
+        <div className="text-center py-5">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+          <p className="mt-2">Loading session...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="chat-container">
+      {error && <Alert variant="danger">{error}</Alert>}
+      
       <div className="chat-main">
         <div className="chat-header">
+          <div className="session-info mb-3">
+            <h5>Session with {appointment?.counsellor?.user?.name}</h5>
+            <p className="text-muted mb-0">
+              {appointment && new Date(appointment.date).toLocaleDateString()} at {appointment?.startTime}
+            </p>
+          </div>
+          
           <div className={`chat-tabs ${activeTab === 'video' ? 'video-active' : ''}`}>
             <button 
               className={`chat-tab ${activeTab === 'chat' ? 'active' : ''}`}
@@ -111,20 +161,36 @@ const ChatVideo = () => {
             <span>These are notes shared by your counsellor for this session.</span>
           </div>
           
-          <div className="notes-section">
-            <h6 className="notes-title">Anxiety Management Techniques</h6>
-            <ul className="notes-list">
-              <li>Deep breathing exercises - 4-7-8 technique</li>
-              <li>Progressive muscle relaxation</li>
-              <li>Visualization of successful presentation</li>
-              <li>Preparation and practice strategies</li>
-            </ul>
-          </div>
-          
-          <div className="notes-section">
-            <h6 className="notes-title">Homework</h6>
-            <p>Practice deep breathing twice daily and record your anxiety levels before and after.</p>
-          </div>
+          {sessionNotes.length > 0 ? (
+            sessionNotes.map((note, index) => (
+              <div key={index} className="notes-section">
+                {note.publicNotes && (
+                  <>
+                    <h6 className="notes-title">Session Notes</h6>
+                    <div dangerouslySetInnerHTML={{ __html: note.publicNotes }} />
+                  </>
+                )}
+                
+                {note.treatmentPlan && (
+                  <>
+                    <h6 className="notes-title">Treatment Plan</h6>
+                    <p>{note.treatmentPlan}</p>
+                  </>
+                )}
+                
+                {note.followUpRecommended && (
+                  <>
+                    <h6 className="notes-title">Follow-up Recommended</h6>
+                    <p>Next session recommended for: {new Date(note.followUpDate).toLocaleDateString()}</p>
+                  </>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="notes-section">
+              <p className="text-muted">No session notes available yet.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

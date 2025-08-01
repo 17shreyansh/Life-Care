@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Modal, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { adminAPI } from '../../services/api';
+import { adminAPI, uploadAPI } from '../../services/api';
 import ImageUpload from '../../components/shared/ImageUpload';
 import SEOHead from '../../components/shared/SEOHead';
 import '../client/Dashboard.css';
@@ -23,11 +23,7 @@ const Content = () => {
   const [modalAction, setModalAction] = useState('create'); // create, edit
   const [selectedItem, setSelectedItem] = useState(null);
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  const [fileInputRef, setFileInputRef] = useState(null);
-  const [showVideoPicker, setShowVideoPicker] = useState(false);
-  const [imagePickerType, setImagePickerType] = useState('');
-  const [videoPickerType, setVideoPickerType] = useState('');
+
 
   useEffect(() => {
     if (activeTab === 'blogs') {
@@ -170,21 +166,13 @@ const Content = () => {
       case 'video':
         return {
           title: '',
-          description: '',
-          videoUrl: '',
-          videoType: 'youtube',
-          thumbnailUrl: '',
-          categories: [],
-          tags: [],
-          status: 'draft',
-          isFeatured: false
+          videoUrl: ''
         };
       case 'gallery':
         return {
           title: '',
-          description: '',
           imageUrl: '',
-          category: ''
+          altText: ''
         };
       default:
         return {};
@@ -193,6 +181,16 @@ const Content = () => {
 
   const handleSave = async () => {
     try {
+      // Validate required fields
+      if (modalType === 'video' && (!selectedItem.title || !selectedItem.videoUrl)) {
+        showAlert('Please provide title and upload a video', 'danger');
+        return;
+      }
+      if (modalType === 'gallery' && (!selectedItem.title || !selectedItem.imageUrl || !selectedItem.altText)) {
+        showAlert('Please provide title, image, and alt text', 'danger');
+        return;
+      }
+      
       if (modalAction === 'create') {
         if (modalType === 'blog') {
           const response = await adminAPI.createBlog(selectedItem);
@@ -373,40 +371,10 @@ const Content = () => {
                 <Row>
                   {activeTab === 'videos' && (
                     <>
-                      <Col md={3}>
-                        <Form.Group className="mb-3">
-                          <Form.Label className="small">Status</Form.Label>
-                          <Form.Select 
-                            name="status" 
-                            value={filter.status} 
-                            onChange={handleFilterChange}
-                            size="sm"
-                          >
-                            <option value="">All</option>
-                            <option value="draft">Draft</option>
-                            <option value="published">Published</option>
-                            <option value="archived">Archived</option>
-                          </Form.Select>
-                        </Form.Group>
-                      </Col>
-                      <Col md={3}>
-                        <Form.Group className="mb-3">
-                          <Form.Label className="small">Featured</Form.Label>
-                          <Form.Select 
-                            name="isFeatured" 
-                            value={filter.isFeatured} 
-                            onChange={handleFilterChange}
-                            size="sm"
-                          >
-                            <option value="">All</option>
-                            <option value="true">Featured</option>
-                            <option value="false">Not Featured</option>
-                          </Form.Select>
-                        </Form.Group>
-                      </Col>
+                      {/* Simplified - no filters for videos */}
                     </>
                   )}
-                  <Col md={activeTab === 'gallery' ? 8 : 4}>
+                  <Col md={8}>
                     <Form.Group className="mb-3">
                       <Form.Label className="small">Search</Form.Label>
                       <Form.Control
@@ -434,7 +402,7 @@ const Content = () => {
                         variant="success" 
                         size="sm" 
                         className="w-100"
-                        onClick={() => handleCreate(activeTab.slice(0, -1))}
+                        onClick={() => handleCreate(activeTab === 'gallery' ? 'gallery' : activeTab.slice(0, -1))}
                       >
                         <i className="bi bi-plus-circle me-1"></i>Add
                       </Button>
@@ -461,8 +429,8 @@ const Content = () => {
                 </Link>
               )}
               {activeTab !== 'blogs' && (
-                <Button variant="primary" size="sm" onClick={() => handleCreate(activeTab.slice(0, -1))}>
-                  <i className="bi bi-plus-circle me-2"></i>Add {activeTab.slice(0, -1)}
+                <Button variant="primary" size="sm" onClick={() => handleCreate(activeTab === 'gallery' ? 'gallery' : activeTab.slice(0, -1))}>
+                  <i className="bi bi-plus-circle me-2"></i>Add {activeTab === 'gallery' ? 'Image' : activeTab.slice(0, -1)}
                 </Button>
               )}
             </div>
@@ -551,11 +519,7 @@ const Content = () => {
                       <thead>
                         <tr>
                           <th>Title</th>
-                          <th>Type</th>
-                          <th>Status</th>
-                          <th>Featured</th>
-                          <th>Views</th>
-                          <th>Duration</th>
+                          <th>Uploaded</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -563,25 +527,7 @@ const Content = () => {
                         {videos.map((video) => (
                           <tr key={video._id}>
                             <td>{video.title}</td>
-                            <td>
-                              <Badge bg="info">
-                                {video.videoType.charAt(0).toUpperCase() + video.videoType.slice(1)}
-                              </Badge>
-                            </td>
-                            <td>
-                              <Badge bg={getStatusBadge(video.status)}>
-                                {video.status.charAt(0).toUpperCase() + video.status.slice(1)}
-                              </Badge>
-                            </td>
-                            <td>
-                              <Form.Check
-                                type="switch"
-                                checked={video.isFeatured}
-                                onChange={() => handleToggleFeatured(video._id, !video.isFeatured)}
-                              />
-                            </td>
-                            <td>{video.viewCount}</td>
-                            <td>{video.duration ? `${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}` : 'N/A'}</td>
+                            <td>{new Date(video.createdAt).toLocaleDateString()}</td>
                             <td>
                               <div className="d-flex gap-1">
                                 <Button 
@@ -620,7 +566,7 @@ const Content = () => {
                             <Card.Img variant="top" src={image.imageUrl} style={{ height: '200px', objectFit: 'cover' }} />
                             <Card.Body>
                               <Card.Title className="h6">{image.title}</Card.Title>
-                              <Card.Text className="small text-muted">{image.description}</Card.Text>
+
                               <div className="d-flex justify-content-between">
                                 <Button 
                                   variant="outline-danger" 
@@ -648,7 +594,7 @@ const Content = () => {
       </div>
       
       {/* Content Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="xl" centered style={{ zIndex: 1050 }} dialogClassName="modal-90w">
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="xl" centered style={{ zIndex: 10500 }} dialogClassName="modal-90w">
         <Modal.Header closeButton>
           <Modal.Title>
             {modalAction === 'create' ? 'Create' : 'Edit'} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}
@@ -661,160 +607,107 @@ const Content = () => {
               
               {modalType === 'video' && (
                 <>
-                  <Row>
-                    <Col md={8}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Video Title <span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={selectedItem.title}
-                          onChange={(e) => handleInputChange('title', e.target.value)}
-                          placeholder="Enter video title"
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Status</Form.Label>
-                        <Form.Select
-                          value={selectedItem.status}
-                          onChange={(e) => handleInputChange('status', e.target.value)}
-                        >
-                          <option value="draft">Draft</option>
-                          <option value="published">Published</option>
-                          <option value="archived">Archived</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Video Type</Form.Label>
-                        <Form.Select
-                          value={selectedItem.videoType}
-                          onChange={(e) => handleInputChange('videoType', e.target.value)}
-                        >
-                          <option value="youtube">YouTube</option>
-                          <option value="vimeo">Vimeo</option>
-                          <option value="uploaded">Uploaded File</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>&nbsp;</Form.Label>
-                        <Form.Check
-                          type="switch"
-                          label="Featured Video"
-                          checked={selectedItem.isFeatured}
-                          onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                          className="mt-2"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  
                   <Form.Group className="mb-3">
-                    <Form.Label>Video URL <span className="text-danger">*</span></Form.Label>
-                    <div className="d-flex gap-2">
-                      <Form.Control
-                        type="url"
-                        value={selectedItem.videoUrl}
-                        onChange={(e) => handleInputChange('videoUrl', e.target.value)}
-                        placeholder="Enter YouTube/Vimeo URL or upload video file"
-                        required
-                      />
-                      <Button 
-                        variant="outline-primary" 
-                        onClick={() => {
-                          setShowVideoPicker(true);
-                          setVideoPickerType('videoUrl');
-                        }}
-                      >
-                        <i className="bi bi-upload"></i>
-                      </Button>
-                    </div>
-                  </Form.Group>
-                  
-                  <Form.Group className="mb-3">
-                    <Form.Label>Description <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>Video Title <span className="text-danger">*</span></Form.Label>
                     <Form.Control
-                      as="textarea"
-                      rows={6}
-                      value={selectedItem.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Describe your video content..."
+                      type="text"
+                      value={selectedItem.title}
+                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      placeholder="Enter video title"
                       required
                     />
                   </Form.Group>
                   
                   <Form.Group className="mb-3">
-                    <Form.Label>Categories</Form.Label>
+                    <Form.Label>Video File <span className="text-danger">*</span></Form.Label>
                     <Form.Control
-                      type="text"
-                      value={selectedItem.categories?.join(', ')}
-                      onChange={(e) => handleInputChange('categories', e.target.value.split(',').map(c => c.trim()))}
-                      placeholder="e.g., Mental Health, Meditation, Therapy Sessions"
+                      type="file"
+                      accept="video/*"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          try {
+                            const response = await uploadAPI.uploadVideo(file);
+                            handleInputChange('videoUrl', response.data.data.url);
+                          } catch (error) {
+                            console.error('Video upload failed:', error);
+                          }
+                        }
+                      }}
                     />
+                    <Form.Text className="text-muted">
+                      Upload video file (MP4, AVI, MOV, WMV - Max 100MB)
+                    </Form.Text>
+                    {selectedItem.videoUrl && (
+                      <div className="mt-2">
+                        <video width="300" height="200" controls>
+                          <source src={selectedItem.videoUrl} type="video/mp4" />
+                        </video>
+                      </div>
+                    )}
                   </Form.Group>
                 </>
               )}
               
               {modalType === 'gallery' && (
                 <>
-                  <Row>
-                    <Col md={8}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Image Title <span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={selectedItem.title}
-                          onChange={(e) => handleInputChange('title', e.target.value)}
-                          placeholder="Enter image title"
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Category</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={selectedItem.category}
-                          onChange={(e) => handleInputChange('category', e.target.value)}
-                          placeholder="e.g., Office, Team, Events"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Image Title <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={selectedItem.title}
+                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      placeholder="Enter image title"
+                      required
+                    />
+                  </Form.Group>
+                  
+                  <Form.Group className="mb-3">
+                    <Form.Label>Alt Text <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={selectedItem.altText || ''}
+                      onChange={(e) => handleInputChange('altText', e.target.value)}
+                      placeholder="Describe the image for accessibility"
+                      required
+                    />
+                  </Form.Group>
                   
                   <Row>
                     <Col md={5}>
                       <Form.Group className="mb-3">
                         <Form.Label>Gallery Image <span className="text-danger">*</span></Form.Label>
-                        <ImageUpload
-                          type="gallery"
-                          currentImage={selectedItem.imageUrl}
-                          onImageUploaded={(url) => handleInputChange('imageUrl', url)}
-                          size="250px"
-                          className="w-100"
+                        <Form.Control
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              try {
+                                const response = await uploadAPI.uploadGalleryImage(file);
+                                handleInputChange('imageUrl', response.data.data.url);
+                              } catch (error) {
+                                console.error('Image upload failed:', error);
+                              }
+                            }
+                          }}
                         />
+                        <Form.Text className="text-muted">
+                          Upload image file (JPG, PNG, GIF - Max 10MB)
+                        </Form.Text>
+                        {selectedItem.imageUrl && (
+                          <div className="mt-2">
+                            <img 
+                              src={selectedItem.imageUrl} 
+                              alt="Preview" 
+                              style={{ width: '100%', maxWidth: '250px', height: 'auto', border: '1px solid #ddd', borderRadius: '4px' }}
+                            />
+                          </div>
+                        )}
                       </Form.Group>
                     </Col>
                     <Col md={7}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                          as="textarea"
-                          rows={10}
-                          value={selectedItem.description}
-                          onChange={(e) => handleInputChange('description', e.target.value)}
-                          placeholder="Describe the image, event, or context..."
-                        />
-                      </Form.Group>
+                      {/* Description removed */}
                     </Col>
                   </Row>
                 </>
@@ -832,53 +725,7 @@ const Content = () => {
         </Modal.Footer>
       </Modal>
       
-      {/* Hidden File Input */}
-      <input
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        ref={setFileInputRef}
-        onChange={(e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            handleInputChange(imagePickerType, imageUrl);
-          }
-        }}
-      />
-      
-      {/* Video Picker Modal */}
-      <Modal show={showVideoPicker} onHide={() => setShowVideoPicker(false)} size="xl" centered style={{ zIndex: 1055 }} dialogClassName="modal-90w">
-        <Modal.Header closeButton>
-          <Modal.Title>Upload Video</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group className="mb-3">
-            <Form.Label>Select Video File</Form.Label>
-            <Form.Control
-              type="file"
-              accept="video/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  // In real implementation, upload to cloud storage
-                  const videoUrl = URL.createObjectURL(file);
-                  handleInputChange(videoPickerType, videoUrl);
-                  setShowVideoPicker(false);
-                }
-              }}
-            />
-            <Form.Text className="text-muted">
-              Supported formats: MP4, AVI, MOV, WMV (Max 100MB)
-            </Form.Text>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowVideoPicker(false)}>
-            Cancel
-          </Button>
-        </Modal.Footer>
-      </Modal>
+
     </div>
   );
 };

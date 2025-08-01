@@ -1,32 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { clientAPI } from '../../services/api';
 import './Feedback.css';
 
 const Feedback = () => {
+  const [searchParams] = useSearchParams();
+  const appointmentId = searchParams.get('appointment');
+  
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  
-  // Mock data for past sessions
-  const pastSessions = [
-    {
-      id: 1,
-      counsellor: 'Dr. Sarah Johnson',
-      date: '2023-06-10',
-      feedbackSubmitted: false
-    },
-    {
-      id: 2,
-      counsellor: 'Dr. Michael Chen',
-      date: '2023-05-25',
-      feedbackSubmitted: true
-    }
-  ];
+  const [loading, setLoading] = useState(false);
+  const [completedAppointments, setCompletedAppointments] = useState([]);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [reviews, setReviews] = useState([]);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchCompletedAppointments();
+    fetchReviews();
+  }, []);
+
+  useEffect(() => {
+    if (appointmentId && completedAppointments.length > 0) {
+      const appointment = completedAppointments.find(app => app._id === appointmentId);
+      if (appointment) {
+        setSelectedAppointment(appointment);
+      }
+    }
+  }, [appointmentId, completedAppointments]);
+
+  const fetchCompletedAppointments = async () => {
+    try {
+      const response = await clientAPI.getAppointments({ status: 'completed' });
+      setCompletedAppointments(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching completed appointments:', error);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await clientAPI.getReviews();
+      setReviews(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const hasReviewForAppointment = (appointmentId) => {
+    return reviews.some(review => review.appointment === appointmentId);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would send the feedback to the server
-    console.log({ sessionId: pastSessions[0].id, rating, feedback });
-    setSubmitted(true);
+    if (!selectedAppointment) return;
+    
+    try {
+      setLoading(true);
+      const reviewData = {
+        counsellor: selectedAppointment.counsellor._id,
+        appointment: selectedAppointment._id,
+        rating,
+        comment: feedback
+      };
+      
+      await clientAPI.submitReview(reviewData);
+      setSubmitted(true);
+      // Refresh reviews
+      fetchReviews();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit feedback. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectAppointment = (appointment) => {
+    setSelectedAppointment(appointment);
+    setRating(0);
+    setFeedback('');
+    setSubmitted(false);
   };
 
   const getRatingText = (rating) => {
@@ -56,13 +110,21 @@ const Feedback = () => {
             <h5 className="mb-0">Leave Feedback</h5>
           </div>
           <div className="feedback-card-body">
-            <div className="session-info">
-              <h6 className="session-title">Session with {pastSessions[0].counsellor}</h6>
-              <div className="session-date">
-                <i className="bi bi-calendar"></i>
-                <span>{new Date(pastSessions[0].date).toLocaleDateString()}</span>
+            {selectedAppointment ? (
+              <div className="session-info">
+                <h6 className="session-title">
+                  Session with {selectedAppointment.counsellor?.user?.name || 'Counsellor'}
+                </h6>
+                <div className="session-date">
+                  <i className="bi bi-calendar"></i>
+                  <span>{new Date(selectedAppointment.date).toLocaleDateString()}</span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="session-info">
+                <p className="text-muted">Please select a completed session to leave feedback.</p>
+              </div>
+            )}
             
             <form onSubmit={handleSubmit}>
               <div className="rating-container">
@@ -98,10 +160,21 @@ const Feedback = () => {
                 <button 
                   type="submit" 
                   className="submit-button"
-                  disabled={rating === 0}
+                  disabled={rating === 0 || !selectedAppointment || loading}
                 >
-                  <i className="bi bi-send"></i>
-                  Submit Feedback
+                  {loading ? (
+                    <>
+                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-send"></i>
+                      Submit Feedback
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -113,13 +186,24 @@ const Feedback = () => {
             <i className="bi bi-check-circle-fill success-icon"></i>
             <h4 className="success-title">Thank You for Your Feedback!</h4>
             <p className="success-text">Your feedback helps us improve our services and provide better mental health support.</p>
-            <button 
-              className="back-button"
-              onClick={() => setSubmitted(false)}
-            >
-              <i className="bi bi-arrow-left"></i>
-              Leave Another Feedback
-            </button>
+            <div className="success-actions">
+              <button 
+                className="back-button"
+                onClick={() => {
+                  setSubmitted(false);
+                  setSelectedAppointment(null);
+                  setRating(0);
+                  setFeedback('');
+                }}
+              >
+                <i className="bi bi-arrow-left"></i>
+                Leave Another Feedback
+              </button>
+              <Link to="/client/appointments" className="back-button">
+                <i className="bi bi-calendar-check"></i>
+                View Appointments
+              </Link>
+            </div>
           </div>
         </div>
       )}
@@ -143,36 +227,56 @@ const Feedback = () => {
                 </tr>
               </thead>
               <tbody>
-                {pastSessions.map(session => (
-                  <tr key={session.id}>
-                    <td>{session.counsellor}</td>
-                    <td>{new Date(session.date).toLocaleDateString()}</td>
-                    <td>
-                      {session.feedbackSubmitted ? (
-                        <span className="status-badge status-submitted">
-                          <i className="bi bi-check-circle"></i>
-                          Feedback Submitted
-                        </span>
-                      ) : (
-                        <span className="status-badge status-pending">
-                          <i className="bi bi-clock"></i>
-                          Feedback Pending
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {!session.feedbackSubmitted ? (
-                        <button className="action-button action-primary">
-                          <i className="bi bi-star"></i> Leave Feedback
-                        </button>
-                      ) : (
-                        <button className="action-button action-secondary" disabled>
-                          <i className="bi bi-check-circle"></i> Completed
-                        </button>
-                      )}
+                {completedAppointments.length > 0 ? (
+                  completedAppointments.map(appointment => {
+                    const hasReview = hasReviewForAppointment(appointment._id);
+                    return (
+                      <tr key={appointment._id}>
+                        <td>{appointment.counsellor?.user?.name || 'Counsellor'}</td>
+                        <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                        <td>
+                          {hasReview ? (
+                            <span className="status-badge status-submitted">
+                              <i className="bi bi-check-circle"></i>
+                              Feedback Submitted
+                            </span>
+                          ) : (
+                            <span className="status-badge status-pending">
+                              <i className="bi bi-clock"></i>
+                              Feedback Pending
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {!hasReview ? (
+                            <button 
+                              className="action-button action-primary"
+                              onClick={() => handleSelectAppointment(appointment)}
+                            >
+                              <i className="bi bi-star"></i> Leave Feedback
+                            </button>
+                          ) : (
+                            <button className="action-button action-secondary" disabled>
+                              <i className="bi bi-check-circle"></i> Completed
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="text-center py-4">
+                      <div className="text-muted">
+                        <i className="bi bi-calendar-x me-2"></i>
+                        No completed sessions found
+                      </div>
+                      <Link to="/client/appointments" className="btn btn-sm btn-primary mt-2">
+                        View All Appointments
+                      </Link>
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

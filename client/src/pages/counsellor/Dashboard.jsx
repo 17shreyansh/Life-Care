@@ -226,15 +226,7 @@ const Dashboard = () => {
                     <small>Manage your schedule</small>
                   </div>
                 </Link>
-                <Link to="/counsellor/content" className="action-button secondary">
-                  <div className="action-icon">
-                    <i className="bi bi-file-earmark-text"></i>
-                  </div>
-                  <div className="action-text">
-                    <span>Create Content</span>
-                    <small>Share your expertise</small>
-                  </div>
-                </Link>
+
                 <Link to="/counsellor/profile" className="action-button tertiary">
                   <div className="action-icon">
                     <i className="bi bi-person"></i>

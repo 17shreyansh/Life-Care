@@ -427,7 +427,7 @@
 }
 
 .modal-backdrop {
-  z-index: 9998 !important;
+  z-index: 1000 !important;
 }
 
 @media (max-width: 1200px) {

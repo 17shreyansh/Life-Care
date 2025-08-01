@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const BookAppointment = () => {
   const { counsellorId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [counsellor, setCounsellor] = useState(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -23,8 +25,8 @@ const BookAppointment = () => {
     const fetchCounsellorDetails = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/counsellors/${counsellorId}`);
-        setCounsellor(res.data.counsellor);
+        const res = await api.get(`/client/counsellors/${counsellorId}`);
+        setCounsellor(res.data.data);
         setLoading(false);
       } catch (err) {
         setError('Failed to load counsellor details');
@@ -54,7 +56,7 @@ const BookAppointment = () => {
     }
   };
   
-  // Handle booking submission
+  // Handle booking submission with Razorpay
   const handleBookAppointment = async (e) => {
     e.preventDefault();
     
@@ -75,14 +77,52 @@ const BookAppointment = () => {
       };
       
       const res = await api.post('/appointments/book', appointmentData);
+      const { appointment, razorpayOrder } = res.data.data;
       
-      setSuccess('Appointment booked successfully!');
+      // Initialize Razorpay payment
+      if (window.Razorpay) {
+        // Real Razorpay payment
+        const options = {
+          key: razorpayOrder.key_id,
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency,
+          name: 'S S Psychologist Life Care',
+          description: `Session with ${counsellor.user?.name || counsellor.name}`,
+          order_id: razorpayOrder.id,
+          handler: async function (response) {
+            try {
+              await api.post('/appointments/verify-payment', {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                appointmentId: appointment._id
+              });
+              
+              setSuccess('Payment successful! Appointment confirmed.');
+              setTimeout(() => {
+                navigate('/client/appointments');
+              }, 2000);
+            } catch (error) {
+              setError('Payment verification failed');
+            }
+          },
+          prefill: {
+            name: user?.name || '',
+            email: user?.email || '',
+            contact: user?.phone || ''
+          },
+          theme: {
+            color: '#007bff'
+          }
+        };
+        
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } else {
+        setError('Razorpay is not loaded. Please refresh the page.');
+      }
+      
       setLoading(false);
-      
-      // Redirect to appointments page after 2 seconds
-      setTimeout(() => {
-        navigate('/client/appointments');
-      }, 2000);
       
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to book appointment');
@@ -128,15 +168,15 @@ const BookAppointment = () => {
             <Card className="mb-4">
               <Card.Img 
                 variant="top" 
-                src={counsellor.profileImage || 'https://via.placeholder.com/300'} 
-                alt={counsellor.name}
+                src={counsellor.user?.avatar || counsellor.profileImage || 'https://via.placeholder.com/300'} 
+                alt={counsellor.user?.name || counsellor.name}
               />
               <Card.Body>
-                <Card.Title>{counsellor.name}</Card.Title>
+                <Card.Title>{counsellor.user?.name || counsellor.name}</Card.Title>
                 <Card.Text>
-                  <strong>Specialization:</strong> {counsellor.specialization}<br />
+                  <strong>Specializations:</strong> {counsellor.specializations?.join(', ')}<br />
                   <strong>Experience:</strong> {counsellor.experience} years<br />
-                  <strong>Fee:</strong> ₹{counsellor.fees} per session
+                  <strong>Fee:</strong> ₹{counsellor.fees?.video || counsellor.fees} per session
                 </Card.Text>
               </Card.Body>
             </Card>

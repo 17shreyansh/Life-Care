@@ -329,7 +329,7 @@ exports.cancelAppointment = async (req, res, next) => {
     // Free up the counsellor's slot
     const counsellor = await Counsellor.findById(appointment.counsellor);
     if (counsellor) {
-      const dayOfWeek = appointmentTime.toLocaleDateString('en-US', { weekday: 'lowercase' });
+      const dayOfWeek = appointmentTime.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const dayAvailability = counsellor.availability[dayOfWeek];
       
       // Find and remove the booked slot

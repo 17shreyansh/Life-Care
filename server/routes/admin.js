@@ -9,6 +9,7 @@ const {
   getCounsellors,
   getCounsellor,
   createCounsellor,
+  updateCounsellor,
   verifyCounsellor,
   getAppointments,
   updatePaymentStatus,
@@ -62,7 +63,10 @@ router.route('/counsellors')
   .get(getCounsellors)
   .post(createCounsellor);
 
-router.get('/counsellors/:id', getCounsellor);
+router.route('/counsellors/:id')
+  .get(getCounsellor)
+  .put(updateCounsellor);
+
 router.put('/counsellors/:id/verify', verifyCounsellor);
 
 // Appointment routes

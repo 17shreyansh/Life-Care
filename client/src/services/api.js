@@ -100,6 +100,13 @@ export const clientAPI = {
   getReviews: () => api.get('/client/reviews')
 };
 
+// Appointment API
+export const appointmentAPI = {
+  getAvailableSlots: (counsellorId, date) => api.get(`/appointments/available-slots?counsellorId=${counsellorId}&date=${date}`),
+  bookAppointment: (appointmentData) => api.post('/appointments/book', appointmentData),
+  verifyPayment: (paymentData) => api.post('/appointments/verify-payment', paymentData)
+};
+
 // Counsellor API
 export const counsellorAPI = {
   getProfile: () => api.get('/counsellor/profile'),
@@ -149,6 +156,7 @@ export const adminAPI = {
   getCounsellors: (params) => api.get('/admin/counsellors', { params }),
   getCounsellor: (id) => api.get(`/admin/counsellors/${id}`),
   createCounsellor: (counsellorData) => api.post('/admin/counsellors', counsellorData),
+  updateCounsellor: (id, counsellorData) => api.put(`/admin/counsellors/${id}`, counsellorData),
   verifyCounsellor: (id, isVerified) => api.put(`/admin/counsellors/${id}/verify`, { isVerified }),
   
   // Appointments
@@ -240,6 +248,14 @@ export const uploadAPI = {
     files.forEach(file => formData.append('documents', file));
     return api.post('/upload/documents', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadVideo: (file) => {
+    const formData = new FormData();
+    formData.append('video', file);
+    return api.post('/upload/video', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000 // 5 minutes for video uploads
     });
   }
 };

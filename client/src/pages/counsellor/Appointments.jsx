@@ -179,9 +179,23 @@ const Appointments = () => {
                 
                 <div className="appointment-actions">
                   {appointment.status === 'confirmed' && (
-                    <Link to={`/counsellor/chat-video/${appointment._id}`} className="btn-action btn-primary-action">
-                      <i className="bi bi-camera-video"></i> Start Session
-                    </Link>
+                    <>
+                      {appointment.sessionType === 'video' ? (
+                        <Link 
+                          to={`/counsellor/video/${appointment._id}`}
+                          className="btn-action btn-primary-action"
+                        >
+                          <i className="bi bi-camera-video"></i> Start Video
+                        </Link>
+                      ) : (
+                        <Link 
+                          to={`/counsellor/chat/${appointment._id}`}
+                          className="btn-action btn-primary-action"
+                        >
+                          <i className="bi bi-chat-dots"></i> Start Chat
+                        </Link>
+                      )}
+                    </>
                   )}
                   <Link to={`/counsellor/appointments/${appointment._id}`} className="btn-action btn-secondary-action">
                     <i className="bi bi-eye"></i> View Details

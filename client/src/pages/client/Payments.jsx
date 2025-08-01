@@ -1,34 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Spinner, Alert } from 'react-bootstrap';
+import api from '../../services/api';
 import './Payments.css';
 
 const Payments = () => {
-  // Mock payment data
-  const payments = [
-    {
-      id: 'INV-001',
-      date: '2023-06-10',
-      counsellor: 'Dr. Sarah Johnson',
-      amount: 1500,
-      status: 'Paid',
-      sessionType: 'Video Call'
-    },
-    {
-      id: 'INV-002',
-      date: '2023-05-25',
-      counsellor: 'Dr. Michael Chen',
-      amount: 1800,
-      status: 'Paid',
-      sessionType: 'Video Call'
-    },
-    {
-      id: 'INV-003',
-      date: '2023-05-15',
-      counsellor: 'Dr. Emily Rodriguez',
-      amount: 1200,
-      status: 'Refunded',
-      sessionType: 'Chat Session'
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchPayments();
+  }, []);
+
+  const fetchPayments = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/client/appointments?status=completed');
+      const completedAppointments = res.data.data.map(apt => ({
+        id: apt._id,
+        date: apt.date,
+        counsellor: apt.counsellor?.user?.name || 'Unknown',
+        amount: apt.amount,
+        status: apt.payment?.status === 'completed' ? 'Paid' : 
+                apt.payment?.status === 'refunded' ? 'Refunded' : 'Pending',
+        sessionType: apt.sessionType === 'video' ? 'Video Call' : 
+                    apt.sessionType === 'chat' ? 'Chat Session' : 'In-Person'
+      }));
+      setPayments(completedAppointments);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to load payment history');
+      setLoading(false);
     }
-  ];
+  };
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -52,12 +56,27 @@ const Payments = () => {
   const averageCost = sessionsAttended > 0 ? 
     Math.round(totalSpent / sessionsAttended) : 0;
 
+  if (loading) {
+    return (
+      <div className="payments-page">
+        <div className="text-center py-5">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+          <p className="mt-2">Loading payment history...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="payments-page">
       <div className="payments-header">
         <h1>Payment History</h1>
         <p>View and manage your payment transactions</p>
       </div>
+      
+      {error && <Alert variant="danger">{error}</Alert>}
       
       <div className="payment-cards">
         <div className="stat-card">
@@ -115,30 +134,38 @@ const Payments = () => {
               </tr>
             </thead>
             <tbody>
-              {payments.map(payment => (
-                <tr key={payment.id}>
-                  <td>{payment.id}</td>
-                  <td>{new Date(payment.date).toLocaleDateString()}</td>
-                  <td>{payment.counsellor}</td>
-                  <td>{payment.sessionType}</td>
-                  <td>₹{payment.amount}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusClass(payment.status)}`}>
-                      <i className={`bi ${
-                        payment.status === 'Paid' ? 'bi-check-circle' : 
-                        payment.status === 'Pending' ? 'bi-clock' :
-                        payment.status === 'Failed' ? 'bi-x-circle' : 'bi-arrow-repeat'
-                      }`}></i>
-                      {payment.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button className="download-button">
-                      <i className="bi bi-download"></i> Invoice
-                    </button>
+              {payments.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-4">
+                    No payment history found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                payments.map(payment => (
+                  <tr key={payment.id}>
+                    <td>{payment.id.slice(-8)}</td>
+                    <td>{new Date(payment.date).toLocaleDateString()}</td>
+                    <td>{payment.counsellor}</td>
+                    <td>{payment.sessionType}</td>
+                    <td>₹{payment.amount}</td>
+                    <td>
+                      <span className={`status-badge ${getStatusClass(payment.status)}`}>
+                        <i className={`bi ${
+                          payment.status === 'Paid' ? 'bi-check-circle' : 
+                          payment.status === 'Pending' ? 'bi-clock' :
+                          payment.status === 'Failed' ? 'bi-x-circle' : 'bi-arrow-repeat'
+                        }`}></i>
+                        {payment.status}
+                      </span>
+                    </td>
+                    <td>
+                      <button className="download-button">
+                        <i className="bi bi-download"></i> Invoice
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

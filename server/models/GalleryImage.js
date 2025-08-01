@@ -7,10 +7,7 @@ const galleryImageSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Title cannot be more than 100 characters']
   },
-  description: {
-    type: String,
-    maxlength: [500, 'Description cannot be more than 500 characters']
-  },
+
   imageUrl: {
     type: String,
     required: [true, 'Please add an image URL']
@@ -18,11 +15,7 @@ const galleryImageSchema = new mongoose.Schema({
   thumbnailUrl: {
     type: String
   },
-  category: {
-    type: String,
-    required: [true, 'Please add a category'],
-    enum: ['team', 'events', 'office', 'testimonials', 'other']
-  },
+
   tags: [{
     type: String
   }],
@@ -55,7 +48,7 @@ const galleryImageSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Indexes for faster queries
-galleryImageSchema.index({ category: 1, status: 1 });
+galleryImageSchema.index({ status: 1 });
 galleryImageSchema.index({ isFeatured: 1, sortOrder: 1 });
 
 module.exports = mongoose.model('GalleryImage', galleryImageSchema);
