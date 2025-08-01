@@ -45,16 +45,7 @@ const Login = () => {
         return;
       }
       
-      // Redirect based on user role
-      if (result.role === 'client') {
-        navigate('/client/dashboard');
-      } else if (result.role === 'counsellor') {
-        navigate('/counsellor/dashboard');
-      } else if (result.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/');
-      }
+      // Navigation is handled by AuthContext
     } catch (err) {
       console.error('Login error:', err);
       console.error('Response data:', err.response?.data);
@@ -85,18 +76,9 @@ const Login = () => {
       await authAPI.verifyOTP(formData.email, otp);
       
       // Auto-login after successful verification
-      const result = await login(formData);
+      await login(formData);
       
-      // Redirect based on user role
-      if (result.role === 'client') {
-        navigate('/client/dashboard');
-      } else if (result.role === 'counsellor') {
-        navigate('/counsellor/dashboard');
-      } else if (result.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/');
-      }
+      // Navigation is handled by AuthContext
     } catch (err) {
       setOtpError(err.response?.data?.message || 'OTP verification failed');
     } finally {

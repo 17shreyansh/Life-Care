@@ -5,6 +5,15 @@ const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const sendEmail = require('../utils/sendEmail');
 const { generateAndSendOTP, mockOTP } = require('../utils/otpGenerator');
+const fs = require('fs');
+const path = require('path');
+
+// Helper function to delete old file
+const deleteOldFile = (filePath) => {
+  if (filePath && fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+};
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -143,24 +152,20 @@ exports.resendOTP = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt for:', email);
 
     // Validate email & password
     if (!email || !password) {
-      console.log('Missing email or password');
       return next(new ErrorResponse('Please provide an email and password', 400));
     }
 
     // Check for user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      console.log('User not found:', email);
       return next(new ErrorResponse('Invalid credentials', 401));
     }
 
     // Check if password matches
     const isMatch = await user.matchPassword(password);
-    console.log('Password match result:', isMatch);
     if (!isMatch) {
       return next(new ErrorResponse('Invalid credentials', 401));
     }
@@ -275,17 +280,28 @@ exports.getMe = async (req, res, next) => {
 // @access  Private
 exports.updateDetails = async (req, res, next) => {
   try {
-    const fieldsToUpdate = {
-      name: req.body.name
-    };
+    const fieldsToUpdate = {};
+    
+    if (req.body.name) {
+      fieldsToUpdate.name = req.body.name;
+    }
 
-    // Only update phone if provided
     if (req.body.phone) {
       fieldsToUpdate.phone = req.body.phone;
-      // Reset phone verification if phone number changes
       if (req.user.phone !== req.body.phone) {
         fieldsToUpdate.isPhoneVerified = false;
       }
+    }
+
+    // Handle avatar upload
+    if (req.file) {
+      // Delete old avatar if exists
+      if (req.user.avatar && req.user.avatar.startsWith('/uploads/')) {
+        const oldPath = path.join(__dirname, '..', req.user.avatar);
+        deleteOldFile(oldPath);
+      }
+      
+      fieldsToUpdate.avatar = `/${req.file.path.replace(/\\/g, '/')}`;
     }
 
     const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
@@ -418,70 +434,25 @@ exports.resetPassword = async (req, res, next) => {
   }
 };
 
-// @desc    Refresh token
-// @route   POST /api/auth/refresh-token
-// @access  Public
-exports.refreshToken = async (req, res, next) => {
-  try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return next(new ErrorResponse('Refresh token is required', 400));
-    }
-
-    // Verify refresh token
-    let decoded;
-    try {
-      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    } catch (error) {
-      return next(new ErrorResponse('Invalid refresh token', 401));
-    }
-
-    // Find user with matching refresh token
-    const user = await User.findById(decoded.id).select('+refreshToken');
-
-    if (!user || user.refreshToken !== refreshToken) {
-      return next(new ErrorResponse('Invalid refresh token', 401));
-    }
-
-    // Generate new access token
-    const accessToken = user.getSignedJwtToken();
-
-    res.status(200).json({
-      success: true,
-      accessToken
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // @desc    Logout user / clear cookie
 // @route   GET /api/auth/logout
 // @access  Private
 exports.logout = async (req, res, next) => {
   try {
-    // Clear refresh token in database
     if (req.user) {
-      const user = await User.findById(req.user.id);
-      if (user) {
-        user.refreshToken = undefined;
-        await user.save({ validateBeforeSave: false });
-      }
-    }
-
-    // Clear cookie if it exists
-    if (req.cookies.token) {
-      res.cookie('token', 'none', {
-        expires: new Date(Date.now() + 10 * 1000), // 10 seconds
-        httpOnly: true
+      await User.findByIdAndUpdate(req.user.id, {
+        refreshToken: undefined
       });
     }
 
-    res.status(200).json({
-      success: true,
-      message: 'Logged out successfully'
-    });
+    res
+      .clearCookie('token')
+      .clearCookie('refreshToken')
+      .status(200)
+      .json({
+        success: true,
+        message: 'Logged out successfully'
+      });
   } catch (error) {
     next(error);
   }
@@ -489,39 +460,39 @@ exports.logout = async (req, res, next) => {
 
 // Helper function to send token response
 const sendTokenResponse = (user, statusCode, res) => {
-  // Create access token
   const accessToken = user.getSignedJwtToken();
-  
-  // Create refresh token
   const refreshToken = user.getRefreshToken();
   
-  // Save refresh token to database
   user.save({ validateBeforeSave: false });
   
-  // Set cookie options
-  const cookieOptions = {
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000 || 30 * 24 * 60 * 60 * 1000),
-    httpOnly: true
+  const tokenOptions = {
+    expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
   };
-  
-  // Set secure flag in production
-  if (process.env.NODE_ENV === 'production') {
-    cookieOptions.secure = true;
-  }
-  
-  // Set cookie
-  res.cookie('token', accessToken, cookieOptions);
-  
-  res.status(statusCode).json({
-    success: true,
-    accessToken,
-    refreshToken,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar
-    }
-  });
+
+  const refreshOptions = {
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  };
+
+  res
+    .status(statusCode)
+    .cookie('token', accessToken, tokenOptions)
+    .cookie('refreshToken', refreshToken, refreshOptions)
+    .json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        phone: user.phone,
+        isEmailVerified: user.isEmailVerified
+      }
+    });
 };

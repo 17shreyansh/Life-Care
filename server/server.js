@@ -49,8 +49,12 @@ app.use(cookieParser()); // For JWT cookies
 // Static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/upload', require('./routes/upload'));
 app.use('/api/client', require('./routes/client'));
 app.use('/api/counsellor', require('./routes/counsellor'));
 app.use('/api/admin', require('./routes/admin'));

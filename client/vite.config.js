@@ -9,10 +9,14 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'https://life-care-sqr5.onrender.com',
+        target: 'http://localhost:5000',
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path
+        secure: false
+      },
+      '/uploads': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false
       }
     },
     hmr: {

@@ -15,14 +15,12 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add content']
   },
-  summary: {
+  excerpt: {
     type: String,
-    required: [true, 'Please add a summary'],
-    maxlength: [500, 'Summary cannot be more than 500 characters']
+    maxlength: [500, 'Excerpt cannot be more than 500 characters']
   },
   featuredImage: {
-    type: String,
-    required: [true, 'Please add a featured image']
+    type: String
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,8 +28,7 @@ const blogSchema = new mongoose.Schema({
     required: true
   },
   categories: [{
-    type: String,
-    required: [true, 'Please add at least one category']
+    type: String
   }],
   tags: [{
     type: String
@@ -56,10 +53,20 @@ const blogSchema = new mongoose.Schema({
     type: Number, // in minutes
     default: 5
   },
-  seo: {
-    metaTitle: String,
-    metaDescription: String,
-    keywords: String
+  // SEO Fields
+  metaTitle: {
+    type: String,
+    maxlength: [60, 'Meta title cannot be more than 60 characters']
+  },
+  metaDescription: {
+    type: String,
+    maxlength: [160, 'Meta description cannot be more than 160 characters']
+  },
+  metaKeywords: {
+    type: String
+  },
+  canonicalUrl: {
+    type: String
   }
 }, { 
   timestamps: true,

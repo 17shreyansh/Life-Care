@@ -9,10 +9,7 @@ const Header = () => {
   const location = useLocation();
   const { user, logout, isAuthenticated, loading } = useAuth();
 
-  // Debug logging
-  console.log('Header - user:', user);
-  console.log('Header - isAuthenticated:', isAuthenticated);
-  console.log('Header - loading:', loading);
+
 
   // Check if current route is active
   const isActive = (path) => {
@@ -93,9 +90,17 @@ const Header = () => {
             </li>
           </ul>
           
-          <div className="d-flex">
+          <div className="d-flex align-items-center">
             {!loading && isAuthenticated && user ? (
               <>
+                {user.avatar && (
+                  <img 
+                    src={user.avatar}
+                    alt={user.name}
+                    className="rounded-circle me-2"
+                    style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                  />
+                )}
                 <Link to={`/${user.role}/dashboard`} className="btn btn-outline-primary me-2">
                   <i className="bi bi-speedometer2 me-1"></i> Dashboard
                 </Link>
@@ -112,7 +117,7 @@ const Header = () => {
                   <i className="bi bi-person-plus me-1"></i> Register
                 </Link>
               </>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

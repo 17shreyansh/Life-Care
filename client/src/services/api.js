@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Create axios instance with base URL
-const baseURL = import.meta.env.VITE_API_URL || '/api';
+const baseURL = '/api';
 const api = axios.create({
   baseURL,
   timeout: 10000,
@@ -17,7 +17,6 @@ console.log('API Base URL:', baseURL);
 // Add request logging
 api.interceptors.request.use(request => {
   console.log('Starting API Request:', request.method, request.url);
-  console.log('Request data:', request.data);
   return request;
 });
 
@@ -46,72 +45,24 @@ api.interceptors.response.use(
   }
 );
 
-// Add request interceptor to include auth token
-api.interceptors.request.use(
-  (config) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (token && token !== 'undefined' && token !== 'null') {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (error) {
-      console.error('Error getting token from localStorage:', error);
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+
 
 // Add response interceptor to handle token expiration
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-    
-    // If error is 401 and not already retrying
-    if (error.response?.status === 401 && error.response?.data?.tokenExpired && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
+    if (error.response?.status === 401 && error.response?.data?.tokenExpired) {
+      // Try to refresh token using cookie
       try {
-        // Try to refresh the token
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken || refreshToken === 'undefined' || refreshToken === 'null') {
-          // No refresh token, redirect to login
-          window.location.href = '/login';
-          return Promise.reject(error);
-        }
-        
-        const response = await axios.post('/api/auth/refresh-token', {
-          refreshToken
-        });
-        
-        // If token refresh was successful
-        if (response.data.success) {
-          // Update token in localStorage
-          localStorage.setItem('token', response.data.accessToken);
-          
-          // Update Authorization header
-          originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
-          
-          // Retry the original request
-          return axios(originalRequest);
-        }
+        await api.post('/auth/refresh-token');
+        // Retry original request
+        return api(error.config);
       } catch (refreshError) {
-        // If refresh token is invalid, redirect to login
-        try {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-        } catch (error) {
-          console.error('Error clearing localStorage:', error);
-        }
+        // Redirect to login if refresh fails
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
-    
     return Promise.reject(error);
   }
 );
@@ -125,7 +76,12 @@ export const authAPI = {
   googleLogin: (idToken) => api.post('/auth/google', { idToken }),
   logout: () => api.get('/auth/logout'),
   getMe: () => api.get('/auth/me'),
-  updateProfile: (userData) => api.put('/auth/updatedetails', userData),
+  updateProfile: (userData) => {
+    const isFormData = userData instanceof FormData;
+    return api.put('/auth/updatedetails', userData, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
+    });
+  },
   updatePassword: (passwordData) => api.put('/auth/updatepassword', passwordData),
   forgotPassword: (email) => api.post('/auth/forgotpassword', { email }),
   resetPassword: (resetToken, password) => api.put(`/auth/resetpassword/${resetToken}`, { password })
@@ -169,7 +125,23 @@ export const adminAPI = {
   getUsers: (params) => api.get('/admin/users', { params }),
   getUser: (id) => api.get(`/admin/users/${id}`),
   createUser: (userData) => api.post('/admin/users', userData),
-  updateUser: (id, userData) => api.put(`/admin/users/${id}`, userData),
+  updateUser: (id, userData) => {
+    // Always use FormData for user updates to handle avatar properly
+    console.log('API updateUser received userData:', userData);
+    const formData = new FormData();
+    Object.keys(userData).forEach(key => {
+      if (userData[key] !== undefined && userData[key] !== null) {
+        formData.append(key, userData[key]);
+        console.log(`FormData appended: ${key} = ${userData[key]}`);
+      }
+    });
+    return api.put(`/admin/users/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  updateUserWithFile: (id, formData) => api.put(`/admin/users/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
   banUser: (id, banData) => api.put(`/admin/users/${id}/ban`, banData),
   
@@ -190,6 +162,7 @@ export const adminAPI = {
   
   // CMS - Blogs
   getBlogs: (params) => api.get('/admin/cms/blogs', { params }),
+  getBlog: (id) => api.get(`/admin/cms/blogs/${id}`),
   createBlog: (blogData) => api.post('/admin/cms/blogs', blogData),
   updateBlog: (id, blogData) => api.put(`/admin/cms/blogs/${id}`, blogData),
   deleteBlog: (id) => api.delete(`/admin/cms/blogs/${id}`),
@@ -223,6 +196,52 @@ export const cmsAPI = {
   getVideoCategories: () => api.get('/cms/videos/categories'),
   getGallery: (params) => api.get('/cms/gallery', { params }),
   getGalleryCategories: () => api.get('/cms/gallery/categories')
+};
+
+// Upload API
+export const uploadAPI = {
+  uploadAvatar: (file) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return api.post('/upload/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadProfilePicture: (file) => {
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+    return api.post('/upload/profile-picture', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadBlogImage: (file) => {
+    const formData = new FormData();
+    formData.append('blogImage', file);
+    return api.post('/upload/blog-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadFeaturedImage: (file) => {
+    const formData = new FormData();
+    formData.append('featuredImage', file);
+    return api.post('/upload/featured-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadGalleryImage: (file) => {
+    const formData = new FormData();
+    formData.append('galleryImage', file);
+    return api.post('/upload/gallery-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadDocuments: (files) => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('documents', file));
+    return api.post('/upload/documents', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
 };
 
 export default api;

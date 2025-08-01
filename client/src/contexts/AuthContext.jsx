@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
-import { storage } from '../utils/storage';
 
 const AuthContext = createContext();
 
@@ -13,32 +12,21 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Load user from localStorage on initial render
+  // Check if user is authenticated on initial render
   useEffect(() => {
-    const storedUser = storage.get('user');
-    if (storedUser) {
-      setUser(storedUser);
-    }
-    setLoading(false);
+    const checkAuth = async () => {
+      try {
+        const response = await authAPI.getMe();
+        setUser(response.data.data);
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkAuth();
   }, []);
-
-  // Fetch current user data
-  const fetchCurrentUser = async () => {
-    try {
-      setLoading(true);
-      const response = await authAPI.getMe();
-      const userData = response.data.data;
-      setUser(userData);
-      storage.set('user', userData);
-      return userData;
-    } catch (err) {
-      console.error('Error fetching user:', err);
-      setError(err.response?.data?.message || 'Failed to fetch user data');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Register user
   const register = async (userData) => {
@@ -61,12 +49,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await authAPI.verifyOTP(email, otp);
-      const { accessToken, refreshToken, user: userData } = response.data;
-      
-      // Save tokens and user data
-      storage.set('token', accessToken);
-      storage.set('refreshToken', refreshToken);
-      storage.set('user', userData);
+      const { user: userData } = response.data;
       
       setUser(userData);
       return userData;
@@ -98,27 +81,27 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Sending login request with:', credentials.email);
       const response = await authAPI.login(credentials);
-      console.log('Login API response:', response.data);
       
       // Check if OTP verification is required
       if (response.data.requireOTP) {
         return { requireOTP: true, email: credentials.email };
       }
       
-      const { accessToken, refreshToken, user: userData } = response.data;
-      
-      // Save tokens and user data
-      storage.set('token', accessToken);
-      storage.set('refreshToken', refreshToken);
-      storage.set('user', userData);
-      
+      const { user: userData } = response.data;
       setUser(userData);
+      
+      // Navigate to appropriate dashboard
+      if (userData.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (userData.role === 'counsellor') {
+        navigate('/counsellor/dashboard');
+      } else {
+        navigate('/client/dashboard');
+      }
+      
       return userData;
     } catch (err) {
-      console.error('Login API error:', err);
-      console.error('Error response:', err.response?.data);
       setError(err.response?.data?.message || 'Login failed');
       throw err;
     } finally {
@@ -132,12 +115,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await authAPI.googleLogin(idToken);
-      const { accessToken, refreshToken, user: userData } = response.data;
-      
-      // Save tokens and user data
-      storage.set('token', accessToken);
-      storage.set('refreshToken', refreshToken);
-      storage.set('user', userData);
+      const { user: userData } = response.data;
       
       setUser(userData);
       return userData;
@@ -157,13 +135,25 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
-      // Clear local storage and state regardless of API response
-      storage.remove('token');
-      storage.remove('refreshToken');
-      storage.remove('user');
       setUser(null);
       setLoading(false);
       navigate('/login');
+    }
+  };
+
+  // Fetch current user data
+  const fetchCurrentUser = async () => {
+    try {
+      setLoading(true);
+      const response = await authAPI.getMe();
+      const userData = response.data.data;
+      setUser(userData);
+      return userData;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch user data');
+      return null;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -172,13 +162,23 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await authAPI.updateProfile(userData);
+      
+      let response;
+      if (userData.avatar && typeof userData.avatar === 'string' && userData.avatar.startsWith('blob:')) {
+        // Handle file upload
+        const formData = new FormData();
+        Object.keys(userData).forEach(key => {
+          if (key !== 'avatar') {
+            formData.append(key, userData[key]);
+          }
+        });
+        response = await authAPI.updateProfile(formData);
+      } else {
+        response = await authAPI.updateProfile(userData);
+      }
+      
       const updatedUser = response.data.data;
-      
-      // Update local storage and state
-      storage.set('user', updatedUser);
       setUser(updatedUser);
-      
       return updatedUser;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update profile');

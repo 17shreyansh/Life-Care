@@ -30,7 +30,7 @@ const createTestData = async () => {
     const adminUser = await User.create({
       name: 'Admin User',
       email: 'admin@example.com',
-      password: await bcrypt.hash('password123', 10),
+      password: 'password123',
       role: 'admin',
       isEmailVerified: true,
       active: true
@@ -40,7 +40,7 @@ const createTestData = async () => {
     const clientUser = await User.create({
       name: 'Test Client',
       email: 'client@example.com',
-      password: await bcrypt.hash('password123', 10),
+      password: 'password123',
       role: 'client',
       isEmailVerified: true,
       active: true
@@ -50,7 +50,7 @@ const createTestData = async () => {
     const counsellorUser = await User.create({
       name: 'Dr. Jane Smith',
       email: 'counsellor@example.com',
-      password: await bcrypt.hash('password123', 10),
+      password: 'password123',
       role: 'counsellor',
       isEmailVerified: true,
       active: true

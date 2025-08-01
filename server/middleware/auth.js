@@ -5,16 +5,15 @@ const User = require('../models/User');
 exports.protect = async (req, res, next) => {
   let token;
 
-  // Check for token in Authorization header
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  } 
-  // Check for token in cookie (for browser clients)
-  else if (req.cookies && req.cookies.token) {
+  // Check for token in cookie first (primary method)
+  if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
+  // Fallback to Authorization header
+  else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
 
-  // Make sure token exists
   if (!token) {
     return res.status(401).json({
       success: false,
@@ -79,20 +78,17 @@ exports.authorize = (...roles) => {
 
 // Verify refresh token and issue new access token
 exports.refreshToken = async (req, res, next) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
-    return res.status(400).json({
+    return res.status(401).json({
       success: false,
       message: 'Refresh token is required'
     });
   }
 
   try {
-    // Verify refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-
-    // Find user with matching refresh token
     const user = await User.findById(decoded.id).select('+refreshToken');
 
     if (!user || user.refreshToken !== refreshToken) {
@@ -102,12 +98,17 @@ exports.refreshToken = async (req, res, next) => {
       });
     }
 
-    // Generate new access token
     const accessToken = user.getSignedJwtToken();
 
+    res.cookie('token', accessToken, {
+      expires: new Date(Date.now() + 15 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+
     res.status(200).json({
-      success: true,
-      accessToken
+      success: true
     });
   } catch (error) {
     return res.status(401).json({

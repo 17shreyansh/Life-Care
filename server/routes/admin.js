@@ -16,6 +16,7 @@ const {
   getWithdrawals,
   processWithdrawal,
   getBlogs,
+  getBlog,
   createBlog,
   updateBlog,
   deleteBlog,
@@ -24,7 +25,7 @@ const {
   updateVideo,
   deleteVideo,
   getGallery,
-  uploadGalleryImage,
+  uploadGalleryImage: uploadGalleryImageController,
   deleteGalleryImage,
   getReports,
   getDashboardStats,
@@ -33,6 +34,7 @@ const {
 } = require('../controllers/adminController');
 
 const { protect, authorize } = require('../middleware/auth');
+const { uploadFeaturedImage, uploadGalleryImage: uploadGalleryImageMiddleware, uploadVideoThumbnail, uploadAvatar } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -50,7 +52,7 @@ router.route('/users')
 
 router.route('/users/:id')
   .get(getUser)
-  .put(updateUser)
+  .put(uploadAvatar, updateUser)
   .delete(deleteUser);
 
 router.put('/users/:id/ban', banUser);
@@ -75,23 +77,24 @@ router.put('/withdrawals/:id', processWithdrawal);
 // CMS routes
 router.route('/cms/blogs')
   .get(getBlogs)
-  .post(createBlog);
+  .post(uploadFeaturedImage, createBlog);
 
 router.route('/cms/blogs/:id')
-  .put(updateBlog)
+  .get(getBlog)
+  .put(uploadFeaturedImage, updateBlog)
   .delete(deleteBlog);
 
 router.route('/cms/videos')
   .get(getVideos)
-  .post(createVideo);
+  .post(uploadVideoThumbnail, createVideo);
 
 router.route('/cms/videos/:id')
-  .put(updateVideo)
+  .put(uploadVideoThumbnail, updateVideo)
   .delete(deleteVideo);
 
 router.route('/cms/gallery')
   .get(getGallery)
-  .post(uploadGalleryImage);
+  .post(uploadGalleryImageMiddleware, uploadGalleryImageController);
 
 router.delete('/cms/gallery/:id', deleteGalleryImage);
 

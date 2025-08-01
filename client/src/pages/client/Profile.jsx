@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
+import { useAuth } from '../../contexts/AuthContext';
+import ImageUpload from '../../components/shared/ImageUpload';
 import './Profile.css';
 
 const Profile = () => {
+  const { user, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('personal');
   const [formData, setFormData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+91 9876543210',
-    gender: 'Male',
-    dob: '1990-01-15',
-    address: '123 Main St, Delhi',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    avatar: user?.avatar || '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -21,10 +22,14 @@ const Profile = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  const handlePersonalInfoSubmit = (e) => {
+  const handlePersonalInfoSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would update the user's profile
-    alert('Profile updated successfully!');
+    try {
+      await updateProfile(formData);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      alert('Failed to update profile');
+    }
   };
   
   const handlePasswordSubmit = (e) => {
@@ -75,21 +80,12 @@ const Profile = () => {
             <form onSubmit={handlePersonalInfoSubmit}>
               <Row className="mb-4">
                 <Col md={3} className="text-center">
-                  <div className="position-relative d-inline-block">
-                    <img 
-                      src="https://placehold.co/200x200?text=JD" 
-                      alt="Profile" 
-                      className="rounded-circle img-thumbnail mb-3"
-                      style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-                    />
-                    <button 
-                      type="button" 
-                      className="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle"
-                      style={{ width: '35px', height: '35px' }}
-                    >
-                      <i className="bi bi-pencil"></i>
-                    </button>
-                  </div>
+                  <ImageUpload
+                    type="avatar"
+                    currentImage={formData.avatar}
+                    onImageUploaded={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
+                    size="150px"
+                  />
                   <h5 className="mt-2">{formData.name}</h5>
                   <p className="text-muted">{formData.email}</p>
                 </Col>

@@ -128,14 +128,33 @@ exports.createUser = async (req, res, next) => {
 // @access  Private (Admin only)
 exports.updateUser = async (req, res, next) => {
   try {
-    const { name, email, role, active } = req.body;
+    const { name, email, role, active, avatar, password } = req.body;
+    
+    console.log('Admin updateUser received:', { name, email, role, active, avatar, password: password ? '[HIDDEN]' : undefined });
     
     // Build update object
     const updateFields = {};
     if (name) updateFields.name = name;
     if (email) updateFields.email = email;
     if (role) updateFields.role = role;
-    if (active !== undefined) updateFields.active = active;
+    if (active !== undefined) updateFields.active = active === 'true' || active === true;
+    
+    // Handle avatar from FormData or direct URL
+    if (req.file) {
+      updateFields.avatar = `/${req.file.path.replace(/\\/g, '/')}`;
+      console.log('Admin avatar file upload:', updateFields.avatar);
+    } else if (avatar) {
+      updateFields.avatar = avatar;
+      console.log('Admin avatar URL update:', updateFields.avatar);
+    }
+    
+    // Handle password update - only if provided and not empty
+    if (password && password.trim() !== '') {
+      updateFields.password = password;
+      console.log('Password will be updated');
+    }
+    
+    console.log('Admin updating user with fields:', updateFields);
     
     const user = await User.findByIdAndUpdate(
       req.params.id,
@@ -147,11 +166,14 @@ exports.updateUser = async (req, res, next) => {
       return next(new ErrorResponse(`User not found with id of ${req.params.id}`, 404));
     }
     
+    console.log('User updated successfully:', user.avatar);
+    
     res.status(200).json({
       success: true,
       data: user
     });
   } catch (error) {
+    console.error('Admin updateUser error:', error);
     next(error);
   }
 };
@@ -656,12 +678,38 @@ exports.getBlogs = async (req, res, next) => {
   }
 };
 
+// @desc    Get single blog
+// @route   GET /api/admin/cms/blogs/:id
+// @access  Private (Admin only)
+exports.getBlog = async (req, res, next) => {
+  try {
+    const blog = await Blog.findById(req.params.id).populate('author', 'name avatar');
+    
+    if (!blog) {
+      return next(new ErrorResponse(`Blog not found with id of ${req.params.id}`, 404));
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: blog
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Create blog
 // @route   POST /api/admin/cms/blogs
 // @access  Private (Admin only)
 exports.createBlog = async (req, res, next) => {
   try {
     req.body.author = req.user.id;
+    
+    // Handle featured image upload
+    if (req.file) {
+      req.body.featuredImage = `/${req.file.path.replace(/\\/g, '/')}`;
+    }
+    
     const blog = await Blog.create(req.body);
     
     res.status(201).json({
@@ -678,6 +726,11 @@ exports.createBlog = async (req, res, next) => {
 // @access  Private (Admin only)
 exports.updateBlog = async (req, res, next) => {
   try {
+    // Handle featured image upload
+    if (req.file) {
+      req.body.featuredImage = `/${req.file.path.replace(/\\/g, '/')}`;
+    }
+    
     const blog = await Blog.findByIdAndUpdate(
       req.params.id,
       req.body,

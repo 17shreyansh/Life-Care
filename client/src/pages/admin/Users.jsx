@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Modal } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import ImageUpload from '../../components/shared/ImageUpload';
 import '../client/Dashboard.css';
 import './AdminStyles.css';
 
@@ -91,6 +92,7 @@ const Users = () => {
         await adminAPI.createUser(selectedUser);
         showAlert('User created successfully');
       } else if (modalAction === 'edit') {
+        console.log('Updating user with data:', selectedUser);
         await adminAPI.updateUser(selectedUser._id, selectedUser);
         showAlert('User updated successfully');
       }
@@ -128,6 +130,11 @@ const Users = () => {
 
   const handleInputChange = (field, value) => {
     setSelectedUser({ ...selectedUser, [field]: value });
+  };
+  
+  const handleAvatarUpload = (url) => {
+    console.log('Avatar uploaded:', url);
+    setSelectedUser({ ...selectedUser, avatar: url });
   };
 
   const handlePageChange = (page) => {
@@ -181,7 +188,6 @@ const Users = () => {
                   >
                     <option value="">All Roles</option>
                     <option value="client">Client</option>
-                    <option value="counsellor">Counsellor</option>
                     <option value="admin">Admin</option>
                   </Form.Select>
                 </Form.Group>
@@ -377,7 +383,7 @@ const Users = () => {
       </Card>
       
       {/* User Modal */}
-      <Modal show={showUserModal} onHide={() => setShowUserModal(false)} size="xl" centered style={{ zIndex: 10010 }} dialogClassName="modal-90w">
+      <Modal show={showUserModal} onHide={() => setShowUserModal(false)} size="xl" centered style={{ zIndex: 1050 }} dialogClassName="modal-90w">
         <Modal.Header closeButton>
           <Modal.Title>
             {modalAction === 'view' ? 'User Details' : 
@@ -414,6 +420,22 @@ const Users = () => {
                 </Col>
               </Row>
               
+              {modalAction !== 'view' && (
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Avatar</Form.Label>
+                      <ImageUpload
+                        type="avatar"
+                        currentImage={selectedUser.avatar}
+                        onImageUploaded={handleAvatarUpload}
+                        size="80px"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              )}
+              
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
@@ -421,10 +443,10 @@ const Users = () => {
                     <Form.Select
                       value={selectedUser.role}
                       onChange={(e) => handleInputChange('role', e.target.value)}
-                      disabled={modalAction === 'view'}
+                      disabled={modalAction === 'view' || selectedUser.role === 'counsellor'}
                     >
                       <option value="client">Client</option>
-                      <option value="counsellor">Counsellor</option>
+                      {selectedUser.role === 'counsellor' && <option value="counsellor">Counsellor</option>}
                       <option value="admin">Admin</option>
                     </Form.Select>
                   </Form.Group>

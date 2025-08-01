@@ -10,11 +10,11 @@ const {
   resetPassword,
   verifyOTP,
   resendOTP,
-  refreshToken,
   logout
 } = require('../controllers/authController');
 
-const { protect } = require('../middleware/auth');
+const { protect, refreshToken } = require('../middleware/auth');
+const { uploadAvatar } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ router.post('/refresh-token', refreshToken);
 
 // Protected routes
 router.get('/me', protect, getMe);
-router.put('/updatedetails', protect, updateDetails);
+router.put('/updatedetails', protect, uploadAvatar, updateDetails);
 router.put('/updatepassword', protect, updatePassword);
 router.get('/logout', protect, logout);
 

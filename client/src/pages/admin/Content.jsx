@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Button, Form, Row, Col, Modal, Alert } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { adminAPI } from '../../services/api';
-import ImagePicker from '../../components/shared/ImagePicker';
+import ImageUpload from '../../components/shared/ImageUpload';
+import SEOHead from '../../components/shared/SEOHead';
 import '../client/Dashboard.css';
 import './AdminStyles.css';
 
@@ -116,6 +118,7 @@ const Content = () => {
   };
 
   const handleCreate = (type) => {
+    if (type === 'blog') return; // Blogs use advanced editor
     setModalType(type);
     setModalAction('create');
     setSelectedItem(getEmptyItem(type));
@@ -123,6 +126,7 @@ const Content = () => {
   };
 
   const handleEdit = (item, type) => {
+    if (type === 'blog') return; // Blogs use advanced editor
     setModalType(type);
     setModalAction('edit');
     setSelectedItem(item);
@@ -156,7 +160,7 @@ const Content = () => {
         return {
           title: '',
           content: '',
-          summary: '',
+          excerpt: '',
           featuredImage: '',
           categories: [],
           tags: [],
@@ -266,6 +270,11 @@ const Content = () => {
 
   return (
     <div>
+      <SEOHead 
+        title="Content Management"
+        description="Manage blogs, videos, and gallery content with advanced editing tools"
+      />
+      
       <div className="d-flex align-items-center mb-4">
         <div className="stat-icon me-3">
           <i className="bi bi-file-earmark-text"></i>
@@ -445,9 +454,18 @@ const Content = () => {
               </div>
               <h5 className="mb-0">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h5>
             </div>
-            <Button variant="success" size="sm" onClick={() => handleCreate(activeTab.slice(0, -1))}>
-              <i className="bi bi-plus-circle me-2"></i>Add {activeTab.slice(0, -1)}
-            </Button>
+            <div>
+              {activeTab === 'blogs' && (
+                <Link to="/admin/content/blog/new" className="btn btn-success btn-sm">
+                  <i className="bi bi-journal-plus me-1"></i>Create Blog
+                </Link>
+              )}
+              {activeTab !== 'blogs' && (
+                <Button variant="primary" size="sm" onClick={() => handleCreate(activeTab.slice(0, -1))}>
+                  <i className="bi bi-plus-circle me-2"></i>Add {activeTab.slice(0, -1)}
+                </Button>
+              )}
+            </div>
           </Card.Header>
           <Card.Body>
             {alert.show && (
@@ -503,13 +521,9 @@ const Content = () => {
                             <td>{blog.viewCount}</td>
                             <td>
                               <div className="d-flex gap-1">
-                                <Button 
-                                  variant="outline-primary" 
-                                  size="sm"
-                                  onClick={() => handleEdit(blog, 'blog')}
-                                >
+                                <Link to={`/admin/content/blog/edit/${blog._id}`} className="btn btn-outline-success btn-sm">
                                   <i className="bi bi-pencil"></i>
-                                </Button>
+                                </Link>
                                 <Button 
                                   variant="outline-danger" 
                                   size="sm"
@@ -634,7 +648,7 @@ const Content = () => {
       </div>
       
       {/* Content Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="xl" centered style={{ zIndex: 10010 }} dialogClassName="modal-90w">
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="xl" centered style={{ zIndex: 1050 }} dialogClassName="modal-90w">
         <Modal.Header closeButton>
           <Modal.Title>
             {modalAction === 'create' ? 'Create' : 'Edit'} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}
@@ -643,124 +657,7 @@ const Content = () => {
         <Modal.Body>
           {selectedItem && (
             <Form>
-              {modalType === 'blog' && (
-                <>
-                  <Row>
-                    <Col md={8}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Title <span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={selectedItem.title}
-                          onChange={(e) => handleInputChange('title', e.target.value)}
-                          placeholder="Enter blog title"
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Status</Form.Label>
-                        <Form.Select
-                          value={selectedItem.status}
-                          onChange={(e) => handleInputChange('status', e.target.value)}
-                        >
-                          <option value="draft">Draft</option>
-                          <option value="published">Published</option>
-                          <option value="archived">Archived</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  
-                  <Row>
-                    <Col md={4}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Featured Image <span className="text-danger">*</span></Form.Label>
-                        <div className="profile-upload-section">
-                          <div 
-                            className="profile-image-box"
-                            style={{ width: '100%', height: '200px' }}
-                            onClick={() => {
-                              setImagePickerType('featuredImage');
-                              if (fileInputRef) fileInputRef.click();
-                            }}
-                          >
-                            {selectedItem.featuredImage ? (
-                              <>
-                                <img
-                                  src={selectedItem.featuredImage}
-                                  alt="Featured preview"
-                                  className="profile-selected-image"
-                                />
-                                <div className="profile-overlay">
-                                  <i className="bi bi-camera"></i>
-                                  <span>Change Image</span>
-                                </div>
-                              </>
-                            ) : (
-                              <div className="profile-upload-placeholder">
-                                <i className="bi bi-image-fill"></i>
-                                <span>Select Image</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </Form.Group>
-                    </Col>
-                    <Col md={8}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Summary <span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                          as="textarea"
-                          rows={4}
-                          value={selectedItem.summary}
-                          onChange={(e) => handleInputChange('summary', e.target.value)}
-                          placeholder="Brief summary of the blog post"
-                          required
-                        />
-                      </Form.Group>
-                      <Row>
-                        <Col md={8}>
-                          <Form.Group className="mb-3">
-                            <Form.Label>Categories</Form.Label>
-                            <Form.Control
-                              type="text"
-                              value={selectedItem.categories?.join(', ')}
-                              onChange={(e) => handleInputChange('categories', e.target.value.split(',').map(c => c.trim()))}
-                              placeholder="e.g., Mental Health, Therapy, Wellness"
-                            />
-                          </Form.Group>
-                        </Col>
-                        <Col md={4}>
-                          <Form.Group className="mb-3">
-                            <Form.Label>&nbsp;</Form.Label>
-                            <Form.Check
-                              type="switch"
-                              label="Featured Post"
-                              checked={selectedItem.isFeatured}
-                              onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                              className="mt-2"
-                            />
-                          </Form.Group>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                  
-                  <Form.Group className="mb-3">
-                    <Form.Label>Content <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={10}
-                      value={selectedItem.content}
-                      onChange={(e) => handleInputChange('content', e.target.value)}
-                      placeholder="Write your blog content here..."
-                      required
-                    />
-                  </Form.Group>
-                </>
-              )}
+
               
               {modalType === 'video' && (
                 <>
@@ -898,35 +795,13 @@ const Content = () => {
                     <Col md={5}>
                       <Form.Group className="mb-3">
                         <Form.Label>Gallery Image <span className="text-danger">*</span></Form.Label>
-                        <div className="profile-upload-section">
-                          <div 
-                            className="profile-image-box"
-                            style={{ width: '100%', height: '250px' }}
-                            onClick={() => {
-                              setImagePickerType('imageUrl');
-                              if (fileInputRef) fileInputRef.click();
-                            }}
-                          >
-                            {selectedItem.imageUrl ? (
-                              <>
-                                <img
-                                  src={selectedItem.imageUrl}
-                                  alt="Gallery preview"
-                                  className="profile-selected-image"
-                                />
-                                <div className="profile-overlay">
-                                  <i className="bi bi-camera"></i>
-                                  <span>Change Image</span>
-                                </div>
-                              </>
-                            ) : (
-                              <div className="profile-upload-placeholder">
-                                <i className="bi bi-image-fill"></i>
-                                <span>Select Image</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                        <ImageUpload
+                          type="gallery"
+                          currentImage={selectedItem.imageUrl}
+                          onImageUploaded={(url) => handleInputChange('imageUrl', url)}
+                          size="250px"
+                          className="w-100"
+                        />
                       </Form.Group>
                     </Col>
                     <Col md={7}>
@@ -973,7 +848,7 @@ const Content = () => {
       />
       
       {/* Video Picker Modal */}
-      <Modal show={showVideoPicker} onHide={() => setShowVideoPicker(false)} size="xl" centered style={{ zIndex: 10015 }} dialogClassName="modal-90w">
+      <Modal show={showVideoPicker} onHide={() => setShowVideoPicker(false)} size="xl" centered style={{ zIndex: 1055 }} dialogClassName="modal-90w">
         <Modal.Header closeButton>
           <Modal.Title>Upload Video</Modal.Title>
         </Modal.Header>

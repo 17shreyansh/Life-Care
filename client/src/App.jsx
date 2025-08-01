@@ -53,13 +53,14 @@ import AdminCounsellors from './pages/admin/Counsellors';
 import AdminAppointments from './pages/admin/Appointments';
 import AdminWithdrawals from './pages/admin/Withdrawals';
 import AdminContent from './pages/admin/Content';
+import BlogEditor from './pages/admin/BlogEditor';
 import AdminReports from './pages/admin/Reports';
 import AdminSettings from './pages/admin/Settings';
 import AdminDisputes from './pages/admin/Disputes';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <Routes>
           {/* Public Routes with MainLayout */}
@@ -115,6 +116,8 @@ function App() {
               <Route path="appointments" element={<AdminAppointments />} />
               <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="content" element={<AdminContent />} />
+              <Route path="content/blog/new" element={<BlogEditor />} />
+              <Route path="content/blog/edit/:id" element={<BlogEditor />} />
               <Route path="reports" element={<AdminReports />} />
               <Route path="disputes" element={<AdminDisputes />} />
               <Route path="settings" element={<AdminSettings />} />
