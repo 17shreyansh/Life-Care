@@ -138,58 +138,49 @@ const CounsellorFinder = () => {
       </div>
 
       <div className="search-filter-section">
-        <div className="search-bar">
-          <i className="bi bi-search search-icon"></i>
-          <input 
-            type="text" 
-            placeholder="Search by name, specialization, or expertise..." 
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-        </div>
-        
-        <div className="filters-container">
-          <div className="filter-group">
-            <label>Gender</label>
-            <select 
-              value={filters.gender} 
-              onChange={(e) => handleFilterChange('gender', e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
+        <div className="filters-inline">
+          <div className="search-bar">
+            <i className="bi bi-search search-icon"></i>
+            <input 
+              type="text" 
+              placeholder="Search by name, specialization, or expertise..." 
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="search-input"
+            />
           </div>
           
-          <div className="filter-group">
-            <label>Expertise</label>
-            <select 
-              value={filters.expertise} 
-              onChange={(e) => handleFilterChange('expertise', e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All</option>
-              {specializations.map(spec => (
-                <option key={spec} value={spec}>{spec}</option>
-              ))}
-            </select>
-          </div>
+          <select 
+            value={filters.gender} 
+            onChange={(e) => handleFilterChange('gender', e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Genders</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
           
-          <div className="filter-group">
-            <label>Price Range</label>
-            <select 
-              value={filters.priceRange} 
-              onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All</option>
-              <option value="under1000">Under ₹1000</option>
-              <option value="1000to1500">₹1000 - ₹1500</option>
-              <option value="over1500">Over ₹1500</option>
-            </select>
-          </div>
+          <select 
+            value={filters.expertise} 
+            onChange={(e) => handleFilterChange('expertise', e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Expertise</option>
+            {specializations.map(spec => (
+              <option key={spec} value={spec}>{spec}</option>
+            ))}
+          </select>
+          
+          <select 
+            value={filters.priceRange} 
+            onChange={(e) => handleFilterChange('priceRange', e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Prices</option>
+            <option value="under1000">Under ₹1000</option>
+            <option value="1000to1500">₹1000 - ₹1500</option>
+            <option value="over1500">Over ₹1500</option>
+          </select>
         </div>
       </div>
 
@@ -201,11 +192,21 @@ const CounsellorFinder = () => {
             filteredCounsellors.map(counsellor => (
               <div key={counsellor._id} className="counsellor-card">
                 <div className="counsellor-header">
-                  <img 
-                    src={counsellor.user?.avatar || '/default-avatar.png'} 
-                    alt={counsellor.user?.name || 'Counsellor'} 
-                    className="counsellor-photo"
-                  />
+                  {counsellor.user?.avatar ? (
+                    <img 
+                      src={counsellor.user.avatar} 
+                      alt={counsellor.user?.name || 'Counsellor'} 
+                      className="counsellor-photo"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className="counsellor-photo-placeholder" style={{display: counsellor.user?.avatar ? 'none' : 'flex'}}>
+                    <i className="bi bi-person-circle"></i>
+                    <span>No Image</span>
+                  </div>
                   <div className="counsellor-badges">
                     <span className="badge-item badge-experience">
                       <i className="bi bi-clock-history"></i>

@@ -88,7 +88,7 @@ exports.refreshToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh-secret');
     const user = await User.findById(decoded.id).select('+refreshToken');
 
     if (!user || user.refreshToken !== refreshToken) {
@@ -101,14 +101,23 @@ exports.refreshToken = async (req, res, next) => {
     const accessToken = user.getSignedJwtToken();
 
     res.cookie('token', accessToken, {
-      expires: new Date(Date.now() + 15 * 60 * 1000),
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict'
     });
 
     res.status(200).json({
-      success: true
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        phone: user.phone,
+        isEmailVerified: user.isEmailVerified
+      }
     });
   } catch (error) {
     return res.status(401).json({

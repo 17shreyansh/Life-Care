@@ -65,9 +65,9 @@ const Home = () => {
         <div className="container">
           <div className="row align-items-center">
             <div className="col-lg-6">
-              <h1 className="display-4 fw-bold mb-4">Trust <span className="text-gradient">S S Psychologist Life Care</span> with your mental health </h1>
-              <p className="lead mb-4">Our mission is simple: to help you feel better, get better and stay better.</p>
-              <p className="lead mb-4">We bring together self-care, support from qualified therapists and psychiatrists, as well as community access to deliver the best quality mental healthcare for your needs.</p>
+              <h1 className="display-2 font-bold mb-4 mobile-h1">Trust <span className="text-gradient">S S Psychologist Life Care</span> with your mental health </h1>
+              <p className="lead leading-relaxed mb-4">Our mission is simple: to help you feel better, get better and stay better.</p>
+              <p className="text-lg leading-relaxed mb-4 text-muted">We bring together self-care, support from qualified therapists and psychiatrists, as well as community access to deliver the best quality mental healthcare for your needs.</p>
               <div className="d-grid gap-3 d-md-flex justify-content-md-start mb-4">
                 <Link to="/register" className="btn btn-primary btn-lg px-4">Get Started</Link>
                 <Link to="/about" className="btn btn-success btn-lg px-4">Learn More</Link>
@@ -108,11 +108,9 @@ const Home = () => {
       <section className="py-5 why-section">
         <div className="container">
           <div className="text-center mb-5">
-            <h6 className="text-primary fw-bold mb-2">WHY CHOOSE US</h6>
-            <h2 className="mb-4">Why <span className="text-gradient">S S Psychologist Life Care</span></h2>
-            <div className="mx-auto" style={{ maxWidth: '700px' }}>
-              <p className="text-muted">We're committed to providing comprehensive mental health support with a focus on quality, accessibility, and personalized care.</p>
-            </div>
+            <h6 className="section-subtitle">WHY CHOOSE US</h6>
+            <h2 className="section-title mobile-h2">Why <span className="text-gradient">S S Psychologist Life Care</span></h2>
+            <p className="section-description">We're committed to providing comprehensive mental health support with a focus on quality, accessibility, and personalized care.</p>
           </div>
           
           <div className="row g-4">
@@ -122,8 +120,8 @@ const Home = () => {
                   <div className="why-icon-wrapper mb-4">
                     <i className="bi bi-grid-3x3-gap feature-icon-lg"></i>
                   </div>
-                  <h5 className="card-title mb-3">Integrated Care</h5>
-                  <p className="card-text text-muted">From self-care & therapy, to peer support & medication management, we can help with it all.</p>
+                  <h5 className="feature-title">Integrated Care</h5>
+                  <p className="feature-description">From self-care & therapy, to peer support & medication management, we can help with it all.</p>
                 </div>
               </div>
             </div>
@@ -133,8 +131,8 @@ const Home = () => {
                   <div className="why-icon-wrapper mb-4">
                     <i className="bi bi-graph-up feature-icon-lg"></i>
                   </div>
-                  <h5 className="card-title mb-3">Grounded in Science</h5>
-                  <p className="card-text text-muted">Our care options are based on scientifically proven treatments & clinically validated approaches.</p>
+                  <h5 className="feature-title">Grounded in Science</h5>
+                  <p className="feature-description">Our care options are based on scientifically proven treatments & clinically validated approaches.</p>
                 </div>
               </div>
             </div>
@@ -144,8 +142,8 @@ const Home = () => {
                   <div className="why-icon-wrapper mb-4">
                     <i className="bi bi-person-check feature-icon-lg"></i>
                   </div>
-                  <h5 className="card-title mb-3">Personalised Support</h5>
-                  <p className="card-text text-muted">Our treatment plans are tailored to your unique needs, so you can get the right care at the right time.</p>
+                  <h5 className="feature-title">Personalised Support</h5>
+                  <p className="feature-description">Our treatment plans are tailored to your unique needs, so you can get the right care at the right time.</p>
                 </div>
               </div>
             </div>
@@ -155,8 +153,8 @@ const Home = () => {
                   <div className="why-icon-wrapper mb-4">
                     <i className="bi bi-clock-history feature-icon-lg"></i>
                   </div>
-                  <h5 className="card-title mb-3">Round the Clock Support</h5>
-                  <p className="card-text text-muted">Our treatment options can be accessed from wherever you might be, all 7 days a week.</p>
+                  <h5 className="feature-title">Round the Clock Support</h5>
+                  <p className="feature-description">Our treatment options can be accessed from wherever you might be, all 7 days a week.</p>
                 </div>
               </div>
             </div>
@@ -171,11 +169,9 @@ const Home = () => {
       <section className="py-5 features-section">
         <div className="container">
           <div className="text-center mb-5">
-            <h6 className="text-primary fw-bold mb-2">OUR SERVICES</h6>
-            <h2 className="mb-4">How We Can <span className="text-gradient">Help You</span></h2>
-            <div className="mx-auto" style={{ maxWidth: '700px' }}>
-              <p className="text-muted">Our platform offers comprehensive mental health support through various services designed to meet your unique needs.</p>
-            </div>
+            <h6 className="section-subtitle">OUR SERVICES</h6>
+            <h2 className="section-title mobile-h2">How We Can <span className="text-gradient">Help You</span></h2>
+            <p className="section-description">Our platform offers comprehensive mental health support through various services designed to meet your unique needs.</p>
           </div>
           
           <div className="row g-4">
@@ -287,9 +283,9 @@ const Home = () => {
       <section className="py-5 testimonials-section">
         <div className="container">
           <div className="text-center mb-5">
-            <h6 className="text-primary fw-bold mb-2">TESTIMONIALS</h6>
-            <h2 className="mb-4">What Our <span className="text-gradient">Clients Say</span></h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
+            <h6 className="section-subtitle">TESTIMONIALS</h6>
+            <h2 className="section-title mobile-h2">What Our <span className="text-gradient">Clients Say</span></h2>
+            <p className="section-description">
               Don't just take our word for it. Here's what people who have used our platform have to say about their experience.
             </p>
           </div>
@@ -308,12 +304,12 @@ const Home = () => {
                     </div>
                     <i className="bi bi-quote fs-1 text-primary opacity-25"></i>
                   </div>
-                  <p className="mb-4">"The platform made it so easy to find the right therapist for me. The video sessions are convenient and secure. I've made significant progress with my anxiety issues."</p>
+                  <p className="testimonial-text">"The platform made it so easy to find the right therapist for me. The video sessions are convenient and secure. I've made significant progress with my anxiety issues."</p>
                   <div className="d-flex align-items-center">
                     <img src="https://placehold.co/50x50?text=SJ" className="rounded-circle me-3" alt="Client" />
                     <div>
-                      <h6 className="mb-0">Sarah Johnson</h6>
-                      <small className="text-muted">Client since 2022</small>
+                      <h6 className="testimonial-author mb-0">Sarah Johnson</h6>
+                      <small className="testimonial-role">Client since 2022</small>
                     </div>
                   </div>
                 </div>
@@ -333,12 +329,12 @@ const Home = () => {
                     </div>
                     <i className="bi bi-quote fs-1 text-primary opacity-25"></i>
                   </div>
-                  <p className="mb-4">"I was hesitant about online therapy, but it's been a game-changer for me. The counsellors are professional and genuinely care about your progress. Highly recommend!"</p>
+                  <p className="testimonial-text">"I was hesitant about online therapy, but it's been a game-changer for me. The counsellors are professional and genuinely care about your progress. Highly recommend!"</p>
                   <div className="d-flex align-items-center">
                     <img src="https://placehold.co/50x50?text=MT" className="rounded-circle me-3" alt="Client" />
                     <div>
-                      <h6 className="mb-0">Michael Thomas</h6>
-                      <small className="text-muted">Client since 2021</small>
+                      <h6 className="testimonial-author mb-0">Michael Thomas</h6>
+                      <small className="testimonial-role">Client since 2021</small>
                     </div>
                   </div>
                 </div>
@@ -358,12 +354,12 @@ const Home = () => {
                     </div>
                     <i className="bi bi-quote fs-1 text-primary opacity-25"></i>
                   </div>
-                  <p className="mb-4">"The flexibility of scheduling sessions around my busy work life has been incredible. My counsellor is amazing and I've seen real improvement in my mental health."</p>
+                  <p className="testimonial-text">"The flexibility of scheduling sessions around my busy work life has been incredible. My counsellor is amazing and I've seen real improvement in my mental health."</p>
                   <div className="d-flex align-items-center">
                     <img src="https://placehold.co/50x50?text=AP" className="rounded-circle me-3" alt="Client" />
                     <div>
-                      <h6 className="mb-0">Anita Patel</h6>
-                      <small className="text-muted">Client since 2023</small>
+                      <h6 className="testimonial-author mb-0">Anita Patel</h6>
+                      <small className="testimonial-role">Client since 2023</small>
                     </div>
                   </div>
                 </div>

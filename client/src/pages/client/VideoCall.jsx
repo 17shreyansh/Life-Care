@@ -14,37 +14,78 @@ const VideoCall = () => {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [videoPosition, setVideoPosition] = useState({ bottom: '100px', right: '24px' });
+  const [isDragging, setIsDragging] = useState(false);
+
   
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [localStream, setLocalStream] = useState(null);
   const [socket, setSocket] = useState(null);
   const [pc, setPc] = useState(null);
+  const controlsTimeoutRef = useRef(null);
 
   useEffect(() => {
     fetchAppointmentDetails();
-    
-    // Auto-hide controls after 3 seconds
-    const timer = setTimeout(() => setShowControls(false), 3000);
-    
-    return () => {
-      clearTimeout(timer);
-      cleanup();
-    };
+    return () => cleanup();
   }, [appointmentId]);
 
   // Show controls on mouse move
   useEffect(() => {
     const handleMouseMove = () => {
       setShowControls(true);
-      setTimeout(() => setShowControls(false), 3000);
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000);
     };
     
     if (isCallActive) {
       document.addEventListener('mousemove', handleMouseMove);
-      return () => document.removeEventListener('mousemove', handleMouseMove);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      };
     }
   }, [isCallActive]);
+
+  const snapToCorner = (x, y) => {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    if (x < centerX && y < centerY) {
+      return { top: '24px', left: '24px', bottom: 'auto', right: 'auto' };
+    } else if (x >= centerX && y < centerY) {
+      return { top: '24px', right: '24px', bottom: 'auto', left: 'auto' };
+    } else if (x < centerX && y >= centerY) {
+      return { bottom: '100px', left: '24px', top: 'auto', right: 'auto' };
+    } else {
+      return { bottom: '100px', right: '24px', top: 'auto', left: 'auto' };
+    }
+  };
+
+  const handleVideoMouseDown = (e) => {
+    setIsDragging(true);
+
+    const handleMouseMove = (e) => {
+      setVideoPosition({
+        position: 'absolute',
+        left: Math.max(20, Math.min(window.innerWidth - 260, e.clientX - 120)) + 'px',
+        top: Math.max(20, Math.min(window.innerHeight - 155, e.clientY - 67)) + 'px',
+        bottom: 'auto',
+        right: 'auto'
+      });
+    };
+
+    const handleMouseUp = (e) => {
+      setIsDragging(false);
+      const finalPosition = snapToCorner(e.clientX, e.clientY);
+      setVideoPosition(finalPosition);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   const cleanup = () => {
     if (socket) socket.disconnect();
@@ -138,10 +179,14 @@ const VideoCall = () => {
         await peerConnection.addIceCandidate(data.candidate);
       });
 
+
+
     } catch (err) {
       setError('Camera access failed');
     }
   };
+
+
 
   const endCall = () => {
     cleanup();
@@ -174,7 +219,7 @@ const VideoCall = () => {
   if (error) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#202124', color: 'white' }}>
       <div style={{ textAlign: 'center', padding: '24px', backgroundColor: '#3c4043', borderRadius: '8px' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+        <i className="bi bi-exclamation-triangle" style={{ fontSize: '48px', marginBottom: '16px', color: '#fbbf24' }}></i>
         <div>{error}</div>
       </div>
     </div>
@@ -203,14 +248,17 @@ const VideoCall = () => {
         opacity: showControls ? 1 : 0,
         transition: 'opacity 0.3s ease'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '8px', height: '8px', backgroundColor: '#34a853', borderRadius: '50%' }}></div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: '40px', height: '40px', backgroundColor: '#3c4043', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '12px' }}>
+            <i className="bi bi-person" style={{ color: 'white', fontSize: '18px' }}></i>
+          </div>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>
-              {appointment?.counsellor?.user?.name || appointment?.client?.name || 'Video Session'}
+            <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '2px' }}>
+              {appointment?.counsellor?.user?.name || 'Video Session'}
             </div>
-            <div style={{ fontSize: '12px', opacity: 0.7 }}>
-              {appointment && new Date(appointment.date).toLocaleDateString()} • {appointment?.startTime}
+            <div style={{ fontSize: '12px', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '6px', height: '6px', backgroundColor: '#34a853', borderRadius: '50%' }}></div>
+              {appointment?.counsellor?.specializations?.[0] || 'Mental Health Professional'}
             </div>
           </div>
         </div>
@@ -242,13 +290,14 @@ const VideoCall = () => {
             onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
             onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
           >
-            ✕
+            <i className="bi bi-x"></i>
           </button>
         </div>
       </div>
 
       {/* Video Area */}
       <div style={{ flex: 1, position: 'relative', display: 'flex' }}>
+
         {!isCallActive ? (
           <div style={{ 
             width: '100%',
@@ -270,7 +319,7 @@ const VideoCall = () => {
               fontSize: '48px',
               marginBottom: '24px'
             }}>
-              📹
+              <i className="bi bi-camera-video" style={{ color: 'white' }}></i>
             </div>
             <h2 style={{ fontSize: '24px', fontWeight: '400', marginBottom: '8px' }}>Ready to join?</h2>
             <p style={{ opacity: 0.7, marginBottom: '32px', fontSize: '14px' }}>Your camera and microphone will be ready</p>
@@ -294,13 +343,18 @@ const VideoCall = () => {
               onMouseEnter={(e) => e.target.style.backgroundColor = '#1557b0'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#1a73e8'}
             >
-              <span>📹</span> Join now
+              <i className="bi bi-camera-video me-2"></i> Join now
             </button>
           </div>
         ) : (
           <>
             {/* Main video area */}
-            <div style={{ flex: 1, position: 'relative', backgroundColor: '#000' }}>
+            <div style={{ 
+              flex: 1, 
+              position: 'relative', 
+              backgroundColor: '#000',
+
+            }}>
               <video 
                 ref={remoteVideoRef} 
                 style={{ 
@@ -334,29 +388,32 @@ const VideoCall = () => {
                     fontSize: '32px',
                     margin: '0 auto 16px'
                   }}>
-                    👤
+                    <i className="bi bi-person" style={{ color: 'white' }}></i>
                   </div>
-                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>Waiting for others to join</div>
-                  <div style={{ fontSize: '14px', opacity: 0.7 }}>Hang tight, someone will be here soon</div>
+                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>Waiting for {appointment?.counsellor?.user?.name || 'Doctor'}</div>
+                  <div style={{ fontSize: '14px', opacity: 0.7 }}>The doctor will join shortly</div>
                 </div>
               )}
             </div>
 
             {/* Local video overlay */}
-            <div style={{
-              position: 'absolute',
-              bottom: showControls ? '100px' : '24px',
-              right: window.innerWidth < 768 ? '12px' : '24px',
-              width: window.innerWidth < 768 ? '120px' : '240px',
-              height: window.innerWidth < 768 ? '90px' : '135px',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              backgroundColor: '#3c4043',
-              border: '2px solid rgba(255,255,255,0.2)',
-              transition: 'bottom 0.3s ease',
-              zIndex: 9999,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-            }}>
+            <div 
+              onMouseDown={handleVideoMouseDown}
+              style={{
+                position: 'absolute',
+                ...videoPosition,
+                width: '240px',
+                height: '135px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                backgroundColor: '#000',
+                border: '2px solid rgba(255,255,255,0.3)',
+                zIndex: 9999,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                cursor: isDragging ? 'grabbing' : 'grab',
+                userSelect: 'none',
+                transition: isDragging ? 'none' : 'all 0.3s ease'
+              }}>
               <video 
                 ref={localVideoRef} 
                 style={{ 
@@ -377,16 +434,17 @@ const VideoCall = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: '#3c4043',
+                  backgroundColor: '#000',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
                   fontSize: '24px'
                 }}>
-                  👤
+                  <i className="bi bi-person"></i>
                 </div>
               )}
+              
             </div>
           </>
         )}
@@ -408,8 +466,17 @@ const VideoCall = () => {
           border: '1px solid rgba(255,255,255,0.1)',
           opacity: showControls ? 1 : 0,
           transition: 'opacity 0.3s ease',
-          zIndex: 1000
-        }}>
+          zIndex: 1000,
+          pointerEvents: showControls ? 'auto' : 'none'
+        }}
+        onMouseEnter={() => {
+          setShowControls(true);
+          if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        }}
+        onMouseLeave={() => {
+          controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 2000);
+        }}
+        >
           <button
             onClick={toggleMute}
             style={{
@@ -424,12 +491,10 @@ const VideoCall = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'background-color 0.2s'
+              transition: 'all 0.2s'
             }}
-            onMouseEnter={(e) => !isMuted && (e.target.style.backgroundColor = 'rgba(255,255,255,0.2)')}
-            onMouseLeave={(e) => !isMuted && (e.target.style.backgroundColor = 'rgba(255,255,255,0.1)')}
           >
-            {isMuted ? '🔇' : '🎤'}
+            <i className={`bi ${isMuted ? 'bi-mic-mute' : 'bi-mic'}`}></i>
           </button>
           
           <button
@@ -446,14 +511,13 @@ const VideoCall = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'background-color 0.2s'
+              transition: 'all 0.2s'
             }}
-            onMouseEnter={(e) => !isVideoOff && (e.target.style.backgroundColor = 'rgba(255,255,255,0.2)')}
-            onMouseLeave={(e) => !isVideoOff && (e.target.style.backgroundColor = 'rgba(255,255,255,0.1)')}
           >
-            {isVideoOff ? '📷' : '📹'}
+            <i className={`bi ${isVideoOff ? 'bi-camera-video-off' : 'bi-camera-video'}`}></i>
           </button>
           
+
           <button
             onClick={endCall}
             style={{
@@ -468,12 +532,10 @@ const VideoCall = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'background-color 0.2s'
+              transition: 'all 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#d33b2c'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#ea4335'}
           >
-            📞
+            <i className="bi bi-telephone-x"></i>
           </button>
         </div>
       )}

@@ -111,7 +111,7 @@ const MyAppointments = () => {
           className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
           onClick={() => setActiveFilter('all')}
         >
-          All Appointments
+          All
         </button>
         <button 
           className={`filter-tab ${activeFilter === 'confirmed' ? 'active' : ''}`}

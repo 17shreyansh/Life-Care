@@ -466,7 +466,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   user.save({ validateBeforeSave: false });
   
   const tokenOptions = {
-    expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict'

@@ -51,14 +51,27 @@ api.interceptors.response.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401 && error.response?.data?.tokenExpired) {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
       // Try to refresh token using cookie
       try {
-        await api.post('/auth/refresh-token');
-        // Retry original request
-        return api(error.config);
+        const refreshResponse = await api.post('/auth/refresh-token');
+        if (refreshResponse.data.success) {
+          // Update user data if available
+          if (refreshResponse.data.user && window.updateAuthUser) {
+            window.updateAuthUser(refreshResponse.data.user);
+          }
+          // Retry original request
+          return api(originalRequest);
+        }
       } catch (refreshError) {
-        // Redirect to login if refresh fails
+        console.error('Token refresh failed:', refreshError);
+        // Clear any stored auth data and redirect to login
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
@@ -76,6 +89,7 @@ export const authAPI = {
   googleLogin: (idToken) => api.post('/auth/google', { idToken }),
   logout: () => api.get('/auth/logout'),
   getMe: () => api.get('/auth/me'),
+  refreshToken: () => api.post('/auth/refresh-token'),
   updateProfile: (userData) => {
     const isFormData = userData instanceof FormData;
     return api.put('/auth/updatedetails', userData, {

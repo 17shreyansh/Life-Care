@@ -43,7 +43,7 @@ const Header = () => {
           <div className="d-flex align-items-center">
             <img src={Logo} alt="Life Care Logo" className="logo-img me-1" style={{ height: '32px' }} />
             {/* <div className="sidebar-logo me-0 mobile-small">SS</div> */}
-            <span className="brand-text mobile-small">SS Psychologist Life Care</span>
+            <span className="brand-text">SS Psychologist Life Care</span>
           </div>
         </Link>
         

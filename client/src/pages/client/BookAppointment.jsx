@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import './BookAppointment.css';
 
 const BookAppointment = () => {
   const { counsellorId } = useParams();
@@ -147,135 +147,183 @@ const BookAppointment = () => {
   
   if (loading && !counsellor) {
     return (
-      <Container className="py-5 text-center">
-        <Spinner animation="border" role="status">
+      <div className="loading-container">
+        <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </Container>
+        </div>
+        <p className="mt-3">Loading counsellor details...</p>
+      </div>
     );
   }
   
   return (
-    <Container className="py-4">
-      <h2 className="mb-4">Book an Appointment</h2>
+    <div className="book-appointment-page">
+      <div className="page-header">
+        <h2>Book an Appointment</h2>
+        <p>Schedule your session with a qualified mental health professional</p>
+      </div>
       
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
+      {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
       
       {counsellor && (
-        <Row>
-          <Col md={4}>
-            <Card className="mb-4">
-              <Card.Img 
-                variant="top" 
-                src={counsellor.user?.avatar || counsellor.profileImage || 'https://via.placeholder.com/300'} 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+          <div className="counsellor-info-card">
+            {counsellor.user?.avatar ? (
+              <img 
+                src={counsellor.user.avatar} 
                 alt={counsellor.user?.name || counsellor.name}
+                className="counsellor-image"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
               />
-              <Card.Body>
-                <Card.Title>{counsellor.user?.name || counsellor.name}</Card.Title>
-                <Card.Text>
-                  <strong>Specializations:</strong> {counsellor.specializations?.join(', ')}<br />
-                  <strong>Experience:</strong> {counsellor.experience} years<br />
-                  <strong>Fee:</strong> ₹{counsellor.fees?.video || counsellor.fees} per session
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
+            ) : null}
+            <div className="counsellor-image-placeholder" style={{display: counsellor.user?.avatar ? 'none' : 'flex'}}>
+              <i className="bi bi-person-circle"></i>
+            </div>
+            
+            <div className="counsellor-detail-book">
+              <h3 className="counsellor-name">{counsellor.user?.name || counsellor.name}</h3>
+              <p className="counsellor-title">Mental Health Professional</p>
+              
+              <div className="detail-item">
+                <div className="detail-label">Specializations:</div>
+                <div className="detail-value">{counsellor.specializations?.join(', ')}</div>
+              </div>
+              <div className="detail-item">
+                <div className="detail-label">Experience:</div>
+                <div className="detail-value">{counsellor.experience} years</div>
+              </div>
+              <div className="detail-item">
+                <div className="detail-label">Languages:</div>
+                <div className="detail-value">{counsellor.languages?.join(', ')}</div>
+              </div>
+              
+              <div className="fee-highlight">
+                ₹{counsellor.fees?.video || counsellor.fees} per session
+              </div>
+            </div>
+          </div>
           
-          <Col md={8}>
-            <Card>
-              <Card.Body>
-                <Form onSubmit={handleBookAppointment}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Select Date</Form.Label>
-                    <Form.Control
-                      type="date"
-                      min={getMinDate()}
-                      value={selectedDate}
-                      onChange={handleDateChange}
-                      required
-                    />
-                  </Form.Group>
-                  
-                  {slotLoading ? (
-                    <div className="text-center my-4">
-                      <Spinner animation="border" size="sm" />
-                      <span className="ms-2">Loading available slots...</span>
+          <div className="booking-form-card">
+            <form onSubmit={handleBookAppointment}>
+              <div className="form-section">
+                <div className="section-title">
+                  <i className="bi bi-calendar3"></i>
+                  Select Date
+                </div>
+                <input
+                  type="date"
+                  className="form-control"
+                  min={getMinDate()}
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  required
+                />
+              </div>
+              
+              {slotLoading ? (
+                <div className="loading-slots">
+                  <div className="spinner-border spinner-border-sm me-2"></div>
+                  Loading available slots...
+                </div>
+              ) : (
+                selectedDate && (
+                  <div className="form-section">
+                    <div className="section-title">
+                      <i className="bi bi-clock"></i>
+                      Select Time Slot
                     </div>
-                  ) : (
-                    <>
-                      {selectedDate && (
-                        <Form.Group className="mb-3">
-                          <Form.Label>Select Time Slot</Form.Label>
-                          {availableSlots.length === 0 ? (
-                            <Alert variant="info">
-                              No slots available on this date. Please select another date.
-                            </Alert>
-                          ) : (
-                            <div className="d-flex flex-wrap gap-2">
-                              {availableSlots.map((slot, index) => (
-                                <Button
-                                  key={index}
-                                  variant={selectedSlot === slot ? "primary" : "outline-primary"}
-                                  onClick={() => setSelectedSlot(slot)}
-                                  className="mb-2"
-                                >
-                                  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                                </Button>
-                              ))}
-                            </div>
-                          )}
-                        </Form.Group>
-                      )}
-                    </>
-                  )}
-                  
-                  <Form.Group className="mb-3">
-                    <Form.Label>Session Type</Form.Label>
-                    <Form.Select
-                      value={sessionType}
-                      onChange={(e) => setSessionType(e.target.value)}
-                      required
-                    >
-                      <option value="video">Video Call</option>
-                      <option value="chat">Chat</option>
-                      <option value="in-person">In-Person</option>
-                    </Form.Select>
-                  </Form.Group>
-                  
-                  <Form.Group className="mb-3">
-                    <Form.Label>Notes (Optional)</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={3}
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Any specific concerns or topics you'd like to discuss"
-                    />
-                  </Form.Group>
-                  
-                  <Button 
-                    variant="primary" 
-                    type="submit" 
-                    disabled={loading || !selectedSlot}
-                    className="w-100"
-                  >
-                    {loading ? (
-                      <>
-                        <Spinner animation="border" size="sm" />
-                        <span className="ms-2">Processing...</span>
-                      </>
+                    {availableSlots.length === 0 ? (
+                      <div className="no-slots-message">
+                        No slots available on this date. Please select another date.
+                      </div>
                     ) : (
-                      'Book Appointment'
+                      <div className="time-slots-grid">
+                        {availableSlots.map((slot, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            className={`time-slot-btn ${selectedSlot === slot ? 'selected' : ''}`}
+                            onClick={() => setSelectedSlot(slot)}
+                          >
+                            {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                          </button>
+                        ))}
+                      </div>
                     )}
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+                  </div>
+                )
+              )}
+              
+              <div className="form-section">
+                <div className="section-title">
+                  <i className="bi bi-camera-video"></i>
+                  Session Type
+                </div>
+                <div className="session-type-options">
+                  <div 
+                    className={`session-option ${sessionType === 'video' ? 'selected' : ''}`}
+                    onClick={() => setSessionType('video')}
+                  >
+                    <i className="bi bi-camera-video"></i>
+                    <div className="session-option-title">Video Call</div>
+                    <div className="session-option-desc">Online video session</div>
+                  </div>
+                  <div 
+                    className={`session-option ${sessionType === 'chat' ? 'selected' : ''}`}
+                    onClick={() => setSessionType('chat')}
+                  >
+                    <i className="bi bi-chat-dots"></i>
+                    <div className="session-option-title">Chat</div>
+                    <div className="session-option-desc">Text-based session</div>
+                  </div>
+                  <div 
+                    className={`session-option ${sessionType === 'in-person' ? 'selected' : ''}`}
+                    onClick={() => setSessionType('in-person')}
+                  >
+                    <i className="bi bi-person"></i>
+                    <div className="session-option-title">In-Person</div>
+                    <div className="session-option-desc">Face-to-face meeting</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="form-section">
+                <div className="section-title">
+                  <i className="bi bi-journal-text"></i>
+                  Notes (Optional)
+                </div>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any specific concerns or topics you'd like to discuss"
+                />
+              </div>
+              
+              <button 
+                type="submit" 
+                disabled={loading || !selectedSlot}
+                className="book-button"
+              >
+                {loading ? (
+                  <>
+                    <div className="spinner-border spinner-border-sm me-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  'Book Appointment'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
       )}
-    </Container>
+    </div>
   );
 };
 

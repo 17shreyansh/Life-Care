@@ -34,12 +34,13 @@ import Counsellors from './pages/client/Counsellors';
 import CounsellorFinder from './pages/client/CounsellorFinder';
 import BookAppointment from './pages/client/BookAppointment';
 import MyAppointments from './pages/client/MyAppointments';
-import ChatVideo from './pages/client/ChatVideo';
+
 import ChatSession from './pages/client/ChatSession';
 import VideoCall from './pages/client/VideoCall';
 import Payments from './pages/client/Payments';
 import Feedback from './pages/client/Feedback';
 import Profile from './pages/client/Profile';
+import ClientCounsellorProfile from './pages/client/CounsellorProfile';
 
 // Counsellor Pages
 import CounsellorDashboard from './pages/counsellor/Dashboard';
@@ -97,11 +98,12 @@ function App() {
               <Route path="counsellors" element={<CounsellorFinder />} />
               <Route path="book-appointment/:counsellorId" element={<BookAppointment />} />
               <Route path="appointments" element={<MyAppointments />} />
-              <Route path="chat-video" element={<ChatVideo />} />
+
               <Route path="chat/:appointmentId" element={<ChatSession />} />
               <Route path="payments" element={<Payments />} />
               <Route path="feedback" element={<Feedback />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="counsellors/:counsellorId" element={<ClientCounsellorProfile />} />
             </Route>
           </Route>
 

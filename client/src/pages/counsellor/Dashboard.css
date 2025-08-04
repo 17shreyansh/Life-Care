@@ -146,6 +146,11 @@
 .badge {
   font-weight: 500;
   padding: 0.5em 0.75em;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Responsive Styles */

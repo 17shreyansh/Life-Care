@@ -142,12 +142,14 @@
 
 .badge-item {
   padding: 5px 10px;
-  border-radius: 50px;
+  border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
   color: white;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 5px;
 }
 

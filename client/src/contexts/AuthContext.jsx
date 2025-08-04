@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { sessionUtils } from '../utils/sessionUtils';
 
 const AuthContext = createContext();
 
@@ -12,14 +13,35 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Make setUser available globally for API interceptor
+  useEffect(() => {
+    window.updateAuthUser = setUser;
+    return () => {
+      delete window.updateAuthUser;
+    };
+  }, []);
+
   // Check if user is authenticated on initial render
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Check if session might be expired
+        if (sessionUtils.isSessionExpired()) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
         const response = await authAPI.getMe();
         setUser(response.data.data);
+        
+        // Initialize session tracking if user is authenticated
+        if (response.data.data) {
+          sessionUtils.initSessionTracking();
+        }
       } catch (error) {
         setUser(null);
+        sessionUtils.clearSession();
       } finally {
         setLoading(false);
       }
@@ -27,6 +49,43 @@ export const AuthProvider = ({ children }) => {
     
     checkAuth();
   }, []);
+
+  // Periodic token refresh (every 20 hours)
+  useEffect(() => {
+    if (!user) return;
+
+    const refreshInterval = setInterval(async () => {
+      try {
+        const response = await authAPI.getMe();
+        setUser(response.data.data);
+      } catch (error) {
+        console.error('Periodic auth check failed:', error);
+        // Don't logout on periodic check failure, let the API interceptor handle it
+      }
+    }, 20 * 60 * 60 * 1000); // 20 hours
+
+    return () => clearInterval(refreshInterval);
+  }, [user]);
+
+  // Check auth when user returns to the browser tab
+  useEffect(() => {
+    if (!user) return;
+
+    const handleVisibilityChange = async () => {
+      if (!document.hidden) {
+        try {
+          const response = await authAPI.getMe();
+          setUser(response.data.data);
+        } catch (error) {
+          console.error('Auth check on visibility change failed:', error);
+          // Let the API interceptor handle token refresh
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user]);
 
   // Register user
   const register = async (userData) => {
@@ -91,6 +150,9 @@ export const AuthProvider = ({ children }) => {
       const { user: userData } = response.data;
       setUser(userData);
       
+      // Initialize session tracking
+      sessionUtils.initSessionTracking();
+      
       // Navigate to appropriate dashboard
       if (userData.role === 'admin') {
         navigate('/admin/dashboard');
@@ -136,6 +198,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', err);
     } finally {
       setUser(null);
+      sessionUtils.clearSession();
       setLoading(false);
       navigate('/login');
     }

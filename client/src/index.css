@@ -1,3 +1,7 @@
+/* Import Typography System */
+@import './styles/typography.css';
+@import './styles/button-groups.css';
+
 :root {
   --primary-color: #2563eb;
   --primary-dark: #1d4ed8;
@@ -20,14 +24,7 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--text-color);
   background-color: var(--background-color);
-  line-height: 1.5;
 }
 
 .container {
@@ -1555,10 +1552,14 @@ body {
 
 .badge {
   padding: 5px 10px;
-  border-radius: 50px;
+  border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .experience-badge {
