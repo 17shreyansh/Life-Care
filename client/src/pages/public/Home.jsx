@@ -1,42 +1,35 @@
 import { Link } from 'react-router-dom';
 import ConditionsSection from '../../components/home/ConditionsSection';
 import HeroImage from '../../assets/woman-psychologist.jpg';
-import doc1 from '../../assets/doc1.png';
-import doc2 from '../../assets/doc2.jpg';
-import doc3 from '../../assets/doc3.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { clientAPI } from '../../services/api';
 
 const Home = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedCounsellor, setSelectedCounsellor] = useState(null);
   const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('');
-  const [bookingStep, setBookingStep] = useState(1); // 1: Select date/time, 2: Check availability, 3: Confirm
+  const [bookingStep, setBookingStep] = useState(1);
   const [isAvailable, setIsAvailable] = useState(false);
+  const [counsellors, setCounsellors] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  const counsellors = [
-    {
-      id: 1,
-      name: 'Dr. Monish Khera',
-      title: 'Counselling Psychologist',
-      description: 'Specializes in anxiety disorders and depression with over 10 years of experience.'
-    },
-    {
-      id: 2,
-      name: 'Dr. Sarah Johnson',
-      title: 'Clinical Psychologist',
-      description: 'Expert in mood disorders and cognitive behavioral therapy with 15 years of practice.'
-    },
-    {
-      id: 3,
-      name: 'Dr. Emily Rodriguez',
-      title: 'Psychiatrist',
-      description: 'Specializes in relationship counseling and stress management techniques.'
+  useEffect(() => {
+    fetchCounsellors();
+  }, []);
+
+  const fetchCounsellors = async () => {
+    try {
+      const res = await clientAPI.getCounsellors({ limit: 3 });
+      setCounsellors(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to load counsellors:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
   
-  const handleBookSession = (counsellorId) => {
-    const counsellor = counsellors.find(c => c.id === counsellorId);
+  const handleBookSession = (counsellor) => {
     setSelectedCounsellor(counsellor);
     setBookingStep(1);
     setBookingDate('');
@@ -236,88 +229,54 @@ const Home = () => {
               Our team consists of qualified and experienced mental health professionals dedicated to providing the best care.
             </p>
           </div>
-          <div className="row g-4">
-            <div className="col-md-6 col-lg-4">
-              <div className="card team-card card-gradient-blue border-0 shadow-sm">
-                <div className="team-image-wrapper">
-                  <img 
-                    // src="https://placehold.co/400x400?text=Dr.+Monish" 
-                    src={doc1}
-                    alt="Dr. Monish Khera" 
-                    className="card-img-top"
-                    style={{ 
-                      objectPosition: 'top center' /* Adjust as needed */
-                    }}
-                  />
-                </div>
-                <div className="card-body text-center p-4">
-                  <h5 className="card-title mb-1">Dr. Monish Khera</h5>
-                  <p className="text-primary mb-3">Counselling Psychologist</p>
-                  <p className="card-text text-muted mb-3">Specializes in anxiety disorders and depression with over 10 years of experience.</p>
-                  <div className="team-social mb-3">
-                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
+          {!loading && counsellors.length > 0 ? (
+            <div className="row g-4">
+              {counsellors.map((counsellor, index) => (
+                <div className="col-md-6 col-lg-4" key={counsellor._id}>
+                  <div className={`card team-card ${index === 0 ? 'card-gradient-blue' : index === 1 ? 'card-gradient-green' : 'card-gradient-purple'} border-0 shadow-sm`}>
+                    <div className="team-image-wrapper">
+                      <img 
+                        src={counsellor.user?.avatar || 'https://via.placeholder.com/400'}
+                        alt={counsellor.user?.name}
+                        className="card-img-top"
+                        style={{ 
+                          height: '300px',
+                          objectFit: 'cover',
+                          objectPosition: 'top center'
+                        }}
+                      />
+                    </div>
+                    <div className="card-body text-center p-4">
+                      <h5 className="card-title mb-1">{counsellor.user?.name}</h5>
+                      <p className="text-primary mb-3">{counsellor.specializations?.join(', ') || 'Mental Health Professional'}</p>
+                      <p className="card-text text-muted mb-3">
+                        {counsellor.experience ? `${counsellor.experience} years of experience` : 'Experienced professional'} • 
+                        Rating: {counsellor.ratings?.average?.toFixed(1) || 'New'}/5
+                      </p>
+                      <div className="team-social mb-3">
+                        <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
+                        <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
+                        <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
+                      </div>
+                      <button className="btn btn-primary w-100" onClick={() => handleBookSession(counsellor)}>Book Session</button>
+                    </div>
                   </div>
-                  <button className="btn btn-primary w-100" onClick={() => handleBookSession(1)}>Book Session</button>
                 </div>
-              </div>
+              ))}
             </div>
-            <div className="col-md-6 col-lg-4">
-              <div className="card team-card card-gradient-green border-0 shadow-sm">
-                <div className="team-image-wrapper">
-                  <img 
-                    // src="https://placehold.co/400x400?text=Dr.+Sarah" 
-                    src={doc2}
-                    alt="Dr. Sarah Johnson" 
-                    className="card-img-top"
-                    style={{ 
-                      objectPosition: 'top center' /* Adjust as needed */
-                    }}
-                  />
+          ) : (
+            <div className="text-center py-5">
+              {loading ? (
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
-                <div className="card-body text-center p-4">
-                  <h5 className="card-title mb-1">Dr. Sarah Johnson</h5>
-                  <p className="text-primary mb-3">Clinical Psychologist</p>
-                  <p className="card-text text-muted mb-3">Expert in mood disorders and cognitive behavioral therapy with 15 years of practice.</p>
-                  <div className="team-social mb-3">
-                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
-                  </div>
-                  <button className="btn btn-primary w-100" onClick={() => handleBookSession(2)}>Book Session</button>
-                </div>
-              </div>
+              ) : (
+                <p className="text-muted">No counsellors available at the moment.</p>
+              )}
             </div>
-            <div className="col-md-6 col-lg-4">
-              <div className="card team-card card-gradient-purple border-0 shadow-sm">
-                <div className="team-image-wrapper">
-                  <img 
-                    // src="https://placehold.co/400x400?text=Dr.+Emily" 
-                    src={doc3}
-                    alt="Dr. Emily Rodriguez" 
-                    className="card-img-top"
-                    style={{ 
-                      objectPosition: 'top center' /* Adjust as needed */
-                    }}
-                  />
-                </div>
-                <div className="card-body text-center p-4">
-                  <h5 className="card-title mb-1">Dr. Emily Rodriguez</h5>
-                  <p className="text-primary mb-3">Psychiatrist</p>
-                  <p className="card-text text-muted mb-3">Specializes in relationship counseling and stress management techniques.</p>
-                  <div className="team-social mb-3">
-                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
-                  </div>
-                  <button className="btn btn-primary w-100" onClick={() => handleBookSession(3)}>Book Session</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
           <div className="text-center mt-4">
-            <Link to="/client/counsellors" className="btn btn-primary">
+            <Link to="/consilar" className="btn btn-primary">
               <i className="bi bi-people me-2"></i>View All Counsellors
             </Link>
           </div>
@@ -514,7 +473,7 @@ const Home = () => {
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="modal-header">
-              <h4>Book a Session with {selectedCounsellor?.name}</h4>
+              <h4>Book a Session with {selectedCounsellor?.user?.name}</h4>
               <button className="close-btn" onClick={handleCloseModal}>
                 <i className="bi bi-x-lg"></i>
               </button>

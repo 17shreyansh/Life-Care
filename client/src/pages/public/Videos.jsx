@@ -1,77 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { clientAPI } from '../../services/api';
 
 const Videos = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [counsellors, setCounsellors] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Mock video data
-  const videos = [
-    {
-      id: 1,
-      title: 'Understanding Anxiety Disorders',
-      thumbnail: 'https://placehold.co/600x400?text=Anxiety+Video',
-      category: 'anxiety',
-      duration: '12:45',
-      views: '1.2k',
-      date: '2023-05-15',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-    },
-    {
-      id: 2,
-      title: 'Coping with Depression',
-      thumbnail: 'https://placehold.co/600x400?text=Depression+Video',
-      category: 'depression',
-      duration: '15:20',
-      views: '2.5k',
-      date: '2023-05-10',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-    },
-    {
-      id: 3,
-      title: 'Mindfulness Meditation Techniques',
-      thumbnail: 'https://placehold.co/600x400?text=Mindfulness+Video',
-      category: 'mindfulness',
-      duration: '08:30',
-      views: '3.7k',
-      date: '2023-05-05',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-    },
-    {
-      id: 4,
-      title: 'Stress Management Strategies',
-      thumbnail: 'https://placehold.co/600x400?text=Stress+Video',
-      category: 'stress',
-      duration: '10:15',
-      views: '1.8k',
-      date: '2023-04-28',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-    },
-    {
-      id: 5,
-      title: 'Building Healthy Relationships',
-      thumbnail: 'https://placehold.co/600x400?text=Relationships+Video',
-      category: 'relationships',
-      duration: '14:50',
-      views: '2.1k',
-      date: '2023-04-20',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-    },
-    {
-      id: 6,
-      title: 'Overcoming Social Anxiety',
-      thumbnail: 'https://placehold.co/600x400?text=Social+Anxiety+Video',
-      category: 'anxiety',
-      duration: '11:25',
-      views: '1.5k',
-      date: '2023-04-15',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-    }
-  ];
+  useEffect(() => {
+    fetchCounsellors();
+  }, []);
 
-  const filteredVideos = activeFilter === 'all' 
-    ? videos 
-    : videos.filter(video => video.category === activeFilter);
+  const fetchCounsellors = async () => {
+    try {
+      const res = await clientAPI.getCounsellors({ limit: 6 });
+      setCounsellors(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to load counsellors:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const videos = [];
+
+  const filteredVideos = [];
 
   const openVideoModal = (video) => {
     setSelectedVideo(video);
@@ -209,6 +164,51 @@ const Videos = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Our Counsellors Section */}
+        <div className="counsellors-section mt-5">
+          <div className="text-center mb-4">
+            <h2 className="mb-3">Learn from Our <span className="text-gradient">Expert Counsellors</span></h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
+              Connect with our qualified mental health professionals who create these educational videos.
+            </p>
+          </div>
+          {!loading && counsellors.length > 0 && (
+            <div className="row g-4">
+              {counsellors.slice(0, 4).map(counsellor => (
+                <div className="col-md-6 col-lg-3" key={counsellor._id}>
+                  <div className="card counsellor-card h-100 border-0 shadow-sm">
+                    <div className="counsellor-image-wrapper">
+                      <img 
+                        src={counsellor.user?.avatar || 'https://via.placeholder.com/300'} 
+                        alt={counsellor.user?.name}
+                        className="card-img-top"
+                        style={{ height: '180px', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div className="card-body p-3">
+                      <h6 className="card-title mb-2">{counsellor.user?.name}</h6>
+                      <p className="text-muted small mb-2">
+                        {counsellor.specializations?.join(', ') || 'General Counselling'}
+                      </p>
+                      <p className="text-muted small mb-2">
+                        {counsellor.experience || 'N/A'} years experience
+                      </p>
+                      <Link to="/consilar" className="btn btn-primary btn-sm w-100">
+                        Book Session
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="text-center mt-4">
+            <Link to="/consilar" className="btn btn-outline-primary">
+              View All Counsellors
+            </Link>
           </div>
         </div>
       </div>

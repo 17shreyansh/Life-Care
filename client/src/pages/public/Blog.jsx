@@ -1,84 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { cmsAPI, clientAPI } from '../../services/api';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [counsellors, setCounsellors] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Mock blog data
-  const blogPosts = [
-    {
-      id: 1,
-      title: 'Understanding Anxiety: Causes, Symptoms, and Treatment',
-      excerpt: 'Anxiety disorders are the most common mental health concern in many countries. Learn about the causes, symptoms, and effective treatment options.',
-      image: 'https://placehold.co/600x400?text=Anxiety',
-      category: 'anxiety',
-      author: 'Dr. Sarah Johnson',
-      date: '2023-06-10',
-      readTime: '5 min read'
-    },
-    {
-      id: 2,
-      title: 'The Connection Between Physical Exercise and Mental Health',
-      excerpt: 'Regular physical activity can have a profound positive impact on depression, anxiety, and more. Discover how exercise benefits your mental health.',
-      image: 'https://placehold.co/600x400?text=Exercise',
-      category: 'wellness',
-      author: 'Dr. Michael Chen',
-      date: '2023-06-05',
-      readTime: '4 min read'
-    },
-    {
-      id: 3,
-      title: 'Mindfulness Meditation: A Beginner\'s Guide',
-      excerpt: 'Mindfulness meditation is a mental training practice that teaches you to slow down racing thoughts, let go of negativity, and calm your mind and body.',
-      image: 'https://placehold.co/600x400?text=Mindfulness',
-      category: 'mindfulness',
-      author: 'Dr. Emily Rodriguez',
-      date: '2023-05-28',
-      readTime: '6 min read'
-    },
-    {
-      id: 4,
-      title: 'Recognizing the Signs of Depression',
-      excerpt: 'Depression is more than just feeling sad. Learn to recognize the signs and symptoms of depression and when to seek professional help.',
-      image: 'https://placehold.co/600x400?text=Depression',
-      category: 'depression',
-      author: 'Dr. Sarah Johnson',
-      date: '2023-05-20',
-      readTime: '7 min read'
-    },
-    {
-      id: 5,
-      title: 'Building Resilience: How to Bounce Back from Adversity',
-      excerpt: 'Resilience is the ability to adapt and bounce back when things don\'t go as planned. Learn strategies to build your resilience in challenging times.',
-      image: 'https://placehold.co/600x400?text=Resilience',
-      category: 'wellness',
-      author: 'Dr. Michael Chen',
-      date: '2023-05-15',
-      readTime: '5 min read'
-    },
-    {
-      id: 6,
-      title: 'The Importance of Setting Boundaries in Relationships',
-      excerpt: 'Healthy boundaries are essential for maintaining balanced relationships. Discover how to set and maintain boundaries for better mental health.',
-      image: 'https://placehold.co/600x400?text=Boundaries',
-      category: 'relationships',
-      author: 'Dr. Emily Rodriguez',
-      date: '2023-05-08',
-      readTime: '6 min read'
+  useEffect(() => {
+    fetchCounsellors();
+  }, []);
+
+  const fetchCounsellors = async () => {
+    try {
+      const res = await clientAPI.getCounsellors({ limit: 6 });
+      setCounsellors(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to load counsellors:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  // Filter posts by search term and category
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === 'all' || post.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const blogPosts = [];
 
-  // Get unique categories
-  const categories = ['all', ...new Set(blogPosts.map(post => post.category))];
+  const filteredPosts = [];
+  const categories = ['all'];
 
   return (
     <div className="blog-page py-5">
@@ -163,6 +111,54 @@ const Blog = () => {
             </button>
           </div>
         )}
+
+        {/* Our Counsellors Section */}
+        <div className="counsellors-section mt-5">
+          <div className="text-center mb-4">
+            <h2 className="mb-3">Meet Our <span className="text-gradient">Expert Counsellors</span></h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
+              Our team of qualified mental health professionals are here to support you on your journey.
+            </p>
+          </div>
+          {!loading && counsellors.length > 0 && (
+            <div className="row g-4 mb-5">
+              {counsellors.slice(0, 3).map(counsellor => (
+                <div className="col-md-4" key={counsellor._id}>
+                  <div className="card counsellor-card h-100 border-0 shadow-sm">
+                    <div className="counsellor-image-wrapper">
+                      <img 
+                        src={counsellor.user?.avatar || 'https://via.placeholder.com/300'} 
+                        alt={counsellor.user?.name}
+                        className="card-img-top"
+                        style={{ height: '200px', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div className="card-body p-4">
+                      <h5 className="card-title mb-2">{counsellor.user?.name}</h5>
+                      <p className="text-muted mb-2">
+                        <strong>Specializations:</strong> {counsellors.specializations?.join(', ') || 'General Counselling'}
+                      </p>
+                      <p className="text-muted mb-2">
+                        <strong>Experience:</strong> {counsellor.experience || 'N/A'} years
+                      </p>
+                      <p className="text-muted mb-3">
+                        <strong>Rating:</strong> ⭐ {counsellor.ratings?.average?.toFixed(1) || 'New'}
+                      </p>
+                      <Link to="/consilar" className="btn btn-primary btn-sm">
+                        Book Session
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="text-center">
+            <Link to="/consilar" className="btn btn-outline-primary">
+              View All Counsellors
+            </Link>
+          </div>
+        </div>
 
         {/* Newsletter Section */}
         <div className="newsletter-section rounded-4 p-5 mt-5">

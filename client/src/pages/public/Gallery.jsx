@@ -1,80 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { clientAPI } from '../../services/api';
 
 const Gallery = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [counsellors, setCounsellors] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Mock gallery data
-  const galleryItems = [
-    {
-      id: 1,
-      image: 'https://placehold.co/600x400?text=Office+Space',
-      title: 'Our Office Space',
-      category: 'office',
-      description: 'Our modern and comfortable office space designed for client comfort.'
-    },
-    {
-      id: 2,
-      image: 'https://placehold.co/600x400?text=Team+Meeting',
-      title: 'Team Meeting',
-      category: 'team',
-      description: 'Our team of professionals during our weekly meeting.'
-    },
-    {
-      id: 3,
-      image: 'https://placehold.co/600x400?text=Therapy+Room',
-      title: 'Therapy Room',
-      category: 'office',
-      description: 'A peaceful therapy room where clients can feel safe and comfortable.'
-    },
-    {
-      id: 4,
-      image: 'https://placehold.co/600x400?text=Workshop',
-      title: 'Mental Health Workshop',
-      category: 'events',
-      description: 'Our recent workshop on stress management techniques.'
-    },
-    {
-      id: 5,
-      image: 'https://placehold.co/600x400?text=Team+Building',
-      title: 'Team Building Activity',
-      category: 'team',
-      description: 'Our team during a team building retreat.'
-    },
-    {
-      id: 6,
-      image: 'https://placehold.co/600x400?text=Webinar',
-      title: 'Online Webinar',
-      category: 'events',
-      description: 'Screenshot from our popular webinar on anxiety management.'
-    },
-    {
-      id: 7,
-      image: 'https://placehold.co/600x400?text=Reception',
-      title: 'Reception Area',
-      category: 'office',
-      description: 'Our welcoming reception area where clients check in.'
-    },
-    {
-      id: 8,
-      image: 'https://placehold.co/600x400?text=Conference',
-      title: 'Annual Conference',
-      category: 'events',
-      description: 'Our team at the annual mental health professionals conference.'
-    },
-    {
-      id: 9,
-      image: 'https://placehold.co/600x400?text=Team+Photo',
-      title: 'Our Team',
-      category: 'team',
-      description: 'Group photo of our dedicated team of mental health professionals.'
-    }
-  ];
+  useEffect(() => {
+    fetchCounsellors();
+  }, []);
 
-  const filteredItems = activeFilter === 'all' 
-    ? galleryItems 
-    : galleryItems.filter(item => item.category === activeFilter);
+  const fetchCounsellors = async () => {
+    try {
+      const res = await clientAPI.getCounsellors({ limit: 8 });
+      setCounsellors(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to load counsellors:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const galleryItems = [];
+
+  const filteredItems = [];
 
   const openLightbox = (item) => {
     setSelectedImage(item);
@@ -144,6 +96,52 @@ const Gallery = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Our Team Gallery Section */}
+        <div className="team-gallery-section mt-5">
+          <div className="text-center mb-4">
+            <h2 className="mb-3">Meet Our <span className="text-gradient">Professional Team</span></h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
+              Get to know our dedicated team of mental health professionals who are here to support you.
+            </p>
+          </div>
+          {!loading && counsellors.length > 0 && (
+            <div className="row gallery-grid">
+              {counsellors.map(counsellor => (
+                <div className="col-md-6 col-lg-3" key={counsellor._id}>
+                  <div className="gallery-item team-member" onClick={() => openLightbox({
+                    id: `counsellor-${counsellor._id}`,
+                    image: counsellor.user?.avatar || 'https://via.placeholder.com/400',
+                    title: counsellor.user?.name,
+                    category: 'team',
+                    description: `${counsellor.user?.name} - ${counsellor.specializations?.join(', ') || 'Mental Health Professional'} with ${counsellor.experience || 'N/A'} years of experience. Rating: ${counsellor.ratings?.average?.toFixed(1) || 'New'}/5`
+                  })}>
+                    <img 
+                      src={counsellor.user?.avatar || 'https://via.placeholder.com/400'} 
+                      alt={counsellor.user?.name}
+                      style={{ height: '250px', objectFit: 'cover' }}
+                    />
+                    <div className="gallery-overlay">
+                      <div className="gallery-info">
+                        <h5>{counsellor.user?.name}</h5>
+                        <div className="gallery-category">team</div>
+                        <p className="small mt-2">{counsellor.specializations?.join(', ') || 'Mental Health Professional'}</p>
+                      </div>
+                    </div>
+                    <button className="gallery-zoom">
+                      <i className="bi bi-zoom-in"></i>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="text-center mt-4">
+            <Link to="/consilar" className="btn btn-primary">
+              Book a Session with Our Team
+            </Link>
+          </div>
         </div>
       </div>
 
