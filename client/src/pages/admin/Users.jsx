@@ -188,6 +188,7 @@ const Users = () => {
                   >
                     <option value="">All Roles</option>
                     <option value="client">Client</option>
+                    <option value="counsellor">Counsellor</option>
                     <option value="admin">Admin</option>
                   </Form.Select>
                 </Form.Group>
@@ -447,7 +448,7 @@ const Users = () => {
                     >
                       <option value="client">Client</option>
                       {selectedUser.role === 'counsellor' && <option value="counsellor">Counsellor</option>}
-                      <option value="admin">Admin</option>
+                      {selectedUser.role === 'admin' && <option value="admin">Admin</option>}
                     </Form.Select>
                   </Form.Group>
                 </Col>

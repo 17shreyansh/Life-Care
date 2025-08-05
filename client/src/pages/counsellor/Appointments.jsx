@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { counsellorAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import AddPostSessionAttachment from '../../components/counsellor/AddPostSessionAttachment';
 import './Appointments.css';
 import '../client/Dashboard.css';
 
 const Appointments = () => {
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -12,6 +15,8 @@ const Appointments = () => {
     startDate: '',
     endDate: ''
   });
+  const [showAttachmentModal, setShowAttachmentModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -63,6 +68,22 @@ const Appointments = () => {
       case 'no-show': return 'status-no-show';
       default: return '';
     }
+  };
+
+  const handleAddAttachment = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowAttachmentModal(true);
+  };
+
+  const handleAttachmentSuccess = () => {
+    // Refresh appointments or show success message
+    fetchAppointments();
+  };
+
+  const canAddAttachment = (appointment) => {
+    return appointment.status === 'completed' && 
+           user && 
+           ['psychiatrist', 'psychologist'].includes(user.counsellorType);
   };
 
   return (
@@ -197,6 +218,15 @@ const Appointments = () => {
                       )}
                     </>
                   )}
+                  {canAddAttachment(appointment) && (
+                    <button 
+                      className="btn-action btn-success-action"
+                      onClick={() => handleAddAttachment(appointment)}
+                      title="Add post-session material"
+                    >
+                      <i className="bi bi-plus-circle"></i> Add Material
+                    </button>
+                  )}
                   <Link to={`/counsellor/appointments/${appointment._id}`} className="btn-action btn-secondary-action">
                     <i className="bi bi-eye"></i> View Details
                   </Link>
@@ -222,6 +252,14 @@ const Appointments = () => {
           </div>
         )}
       </div>
+      
+      {/* Post-Session Attachment Modal */}
+      <AddPostSessionAttachment
+        show={showAttachmentModal}
+        onHide={() => setShowAttachmentModal(false)}
+        appointment={selectedAppointment}
+        onSuccess={handleAttachmentSuccess}
+      />
     </div>
   );
 };

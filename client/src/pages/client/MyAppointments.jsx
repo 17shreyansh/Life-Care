@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { clientAPI } from '../../services/api';
+import InvoiceDownload from '../../components/client/InvoiceDownload';
 import './MyAppointments.css';
 
 const MyAppointments = () => {
@@ -17,7 +18,17 @@ const MyAppointments = () => {
     try {
       setLoading(true);
       const response = await clientAPI.getAppointments();
-      setAppointments(response.data.data || []);
+      
+      // Update expired appointments status on frontend
+      const now = new Date();
+      const updatedAppointments = (response.data.data || []).map(apt => {
+        if (apt.status === 'confirmed' && new Date(apt.date) < now) {
+          return { ...apt, status: 'completed' };
+        }
+        return apt;
+      });
+      
+      setAppointments(updatedAppointments);
     } catch (error) {
       console.error('Error fetching appointments:', error);
       setError('Failed to load appointments');
@@ -200,7 +211,7 @@ const MyAppointments = () => {
                       >
                         <i className="bi bi-star"></i> Feedback
                       </Link>
-                      <div className="btn-action" style={{visibility: 'hidden'}}></div>
+                      <InvoiceDownload appointment={appointment} />
                     </>
                   )}
                   {appointment.status === 'pending' && (

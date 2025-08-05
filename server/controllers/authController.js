@@ -28,47 +28,111 @@ exports.register = async (req, res, next) => {
       return next(new ErrorResponse('Email already registered', 400));
     }
 
+    // Only allow client registration through public registration
+    if (role && role !== 'client') {
+      return next(new ErrorResponse('Public registration is only available for clients. Mental health professionals should contact administrators.', 400));
+    }
+
     // Create user
-    const user = await User.create({
+    const userData = {
       name,
       email,
       password,
-      role: role === 'counsellor' ? 'counsellor' : 'client', // Only allow client or counsellor roles
+      role: 'client', // Force role to client for public registration
       phone
-    });
-
-    // Generate OTP for verification
-    let otp;
-    if (process.env.NODE_ENV === 'development' && process.env.MOCK_OTP === 'true') {
-      otp = mockOTP(user);
-      await user.save({ validateBeforeSave: false });
-    } else {
-      try {
-        otp = await generateAndSendOTP(user, email);
-      } catch (error) {
-        return next(new ErrorResponse('Failed to send OTP. Please try again.', 500));
-      }
-    }
-
-    // Send token response (without OTP in production)
-    const responseData = {
-      success: true,
-      message: 'Registration successful. Please verify your email.',
-      requireOTP: true
     };
 
-    // Include OTP in development mode for testing
-    if (process.env.NODE_ENV === 'development' && process.env.MOCK_OTP === 'true') {
-      responseData.otp = otp;
+    const user = await User.create(userData);
+
+    // Generate email verification token
+    const verificationToken = user.getEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Create verification URL
+    const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+
+    // Send verification email
+    const message = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">Welcome to SS Psychologist Life Care!</h2>
+        <p>Hello ${user.name},</p>
+        <p>Thank you for registering with us. Please verify your email address by clicking the button below:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${verificationUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email</a>
+        </div>
+        <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #2563eb;">${verificationUrl}</p>
+        <p><strong>Note:</strong> You can start using your account immediately, but some features may be limited until you verify your email.</p>
+        <p>This link will expire in 24 hours.</p>
+        <p>Best regards,<br>SS Psychologist Life Care Team</p>
+      </div>
+    `;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Verify Your Email - SS Psychologist Life Care',
+        html: message
+      });
+    } catch (error) {
+      console.error('Email verification error:', error);
+      // Don't fail registration if email fails
     }
 
-    res.status(201).json(responseData);
+    // Send success response - user can login immediately
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful! A verification link has been sent to your email. You can start using your account now.',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        isEmailVerified: user.isEmailVerified
+      }
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Verify OTP
+// @desc    Verify email
+// @route   GET /api/auth/verify-email/:token
+// @access  Public
+exports.verifyEmail = async (req, res, next) => {
+  try {
+    // Get hashed token
+    const emailVerificationToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+    const user = await User.findOne({
+      emailVerificationToken,
+      emailVerificationExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return next(new ErrorResponse('Invalid or expired verification token', 400));
+    }
+
+    // Mark email as verified
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpire = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully!'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Verify OTP (kept for backward compatibility)
 // @route   POST /api/auth/verify-otp
 // @access  Public
 exports.verifyOTP = async (req, res, next) => {
@@ -170,34 +234,8 @@ exports.login = async (req, res, next) => {
       return next(new ErrorResponse('Invalid credentials', 401));
     }
 
-    // Check if email is verified
-    if (!user.isEmailVerified) {
-      // Generate OTP for verification
-      let otp;
-      if (process.env.NODE_ENV === 'development' && process.env.MOCK_OTP === 'true') {
-        otp = mockOTP(user);
-        await user.save({ validateBeforeSave: false });
-      } else {
-        try {
-          otp = await generateAndSendOTP(user, email);
-        } catch (error) {
-          return next(new ErrorResponse('Failed to send OTP. Please try again.', 500));
-        }
-      }
-
-      const responseData = {
-        success: false,
-        message: 'Email not verified. Please verify your email.',
-        requireOTP: true
-      };
-
-      // Include OTP in development mode for testing
-      if (process.env.NODE_ENV === 'development' && process.env.MOCK_OTP === 'true') {
-        responseData.otp = otp;
-      }
-
-      return res.status(401).json(responseData);
-    }
+    // Allow login even if email is not verified
+    // Just show a warning message in the response
 
     // Update last login
     user.lastLogin = Date.now();
@@ -490,6 +528,7 @@ const sendTokenResponse = (user, statusCode, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        counsellorType: user.counsellorType,
         avatar: user.avatar,
         phone: user.phone,
         isEmailVerified: user.isEmailVerified

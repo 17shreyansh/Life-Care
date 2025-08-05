@@ -33,6 +33,9 @@ const storage = multer.diskStorage({
       case 'documents':
         uploadPath = 'uploads/documents/';
         break;
+      case 'file':
+        uploadPath = 'uploads/attachments/';
+        break;
       default:
         uploadPath = 'uploads/misc/';
     }
@@ -59,6 +62,19 @@ const fileFilter = (req, file, cb) => {
       return cb(null, true);
     } else {
       cb(new Error('Only video files are allowed'));
+    }
+  } else if (file.fieldname === 'file') {
+    // For post-session attachments - allow images and documents
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
+    const allowedMimes = /image\/(jpeg|jpg|png|gif)|application\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)/;
+    
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedMimes.test(file.mimetype);
+    
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image and document files are allowed'));
     }
   } else {
     const allowedTypes = /jpeg|jpg|png|gif/;
@@ -106,5 +122,6 @@ module.exports = {
   uploadBlogContent: upload.fields([
     { name: 'featuredImage', maxCount: 1 },
     { name: 'blogImage', maxCount: 5 }
-  ])
+  ]),
+  uploadAttachment: upload.single('file')
 };

@@ -5,7 +5,7 @@ import { authAPI, uploadAPI } from '../../services/api';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('personal');
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -57,9 +57,7 @@ const Profile = () => {
         address: formData.address
       };
       
-      await authAPI.updateProfile(updateData);
-      // Update the user context
-      updateUser({ ...user, ...updateData });
+      await updateProfile(updateData);
       alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -150,7 +148,7 @@ const Profile = () => {
                 <Col md={3} className="text-center">
                   <div className="avatar-upload-section" style={{ position: 'relative', display: 'inline-block' }}>
                     <img
-                      src={formData.avatar || '/default-avatar.png'}
+                      src={formData.avatar || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjZTllY2VmIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjNmM3NTdkIi8+CjxwYXRoIGQ9Ik0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NXYzMEgzMHoiIGZpbGw9IiM2Yzc1N2QiLz4KPHN2Zz4K'}
                       alt="Profile"
                       className="avatar-image"
                       style={{ 
@@ -168,7 +166,8 @@ const Profile = () => {
                         const file = e.target.files[0];
                         if (file) {
                           try {
-                            await handleAvatarUpload(file);
+                            const avatarUrl = await handleAvatarUpload(file);
+                            setFormData(prev => ({ ...prev, avatar: avatarUrl }));
                           } catch (error) {
                             alert('Failed to upload image');
                           }
@@ -248,6 +247,7 @@ const Profile = () => {
                         value={formData.gender}
                         onChange={handleChange}
                       >
+                        <option value="">Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>

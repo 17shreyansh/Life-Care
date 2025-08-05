@@ -1,6 +1,16 @@
 /* Profile Page Styles */
+:root {
+  --primary-color: #2563eb;
+  --primary-dark: #1d4ed8;
+  --secondary-color: #10b981;
+  --text-color: #1f2937;
+  --light-text: #6b7280;
+  --border-radius: 8px;
+}
+
 .profile-page {
   padding-bottom: 30px;
+  min-height: 100vh;
 }
 
 .profile-header {
@@ -34,7 +44,7 @@
   content: '';
   position: absolute;
   height: calc(100% - 10px);
-  width: 200px;
+  width: calc(50% - 5px);
   top: 5px;
   left: 5px;
   background-color: var(--primary-color);
@@ -44,21 +54,22 @@
 }
 
 .nav-tabs.security-active::before {
-  transform: translateX(200px);
+  transform: translateX(calc(100% + 5px));
 }
 
 .nav-tabs .nav-link {
   color: var(--light-text);
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: var(--border-radius);
   transition: all 0.3s ease;
   position: relative;
   z-index: 1;
-  flex: 1 0 auto;
-  min-width: 150px;
+  flex: 1;
   text-align: center;
   white-space: nowrap;
+  font-weight: 500;
+  background: none;
 }
 
 .nav-tabs .nav-link.active {

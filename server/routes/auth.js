@@ -9,6 +9,7 @@ const {
   forgotPassword,
   resetPassword,
   verifyOTP,
+  verifyEmail,
   resendOTP,
   logout
 } = require('../controllers/authController');
@@ -19,9 +20,10 @@ const { uploadAvatar } = require('../middleware/upload');
 const router = express.Router();
 
 // Public routes
-router.post('/register', register);
+router.post('/register', register); // Public registration for clients only
 router.post('/login', login);
 router.post('/google', googleLogin);
+router.get('/verify-email/:token', verifyEmail);
 router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);
 router.post('/forgotpassword', forgotPassword);

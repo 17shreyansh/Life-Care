@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
-  // Register user
+  // Register user (Clients only - Counsellors must be created by admin)
   const register = async (userData) => {
     try {
       setLoading(true);

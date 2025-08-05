@@ -190,6 +190,16 @@ exports.getAppointments = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const startIndex = (page - 1) * limit;
     
+    // Update expired appointments to completed
+    const now = new Date();
+    await Appointment.updateMany({
+      counsellor: counsellor._id,
+      status: 'confirmed',
+      date: { $lt: now }
+    }, {
+      status: 'completed'
+    });
+
     // Execute query
     const appointments = await Appointment.find(query)
       .populate('client', 'name email avatar')
@@ -385,17 +395,25 @@ exports.getEarnings = async (req, res, next) => {
       return next(new ErrorResponse('Counsellor profile not found', 404));
     }
     
-    // Get completed appointments with payment status completed
+    // Get completed appointments with payment details
     const completedAppointments = await Appointment.find({
       counsellor: counsellor._id,
       status: 'completed',
       'payment.status': 'completed'
-    });
+    }).populate('client', 'name').sort({ date: -1 });
     
-    // Calculate earnings
+    // Calculate earnings from payment breakdown
     let totalEarnings = 0;
+    let totalPlatformFees = 0;
+    
     completedAppointments.forEach(appointment => {
-      totalEarnings += appointment.amount;
+      if (appointment.payment.counsellorAmount) {
+        totalEarnings += appointment.payment.counsellorAmount;
+        totalPlatformFees += appointment.payment.platformFee;
+      } else {
+        // Fallback for old appointments without breakdown
+        totalEarnings += appointment.amount;
+      }
     });
     
     // Get withdrawal requests
@@ -427,6 +445,8 @@ exports.getEarnings = async (req, res, next) => {
       success: true,
       data: {
         earnings: counsellor.earnings,
+        totalPlatformFees,
+        completedAppointments: completedAppointments.slice(0, 10), // Recent 10
         withdrawalRequests
       }
     });

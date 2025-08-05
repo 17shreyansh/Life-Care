@@ -83,6 +83,7 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
+  verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
   verifyOTP: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
   resendOTP: (email) => api.post('/auth/resend-otp', { email }),
   login: (credentials) => api.post('/auth/login', credentials),
@@ -111,7 +112,10 @@ export const clientAPI = {
   getAppointment: (id) => api.get(`/client/appointments/${id}`),
   cancelAppointment: (id, reason) => api.put(`/client/appointments/${id}/cancel`, { reason }),
   submitReview: (reviewData) => api.post('/client/reviews', reviewData),
-  getReviews: () => api.get('/client/reviews')
+  getReviews: () => api.get('/client/reviews'),
+  getPostSessionAttachments: (page = 1, limit = 10) => api.get(`/post-session/client/attachments?page=${page}&limit=${limit}`),
+  getPostSessionAttachment: (id) => api.get(`/post-session/client/attachments/${id}`),
+  getPaymentHistory: (params) => api.get('/payments/client/history', { params })
 };
 
 // Appointment API
@@ -134,7 +138,14 @@ export const counsellorAPI = {
   getEarnings: () => api.get('/counsellor/earnings'),
   requestWithdrawal: (withdrawalData) => api.post('/counsellor/withdrawals', withdrawalData),
   createBlog: (blogData) => api.post('/counsellor/blogs', blogData),
-  uploadVideo: (videoData) => api.post('/counsellor/videos', videoData)
+  uploadVideo: (videoData) => api.post('/counsellor/videos', videoData),
+  createPostSessionAttachment: (appointmentId, attachmentData) => api.post(`/post-session/appointments/${appointmentId}/attachments`, attachmentData),
+  getAppointmentAttachments: (appointmentId) => api.get(`/post-session/appointments/${appointmentId}/attachments`),
+  updatePostSessionAttachment: (id, attachmentData) => api.put(`/post-session/attachments/${id}`, attachmentData),
+  deletePostSessionAttachment: (id) => api.delete(`/post-session/attachments/${id}`),
+  uploadFile: (formData) => api.post('/upload/attachment', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
 };
 
 // Admin API
@@ -218,6 +229,19 @@ export const cmsAPI = {
   getVideoCategories: () => api.get('/cms/videos/categories'),
   getGallery: (params) => api.get('/cms/gallery', { params }),
   getGalleryCategories: () => api.get('/cms/gallery/categories')
+};
+
+// Payment API
+export const paymentAPI = {
+  getSettings: () => api.get('/payments/admin/settings'),
+  updateSettings: (settings) => api.put('/payments/admin/settings', settings),
+  calculatePayment: (data) => api.post('/payments/calculate', data),
+  processPayment: (data) => api.post('/payments/process', data),
+  downloadInvoice: (appointmentId) => {
+    return api.get(`/payments/invoice/${appointmentId}`, {
+      responseType: 'blob'
+    });
+  }
 };
 
 // Upload API

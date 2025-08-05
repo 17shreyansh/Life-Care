@@ -10,17 +10,14 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     role: 'client'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showOTPModal, setShowOTPModal] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -53,8 +50,12 @@ const Register = () => {
       const { confirmPassword, ...registerData } = formData;
       const result = await register(registerData);
       
-      // Show OTP modal instead of navigating
-      setShowOTPModal(true);
+      // Registration successful - redirect to login or dashboard
+      if (result.success) {
+        setError('');
+        // Auto-login the user
+        await login({ email: formData.email, password: formData.password });
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -62,51 +63,7 @@ const Register = () => {
     }
   };
 
-  const handleOTPSubmit = async (e) => {
-    e.preventDefault();
-    setOtpError('');
-    
-    if (!otp || otp.length !== 6) {
-      return setOtpError('Please enter a valid 6-digit OTP');
-    }
 
-    setOtpLoading(true);
-
-    try {
-      await authAPI.verifyOTP(formData.email, otp);
-      
-      // Auto-login after successful verification
-      await login({ email: formData.email, password: formData.password });
-      
-      // Navigate based on role
-      if (formData.role === 'counsellor') {
-        navigate('/counsellor/dashboard');
-      } else {
-        navigate('/client/dashboard');
-      }
-    } catch (err) {
-      setOtpError(err.response?.data?.message || 'OTP verification failed');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    setResendLoading(true);
-    setOtpError('');
-
-    try {
-      await authAPI.resendOTP(formData.email);
-      setOtpError('');
-      // Show success message
-      setOtpError('OTP sent successfully!');
-      setTimeout(() => setOtpError(''), 3000);
-    } catch (err) {
-      setOtpError(err.response?.data?.message || 'Failed to resend OTP');
-    } finally {
-      setResendLoading(false);
-    }
-  };
 
   return (
     <div className="auth-page">
@@ -174,6 +131,21 @@ const Register = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
+                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="Enter your phone number"
+                    pattern="[0-9]{10}"
+                  />
+                  <Form.Text className="text-muted">
+                    Enter 10-digit phone number (optional)
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
                   <Form.Label>Password</Form.Label>
                   <div className="position-relative">
                     <Form.Control
@@ -224,7 +196,13 @@ const Register = () => {
                   </div>
                 </Form.Group>
 
-
+                <div className="mb-3">
+                  <div className="alert alert-info">
+                    <i className="bi bi-info-circle me-2"></i>
+                    <strong>Client Registration:</strong> This registration is for clients seeking mental health support. 
+                    A verification link will be sent to your email, but you can start using your account immediately.
+                  </div>
+                </div>
 
                 <Button
                   variant="primary"
@@ -243,82 +221,7 @@ const Register = () => {
           </div>
         </div>
       
-      <Modal 
-        show={showOTPModal} 
-        onHide={() => setShowOTPModal(false)}
-        centered
-        backdrop="static"
-        keyboard={false}
-        className="otp-modal"
-        style={{ zIndex: 10010 }}
-      >
-        <div className="otp-modal-overlay">
-          <Modal.Header closeButton>
-            <Modal.Title>Verify Your Email</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <div className="text-center mb-4">
-              <div className="otp-icon mb-3">
-                <i className="bi bi-envelope-check" style={{ fontSize: '3rem', color: '#2563eb' }}></i>
-              </div>
-              <h5>Enter Verification Code</h5>
-              <p className="text-muted">
-                We've sent a 6-digit verification code to<br/>
-                <strong>{formData.email}</strong>
-              </p>
-            </div>
 
-            {otpError && (
-              <Alert variant={otpError.includes('successfully') ? 'success' : 'danger'}>
-                {otpError}
-              </Alert>
-            )}
-
-            <Form onSubmit={handleOTPSubmit}>
-              <Form.Group className="mb-4">
-                <Form.Control
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="Enter 6-digit OTP"
-                  className="text-center otp-input"
-                  style={{ fontSize: '1.5rem', letterSpacing: '0.5rem', padding: '15px' }}
-                  maxLength={6}
-                  required
-                />
-              </Form.Group>
-
-              <Button
-                variant="primary"
-                type="submit"
-                className="w-100 mb-3"
-                disabled={otpLoading || otp.length !== 6}
-              >
-                {otpLoading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                    Verifying...
-                  </>
-                ) : (
-                  'Verify & Continue'
-                )}
-              </Button>
-
-              <div className="text-center">
-                <p className="mb-2">Didn't receive the code?</p>
-                <Button
-                  variant="link"
-                  onClick={handleResendOTP}
-                  disabled={resendLoading}
-                  className="p-0"
-                >
-                  {resendLoading ? 'Sending...' : 'Resend OTP'}
-                </Button>
-              </div>
-            </Form>
-          </Modal.Body>
-        </div>
-      </Modal>
     </div>
   );
 };

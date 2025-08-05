@@ -70,6 +70,8 @@ app.use('/api/client', require('./routes/client'));
 app.use('/api/counsellor', require('./routes/counsellor'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/cms', require('./routes/cms'));
+app.use('/api/post-session', require('./routes/postSession'));
+app.use('/api/payments', require('./routes/payments'));
 
 // Socket.IO for video calls
 const rooms = new Map();

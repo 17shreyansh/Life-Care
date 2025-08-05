@@ -35,6 +35,13 @@ const UserSchema = new mongoose.Schema({
     enum: ['client', 'counsellor', 'admin'],
     default: 'client'
   },
+  counsellorType: {
+    type: String,
+    enum: ['counsellor', 'psychiatrist', 'psychologist'],
+    required: function() {
+      return this.role === 'counsellor';
+    }
+  },
   avatar: {
     type: String,
     default: 'default-avatar.jpg'
@@ -66,6 +73,8 @@ const UserSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+  emailVerificationToken: String,
+  emailVerificationExpire: Date,
   lastLogin: Date,
   active: {
     type: Boolean,
@@ -164,6 +173,23 @@ UserSchema.methods.verifyOTP = function(enteredOTP) {
   }
   
   return false;
+};
+
+// Generate email verification token
+UserSchema.methods.getEmailVerificationToken = function() {
+  // Generate token
+  const verificationToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to emailVerificationToken field
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  // Set expire (24 hours)
+  this.emailVerificationExpire = Date.now() + 24 * 60 * 60 * 1000;
+
+  return verificationToken;
 };
 
 module.exports = mongoose.model('User', UserSchema);

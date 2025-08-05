@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Form, Button, Row, Col, Alert, Tab, Nav } from 'react-bootstrap';
 import { adminAPI } from '../../services/api';
+import PaymentSettings from '../../components/admin/PaymentSettings';
 import '../client/Dashboard.css';
 import './AdminStyles.css';
 
@@ -131,6 +132,12 @@ const Settings = () => {
                 onClick={() => setActiveTab('payment')}
               >
                 <i className="bi bi-credit-card"></i>Payment
+              </button>
+              <button 
+                className={`content-tab ${activeTab === 'margins' ? 'active' : ''}`}
+                onClick={() => setActiveTab('margins')}
+              >
+                <i className="bi bi-percent"></i>Margins
               </button>
               <button 
                 className={`content-tab ${activeTab === 'features' ? 'active' : ''}`}
@@ -298,6 +305,11 @@ const Settings = () => {
                   <i className="bi bi-info-circle me-2"></i>
                   <strong>Note:</strong> SMTP password should be configured via environment variables for security.
                 </div>
+              </Tab.Pane>
+
+              {/* Margins Settings */}
+              <Tab.Pane eventKey="margins">
+                <PaymentSettings />
               </Tab.Pane>
 
               {/* Payment Settings */}

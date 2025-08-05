@@ -52,7 +52,12 @@ const appointmentSchema = new mongoose.Schema({
       default: 'pending'
     },
     method: String,
-    timestamp: Date
+    timestamp: Date,
+    totalAmount: Number,
+    platformFee: Number,
+    counsellorAmount: Number,
+    marginPercentage: Number,
+    invoiceNumber: String
   },
   cancellation: {
     reason: String,

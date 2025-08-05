@@ -99,6 +99,11 @@ exports.createUser = async (req, res, next) => {
   try {
     const { name, email, password, role } = req.body;
     
+    // Only allow creating client and counsellor accounts
+    if (role && !['client', 'counsellor'].includes(role)) {
+      return next(new ErrorResponse('Only client and counsellor accounts can be created', 400));
+    }
+    
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -110,7 +115,7 @@ exports.createUser = async (req, res, next) => {
       name,
       email,
       password,
-      role,
+      role: role || 'client', // Default to client if no role specified
       isEmailVerified: true // Admin-created users are automatically verified
     });
     

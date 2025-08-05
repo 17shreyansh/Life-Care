@@ -27,6 +27,7 @@ import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import VerifyOTP from './pages/auth/VerifyOTP';
+import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Client Pages
 import ClientDashboard from './pages/client/Dashboard';
@@ -41,6 +42,7 @@ import Payments from './pages/client/Payments';
 import Feedback from './pages/client/Feedback';
 import Profile from './pages/client/Profile';
 import ClientCounsellorProfile from './pages/client/CounsellorProfile';
+import PostSessionMaterials from './pages/client/PostSessionMaterials';
 
 // Counsellor Pages
 import CounsellorDashboard from './pages/counsellor/Dashboard';
@@ -79,7 +81,8 @@ function App() {
           
           {/* Auth Routes */}
           <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
+          <Route path="register" element={<Register />} /> {/* Public registration for clients only */}
+          <Route path="verify-email/:token" element={<VerifyEmail />} />
           <Route path="verify-otp" element={<VerifyOTP />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password/:resetToken" element={<ResetPassword />} />
@@ -98,7 +101,7 @@ function App() {
               <Route path="counsellors" element={<CounsellorFinder />} />
               <Route path="book-appointment/:counsellorId" element={<BookAppointment />} />
               <Route path="appointments" element={<MyAppointments />} />
-
+              <Route path="attachments" element={<PostSessionMaterials />} />
               <Route path="chat/:appointmentId" element={<ChatSession />} />
               <Route path="payments" element={<Payments />} />
               <Route path="feedback" element={<Feedback />} />

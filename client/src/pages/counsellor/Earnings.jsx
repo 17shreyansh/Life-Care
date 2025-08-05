@@ -10,6 +10,8 @@ const Earnings = () => {
     pending: 0
   });
   const [withdrawalRequests, setWithdrawalRequests] = useState([]);
+  const [completedAppointments, setCompletedAppointments] = useState([]);
+  const [totalPlatformFees, setTotalPlatformFees] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
@@ -27,6 +29,8 @@ const Earnings = () => {
       const response = await counsellorAPI.getEarnings();
       setEarnings(response.data.data.earnings);
       setWithdrawalRequests(response.data.data.withdrawalRequests);
+      setCompletedAppointments(response.data.data.completedAppointments || []);
+      setTotalPlatformFees(response.data.data.totalPlatformFees || 0);
     } catch (error) {
       console.error('Error fetching earnings:', error);
     } finally {
@@ -119,7 +123,7 @@ const Earnings = () => {
       </div>
       
       <Row className="g-4 mb-4">
-        <Col md={4}>
+        <Col md={3}>
           <Card className="stat-card">
             <Card.Body className="">
               <div className="d-flex align-items-center mb-3">
@@ -128,7 +132,7 @@ const Earnings = () => {
                 </div>
                 <div>
                   <h5 className="mb-0">Total Earnings</h5>
-                  <small className="text-muted">Lifetime earnings</small>
+                  <small className="text-muted">After platform fees</small>
                 </div>
               </div>
               <h2 className="stat-value">{formatCurrency(earnings.total)}</h2>
@@ -136,7 +140,24 @@ const Earnings = () => {
           </Card>
         </Col>
         
-        <Col md={4}>
+        <Col md={3}>
+          <Card className="stat-card">
+            <Card.Body className="">
+              <div className="d-flex align-items-center mb-3">
+                <div className="stat-icon">
+                  <i className="bi bi-percent"></i>
+                </div>
+                <div>
+                  <h5 className="mb-0">Platform Fees</h5>
+                  <small className="text-muted">Total deducted</small>
+                </div>
+              </div>
+              <h2 className="stat-value">{formatCurrency(totalPlatformFees)}</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3}>
           <Card className="stat-card">
             <Card.Body className="">
               <div className="d-flex align-items-center mb-3">
@@ -153,7 +174,7 @@ const Earnings = () => {
           </Card>
         </Col>
         
-        <Col md={4}>
+        <Col md={3}>
           <Card className="stat-card">
             <Card.Body className="">
               <div className="d-flex align-items-center mb-3">
@@ -171,14 +192,61 @@ const Earnings = () => {
         </Col>
       </Row>
       
-      <Card className="earnings-card">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <div className="d-flex align-items-center">
-            <div className="card-icon">
-              <i className="bi bi-cash-stack"></i>
-            </div>
-            <h5 className="mb-0">Withdrawal Requests</h5>
-          </div>
+      <Row className="g-4 mb-4">
+        <Col md={6}>
+          <Card className="earnings-card">
+            <Card.Header>
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-calendar-check"></i>
+                </div>
+                <h5 className="mb-0">Recent Sessions</h5>
+              </div>
+            </Card.Header>
+            <Card.Body className="p-0">
+              {completedAppointments.length > 0 ? (
+                <div className="table-responsive">
+                  <table className="earnings-table">
+                    <thead>
+                      <tr>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Fee</th>
+                        <th>Earned</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {completedAppointments.map((appointment) => (
+                        <tr key={appointment._id}>
+                          <td>{appointment.client?.name || 'N/A'}</td>
+                          <td>{formatDate(appointment.date)}</td>
+                          <td>₹{appointment.payment?.totalAmount?.toFixed(2) || appointment.amount?.toFixed(2)}</td>
+                          <td>₹{appointment.payment?.platformFee?.toFixed(2) || '0.00'}</td>
+                          <td><strong>₹{appointment.payment?.counsellorAmount?.toFixed(2) || appointment.amount?.toFixed(2)}</strong></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <p className="text-muted">No completed sessions yet.</p>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={6}>
+          <Card className="earnings-card">
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <div className="card-icon">
+                  <i className="bi bi-cash-stack"></i>
+                </div>
+                <h5 className="mb-0">Withdrawal Requests</h5>
+              </div>
           <Button 
             className="withdraw-button"
             onClick={() => setShowWithdrawModal(true)}
@@ -251,8 +319,10 @@ const Earnings = () => {
               </Button>
             </div>
           )}
-        </Card.Body>
-      </Card>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
       
       {/* Withdraw Modal */}
       <Modal show={showWithdrawModal} onHide={() => setShowWithdrawModal(false)}>

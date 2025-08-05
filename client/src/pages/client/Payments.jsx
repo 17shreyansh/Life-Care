@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Spinner, Alert } from 'react-bootstrap';
-import api from '../../services/api';
+import { clientAPI, paymentAPI } from '../../services/api';
 import './Payments.css';
 
 const Payments = () => {
@@ -12,24 +12,52 @@ const Payments = () => {
     fetchPayments();
   }, []);
 
+  const handleDownloadInvoice = async (appointmentId) => {
+    try {
+      const response = await paymentAPI.downloadInvoice(appointmentId);
+      
+      // Create blob and download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get invoice number from payment data if available
+      const payment = payments.find(p => p.id === appointmentId);
+      const filename = payment?.invoiceNumber ? 
+        `invoice-${payment.invoiceNumber}.pdf` : 
+        `invoice-${appointmentId.slice(-8)}.pdf`;
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      setError('Failed to download invoice. Please try again.');
+    }
+  };
+
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/client/appointments?status=completed');
+      const res = await clientAPI.getPaymentHistory();
       const completedAppointments = res.data.data.map(apt => ({
         id: apt._id,
         date: apt.date,
         counsellor: apt.counsellor?.user?.name || 'Unknown',
-        amount: apt.amount,
+        amount: apt.payment?.totalAmount || apt.amount,
+        platformFee: apt.payment?.platformFee || 0,
+        invoiceNumber: apt.payment?.invoiceNumber,
         status: apt.payment?.status === 'completed' ? 'Paid' : 
                 apt.payment?.status === 'refunded' ? 'Refunded' : 'Pending',
         sessionType: apt.sessionType === 'video' ? 'Video Call' : 
                     apt.sessionType === 'chat' ? 'Chat Session' : 'In-Person'
       }));
       setPayments(completedAppointments);
-      setLoading(false);
     } catch (err) {
       setError('Failed to load payment history');
+    } finally {
       setLoading(false);
     }
   };
@@ -143,7 +171,7 @@ const Payments = () => {
               ) : (
                 payments.map(payment => (
                   <tr key={payment.id}>
-                    <td>{payment.id.slice(-8)}</td>
+                    <td>{payment.invoiceNumber || payment.id.slice(-8)}</td>
                     <td>{new Date(payment.date).toLocaleDateString()}</td>
                     <td>{payment.counsellor}</td>
                     <td>{payment.sessionType}</td>
@@ -159,7 +187,11 @@ const Payments = () => {
                       </span>
                     </td>
                     <td>
-                      <button className="download-button">
+                      <button 
+                        className="download-button"
+                        onClick={() => handleDownloadInvoice(payment.id)}
+                        disabled={payment.status !== 'Paid'}
+                      >
                         <i className="bi bi-download"></i> Invoice
                       </button>
                     </td>

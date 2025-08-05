@@ -311,6 +311,17 @@ input[type="date"]:focus {
   transform: translateY(-2px);
 }
 
+.btn-success-action {
+  background-color: #10b981;
+  color: white;
+  border: none;
+}
+
+.btn-success-action:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

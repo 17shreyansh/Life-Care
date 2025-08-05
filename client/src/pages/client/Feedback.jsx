@@ -20,6 +20,10 @@ const Feedback = () => {
     fetchReviews();
   }, []);
 
+  // Debug logging
+  console.log('Completed appointments:', completedAppointments);
+  console.log('Reviews:', reviews);
+
   useEffect(() => {
     if (appointmentId && completedAppointments.length > 0) {
       const appointment = completedAppointments.find(app => app._id === appointmentId);
@@ -31,7 +35,8 @@ const Feedback = () => {
 
   const fetchCompletedAppointments = async () => {
     try {
-      const response = await clientAPI.getAppointments({ status: 'completed' });
+      const response = await clientAPI.getAppointments();
+      console.log('API Response for appointments:', response.data);
       setCompletedAppointments(response.data.data || []);
     } catch (error) {
       console.error('Error fetching completed appointments:', error);
@@ -110,19 +115,51 @@ const Feedback = () => {
             <h5 className="mb-0">Leave Feedback</h5>
           </div>
           <div className="feedback-card-body">
-            {selectedAppointment ? (
-              <div className="session-info">
-                <h6 className="session-title">
-                  Session with {selectedAppointment.counsellor?.user?.name || 'Counsellor'}
-                </h6>
-                <div className="session-date">
-                  <i className="bi bi-calendar"></i>
-                  <span>{new Date(selectedAppointment.date).toLocaleDateString()}</span>
-                </div>
+            {!selectedAppointment ? (
+              <div className="session-selection">
+                <h6>Select a Session to Review</h6>
+                <p className="text-muted mb-3">Choose from your completed sessions below:</p>
+                {completedAppointments.length > 0 ? (
+                  <div className="session-options">
+                    {completedAppointments.map(appointment => (
+                      <div 
+                        key={appointment._id}
+                        className="session-option"
+                        onClick={() => handleSelectAppointment(appointment)}
+                      >
+                        <div className="session-option-info">
+                          <strong>{appointment.counsellor?.user?.name || 'Counsellor'}</strong>
+                          <span className="session-date">{new Date(appointment.date).toLocaleDateString()}</span>
+                          <small className="text-muted">Status: {appointment.status}</small>
+                        </div>
+                        <i className="bi bi-chevron-right"></i>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">No appointments found. Book an appointment first.</p>
+                )}
               </div>
             ) : (
-              <div className="session-info">
-                <p className="text-muted">Please select a completed session to leave feedback.</p>
+              <div className="session-info selected">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 className="session-title">
+                      Session with {selectedAppointment.counsellor?.user?.name || 'Counsellor'}
+                    </h6>
+                    <div className="session-date">
+                      <i className="bi bi-calendar"></i>
+                      <span>{new Date(selectedAppointment.date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => setSelectedAppointment(null)}
+                  >
+                    Change Session
+                  </button>
+                </div>
               </div>
             )}
             
@@ -188,7 +225,7 @@ const Feedback = () => {
             <p className="success-text">Your feedback helps us improve our services and provide better mental health support.</p>
             <div className="success-actions">
               <button 
-                className="back-button"
+                className="back-button me-2"
                 onClick={() => {
                   setSubmitted(false);
                   setSelectedAppointment(null);

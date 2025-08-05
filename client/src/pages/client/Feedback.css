@@ -56,6 +56,71 @@
   margin-bottom: 20px;
 }
 
+.session-selection {
+  margin-bottom: 20px;
+}
+
+.session-selection h6 {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.session-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-option {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  padding: 12px 15px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.session-option:hover {
+  border-color: var(--primary-color);
+  background-color: rgba(37, 99, 235, 0.02);
+  transform: translateY(-1px);
+}
+
+.session-option-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.session-option-info strong {
+  color: var(--text-color);
+  margin-bottom: 2px;
+}
+
+.session-option .session-date {
+  color: var(--light-text);
+  font-size: 0.85rem;
+}
+
+.session-info.selected {
+  border: 1px solid var(--primary-color);
+}
+
+.session-option.has-review {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.session-option.has-review:hover {
+  transform: none;
+  border-color: rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
 .session-title {
   font-weight: 600;
   margin-bottom: 5px;
@@ -190,6 +255,13 @@
   max-width: 400px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.success-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .back-button {

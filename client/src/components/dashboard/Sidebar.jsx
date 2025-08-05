@@ -33,7 +33,7 @@ const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
           { path: '/client/dashboard', icon: 'bi-speedometer2', label: 'Dashboard' },
           { path: '/client/counsellors', icon: 'bi-people', label: 'Find Counsellors' },
           { path: '/client/appointments', icon: 'bi-calendar-check', label: 'My Appointments' },
-
+          { path: '/client/attachments', icon: 'bi-file-earmark-medical', label: 'Session Materials' },
           { path: '/client/payments', icon: 'bi-credit-card', label: 'Payments' },
           { path: '/client/feedback', icon: 'bi-star', label: 'Feedback' },
           { path: '/client/profile', icon: 'bi-person', label: 'Profile' }

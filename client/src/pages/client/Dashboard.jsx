@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Card, Button } from 'react-bootstrap';
+import { Row, Col, Card, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { clientAPI } from '../../services/api';
+import PostSessionAttachments from '../../components/client/PostSessionAttachments';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
     upcomingAppointments: [],
     totalAppointments: 0,
-    completedAppointments: 0
+    completedAppointments: 0,
+    recentAttachments: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -27,10 +29,20 @@ const Dashboard = () => {
         // Fetch completed appointments count
         const completedRes = await clientAPI.getAppointments({ status: 'completed' });
         
+        // Fetch recent post-session attachments
+        let recentAttachments = [];
+        try {
+          const attachmentsRes = await clientAPI.getPostSessionAttachments(1, 3);
+          recentAttachments = attachmentsRes.data.data;
+        } catch (error) {
+          console.log('No attachments found or error fetching attachments');
+        }
+        
         setStats({
           upcomingAppointments: upcomingRes.data.data.slice(0, 3), // Show only 3 upcoming appointments
           totalAppointments: allRes.data.pagination.total,
-          completedAppointments: completedRes.data.pagination.total
+          completedAppointments: completedRes.data.pagination.total,
+          recentAttachments
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -91,13 +103,13 @@ const Dashboard = () => {
           <Card className="stat-card">
             <Card.Body className="d-flex align-items-center p-3">
               <div className="stat-icon">
-                <i className="bi bi-people"></i>
+                <i className="bi bi-file-earmark-medical"></i>
               </div>
               <div className="stat-content">
-                <h5 className="stat-title">Find Counsellors</h5>
-                <p className="stat-subtitle">Connect with professionals</p>
+                <h5 className="stat-title">Session Materials</h5>
+                <h2 className="stat-value">{stats.recentAttachments.length}</h2>
               </div>
-              <Link to="/client/counsellors" className="stat-link">
+              <Link to="/client/attachments" className="stat-link">
                 <i className="bi bi-arrow-right"></i>
               </Link>
             </Card.Body>
@@ -195,13 +207,13 @@ const Dashboard = () => {
                     <small>Find available counsellors</small>
                   </div>
                 </Link>
-                <Link to="/client/chat-video" className="action-button secondary">
+                <Link to="/client/attachments" className="action-button secondary">
                   <div className="action-icon">
-                    <i className="bi bi-camera-video"></i>
+                    <i className="bi bi-file-earmark-medical"></i>
                   </div>
                   <div className="action-text">
-                    <span>Join Video Session</span>
-                    <small>Connect with your counsellor</small>
+                    <span>Session Materials</span>
+                    <small>View prescriptions & resources</small>
                   </div>
                 </Link>
                 <Link to="/client/profile" className="action-button tertiary">
@@ -252,6 +264,48 @@ const Dashboard = () => {
               </div>
             </Card.Body>
           </Card>
+          
+          {stats.recentAttachments.length > 0 && (
+            <Card className="dashboard-card">
+              <Card.Header>
+                <div className="d-flex align-items-center justify-content-between">
+                  <div className="d-flex align-items-center">
+                    <div className="card-icon">
+                      <i className="bi bi-file-earmark-medical"></i>
+                    </div>
+                    <h5 className="mb-0">Recent Session Materials</h5>
+                  </div>
+                  <Link to="/client/attachments" className="btn btn-outline-primary btn-sm">
+                    View All
+                  </Link>
+                </div>
+              </Card.Header>
+              <Card.Body className="p-0">
+                <div className="attachment-preview-list">
+                  {stats.recentAttachments.map((attachment) => (
+                    <div key={attachment._id} className="attachment-preview-item">
+                      <div className="attachment-preview-content">
+                        <div className="attachment-preview-info">
+                          <h6 className="attachment-preview-title">{attachment.title}</h6>
+                          <div className="attachment-preview-meta">
+                            <Badge bg="secondary" className="me-2">{attachment.category}</Badge>
+                            <small className="text-muted">
+                              From: {attachment.counsellor.name} ({attachment.counsellor.counsellorType})
+                            </small>
+                          </div>
+                        </div>
+                        <div className="attachment-preview-date">
+                          <small className="text-muted">
+                            {new Date(attachment.createdAt).toLocaleDateString()}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card.Body>
+            </Card>
+          )}
         </Col>
       </Row>
     </div>

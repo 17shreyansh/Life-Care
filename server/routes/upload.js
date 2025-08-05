@@ -10,7 +10,8 @@ const {
   uploadVideo,
   uploadDocuments,
   uploadGalleryImages,
-  uploadBlogContent
+  uploadBlogContent,
+  uploadAttachment
 } = require('../middleware/upload');
 
 const router = express.Router();
@@ -172,6 +173,21 @@ router.post('/blog-content', uploadBlogContent, (req, res) => {
   res.json({
     success: true,
     data: result
+  });
+});
+
+// Post-session attachment upload
+router.post('/attachment', uploadAttachment, (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'No file uploaded'
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: generateResponse(req.file)
   });
 });
 
