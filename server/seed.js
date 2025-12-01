@@ -29,7 +29,7 @@ const createTestData = async () => {
     // Create admin user
     const adminUser = await User.create({
       name: 'Admin User',
-      email: 'admin@example.com',
+      email: 'admin@plcc.in',
       password: 'password123',
       role: 'admin',
       isEmailVerified: true,
