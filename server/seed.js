@@ -9,7 +9,7 @@ const Blog = require('./models/Blog');
 dotenv.config();
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/lifecare')
+mongoose.connect(process.env.MONGO_URI )
 .then(() => console.log('MongoDB Connected'))
 .catch(err => {
   console.log('MongoDB Connection Error:', err);
@@ -52,6 +52,7 @@ const createTestData = async () => {
       email: 'counsellor@example.com',
       password: 'password123',
       role: 'counsellor',
+      counsellorType: 'psychologist',
       isEmailVerified: true,
       active: true
     });
