@@ -29,8 +29,11 @@ const Consilar = () => {
   const fetchCounsellors = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/client/counsellors?limit=20');
-      setCounsellors(res.data.data);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/cms/counsellors`);
+      const data = await res.json();
+      if (data.success) {
+        setCounsellors(data.data);
+      }
       setLoading(false);
     } catch (err) {
       setError('Failed to load counsellors');
@@ -40,7 +43,7 @@ const Consilar = () => {
 
   const handleBookNow = (counsellor) => {
     if (!isAuthenticated) {
-      navigate('/auth/login');
+      navigate('/login');
       return;
     }
     setSelectedCounsellor(counsellor);

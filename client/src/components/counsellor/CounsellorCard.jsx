@@ -7,7 +7,17 @@ const CounsellorCard = ({ counsellor }) => {
   const navigate = useNavigate();
   const isLoggedIn = localStorage.getItem('token') !== null;
   
+  const handleCardClick = () => {
+    if (!isLoggedIn) {
+      navigate('/login', { state: { from: window.location.pathname } });
+    }
+  };
+  
   const handleBookNow = () => {
+    if (!isLoggedIn) {
+      navigate('/login', { state: { from: window.location.pathname } });
+      return;
+    }
     setShowModal(true);
   };
   
@@ -28,7 +38,7 @@ const CounsellorCard = ({ counsellor }) => {
 
   return (
     <>
-      <div className="profile-card">
+      <div className="profile-card" onClick={handleCardClick} style={{ cursor: isLoggedIn ? 'default' : 'pointer' }}>
         <div className="profile-image-container">
           <img 
             src={counsellor.photo} 
@@ -62,9 +72,12 @@ const CounsellorCard = ({ counsellor }) => {
           
           <button 
             className="book-now-btn"
-            onClick={handleBookNow}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleBookNow();
+            }}
           >
-            Book Now
+            {isLoggedIn ? 'Book Now' : 'Login to Book'}
           </button>
         </div>
       </div>

@@ -7,7 +7,8 @@ const {
   getVideo,
   getVideoCategories,
   getGallery,
-  getGalleryCategories
+  getGalleryCategories,
+  getPublicCounsellors
 } = require('../controllers/cmsController');
 
 const { optionalAuth } = require('../middleware/auth');
@@ -30,5 +31,8 @@ router.get('/videos/:id', getVideo);
 // Gallery routes
 router.get('/gallery', getGallery);
 router.get('/gallery/categories', getGalleryCategories);
+
+// Public counsellors route
+router.get('/counsellors', getPublicCounsellors);
 
 module.exports = router;

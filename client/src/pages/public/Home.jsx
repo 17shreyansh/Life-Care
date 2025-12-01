@@ -20,8 +20,11 @@ const Home = () => {
 
   const fetchCounsellors = async () => {
     try {
-      const res = await clientAPI.getCounsellors({ limit: 3 });
-      setCounsellors(res.data.data || []);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/cms/counsellors`);
+      const data = await res.json();
+      if (data.success) {
+        setCounsellors(data.data.slice(0, 3));
+      }
     } catch (err) {
       console.error('Failed to load counsellors:', err);
     } finally {

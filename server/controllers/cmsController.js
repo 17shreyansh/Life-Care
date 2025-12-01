@@ -1,6 +1,7 @@
 const Blog = require('../models/Blog');
 const Video = require('../models/Video');
 const GalleryImage = require('../models/GalleryImage');
+const Counsellor = require('../models/Counsellor');
 const ErrorResponse = require('../utils/errorResponse');
 
 // @desc    Get all published blogs
@@ -275,6 +276,29 @@ exports.getGalleryCategories = async (req, res, next) => {
       success: true,
       count: categories.length,
       data: categories
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get public counsellors
+// @route   GET /api/cms/counsellors
+// @access  Public
+exports.getPublicCounsellors = async (req, res, next) => {
+  try {
+    const Counsellor = require('../models/Counsellor');
+    
+    const counsellors = await Counsellor.find({ isVerified: true, active: true })
+      .populate('user', 'name email avatar')
+      .select('user specializations experience fees ratings languages bio')
+      .sort({ 'ratings.average': -1 })
+      .limit(20);
+    
+    res.status(200).json({
+      success: true,
+      count: counsellors.length,
+      data: counsellors
     });
   } catch (error) {
     next(error);

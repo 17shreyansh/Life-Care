@@ -80,13 +80,28 @@ const Counsellors = () => {
   ];
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
+    fetchCounsellors();
+  }, []);
+
+  const fetchCounsellors = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/cms/counsellors`);
+      const data = await res.json();
+      if (data.success) {
+        setCounsellors(data.data);
+        setFilteredCounsellors(data.data);
+      } else {
+        setCounsellors(mockCounsellors);
+        setFilteredCounsellors(mockCounsellors);
+      }
+    } catch (error) {
+      console.error('Error fetching counsellors:', error);
       setCounsellors(mockCounsellors);
       setFilteredCounsellors(mockCounsellors);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -232,8 +247,8 @@ const Counsellors = () => {
               <div key={counsellor.id} className="counsellor-card">
                 <div className="counsellor-header">
                   <img 
-                    src={counsellor.photo} 
-                    alt={counsellor.name} 
+                    src={counsellor.user?.avatar || counsellor.photo || 'https://placehold.co/300x300?text=Avatar'} 
+                    alt={counsellor.user?.name || counsellor.name} 
                     className="counsellor-photo"
                   />
                   <div className="counsellor-badges">
@@ -249,43 +264,43 @@ const Counsellors = () => {
                 </div>
                 
                 <div className="counsellor-content">
-                  <h3 className="counsellor-name">{counsellor.name}</h3>
-                  <p className="counsellor-title">{counsellor.specialization}</p>
+                  <h3 className="counsellor-name">{counsellor.user?.name || counsellor.name}</h3>
+                  <p className="counsellor-title">{counsellor.specializations?.[0] || counsellor.specialization}</p>
                   
                   <div className="tag-container">
-                    {counsellor.languages.map((lang, index) => (
+                    {(counsellor.languages || []).map((lang, index) => (
                       <span key={index} className="tag tag-language">{lang}</span>
                     ))}
                   </div>
                   
                   <div className="tag-container">
-                    {counsellor.expertise.slice(0, 3).map((exp, index) => (
+                    {(counsellor.specializations || counsellor.expertise || []).slice(0, 3).map((exp, index) => (
                       <span key={index} className="tag tag-expertise">{exp}</span>
                     ))}
                   </div>
                   
-                  <p className="counsellor-bio">{counsellor.about.substring(0, 100)}...</p>
+                  <p className="counsellor-bio">{(counsellor.bio || counsellor.about || '').substring(0, 100)}...</p>
                   
                   <div className="counsellor-details">
                     <div className="fee-info">
-                      <span className="fee-amount">₹{counsellor.fee}</span>
+                      <span className="fee-amount">₹{counsellor.fees?.video || counsellor.fee || 1500}</span>
                       <span className="fee-label">per session</span>
                     </div>
                     <div className="availability">
-                      <i className="bi bi-calendar-check"></i>
-                      Next available: {new Date(counsellor.nextAvailable).toLocaleDateString()}
+                      <i className="bi bi-star-fill"></i>
+                      Rating: {counsellor.ratings?.average || counsellor.rating || 'N/A'}
                     </div>
                   </div>
                   
                   <div className="counsellor-actions">
                     <Link 
-                      to={`/client/counsellors/${counsellor.id}`} 
+                      to={`/client/counsellors/${counsellor._id || counsellor.id}`} 
                       className="btn-view"
                     >
                       View Profile
                     </Link>
                     <Link 
-                      to={`/client/book-appointment/${counsellor.id}`} 
+                      to={`/client/book-appointment/${counsellor._id || counsellor.id}`} 
                       className="btn-book"
                     >
                       Book Now
