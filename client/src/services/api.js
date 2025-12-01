@@ -112,10 +112,6 @@ api.interceptors.response.use(
     }
     
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Don't attempt refresh if no refresh token exists
-      if (!document.cookie.includes('refreshToken=')) {
-        return Promise.reject(error);
-      }
 
       if (isRefreshing) {
         // Queue requests while refresh is in progress

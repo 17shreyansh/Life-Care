@@ -25,23 +25,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Skip auth check for public pages
-        const publicPaths = ['/', '/about', '/blog', '/gallery', '/videos', '/contact', '/login', '/register'];
-        const isPublicPage = publicPaths.some(path => window.location.pathname === path || window.location.pathname.startsWith(path));
-        
-        if (isPublicPage && !document.cookie.includes('token=')) {
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        // Check if session might be expired
+s        // Check if session might be expired
         if (sessionUtils.isSessionExpired()) {
           setUser(null);
           setLoading(false);
           return;
         }
 
+        // Try to get user data - server will check HTTP-only cookie
         const response = await authAPI.getMe();
         setUser(response.data.data);
         
@@ -50,6 +41,7 @@ export const AuthProvider = ({ children }) => {
           sessionUtils.initSessionTracking();
         }
       } catch (error) {
+        // If auth fails, clear user state
         setUser(null);
         sessionUtils.clearSession();
       } finally {
