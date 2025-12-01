@@ -1,10 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ConditionsSection from '../../components/home/ConditionsSection';
 import HeroImage from '../../assets/woman-psychologist.jpg';
 import { useState, useEffect } from 'react';
 import { clientAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Home = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedCounsellor, setSelectedCounsellor] = useState(null);
   const [bookingDate, setBookingDate] = useState('');
@@ -33,12 +36,11 @@ const Home = () => {
   };
   
   const handleBookSession = (counsellor) => {
-    setSelectedCounsellor(counsellor);
-    setBookingStep(1);
-    setBookingDate('');
-    setBookingTime('');
-    setIsAvailable(false);
-    setShowBookingModal(true);
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/consilar' } });
+      return;
+    }
+    navigate('/client/counsellors');
   };
   
   const handleCloseModal = () => {

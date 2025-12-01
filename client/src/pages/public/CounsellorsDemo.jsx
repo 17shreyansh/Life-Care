@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CounsellorCard from '../../components/counsellor/CounsellorCard';
+import { useAuth } from '../../contexts/AuthContext';
 
 const CounsellorsDemo = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [counsellors, setCounsellors] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +47,14 @@ const CounsellorsDemo = () => {
     );
   }
 
+  const handleBookClick = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/consilar' } });
+      return;
+    }
+    navigate('/client/counsellors');
+  };
+
   return (
     <div className="container py-5">
       <h1 className="text-center mb-5">Our Counsellors</h1>
@@ -50,7 +62,7 @@ const CounsellorsDemo = () => {
         {counsellors.length > 0 ? (
           counsellors.map(counsellor => (
             <div key={counsellor.id} className="col-md-6 col-lg-4">
-              <CounsellorCard counsellor={counsellor} />
+              <CounsellorCard counsellor={counsellor} onBookClick={handleBookClick} />
             </div>
           ))
         ) : (
