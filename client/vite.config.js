@@ -1,8 +1,10 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  return {
   plugins: [react()],
   server: {
     port: 5173,
@@ -10,12 +12,12 @@ export default defineConfig({
     // allowedHosts: ['7c220a15acac.ngrok-free.app'],
     proxy: {
       '/api': {
-        target: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+        target: env.VITE_API_URL || 'http://localhost:5000',
         changeOrigin: true,
         secure: false
       },
       '/uploads': {
-        target: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+        target: env.VITE_API_URL || 'http://localhost:5000',
         changeOrigin: true,
         secure: false
       }
@@ -23,5 +25,5 @@ export default defineConfig({
     hmr: {
       overlay: true
     }
-  },
-})
+  }
+}})
