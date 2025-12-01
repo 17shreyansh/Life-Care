@@ -49,7 +49,7 @@ const authLimiter = rateLimit({
 });
 
 // Apply rate limiting to auth routes
-app.use('/api/auth', authLimiter);
+// app.use('/api/auth', authLimiter);
 
 // Body parser middleware
 app.use(express.json());
