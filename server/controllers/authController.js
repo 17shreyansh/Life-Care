@@ -484,8 +484,8 @@ exports.logout = async (req, res, next) => {
     }
 
     res
-      .clearCookie('token')
-      .clearCookie('refreshToken')
+      .clearCookie('token', { path: '/' })
+      .clearCookie('refreshToken', { path: '/' })
       .status(200)
       .json({
         success: true,
@@ -507,14 +507,16 @@ const sendTokenResponse = (user, statusCode, res) => {
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    path: '/'
   };
 
   const refreshOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    path: '/'
   };
 
   res

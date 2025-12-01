@@ -47,17 +47,12 @@ api.interceptors.response.use(
 
 
 
-// Token refresh state management
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error, token = null) => {
+const processQueue = (error) => {
   failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
+    error ? prom.reject(error) : prom.resolve();
   });
   failedQueue = [];
 };
@@ -112,47 +107,24 @@ api.interceptors.response.use(
     }
     
     if (error.response?.status === 401 && !originalRequest._retry) {
-
       if (isRefreshing) {
-        // Queue requests while refresh is in progress
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(() => {
-          return api(originalRequest);
-        }).catch(err => {
-          return Promise.reject(err);
-        });
+        }).then(() => api(originalRequest));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const refreshResponse = await api.post('/auth/refresh-token');
-        if (refreshResponse.data.success) {
-          isRefreshing = false;
-          processQueue(null, true);
-          
-          // Update user data if available
-          if (refreshResponse.data.user && window.updateAuthUser) {
-            window.updateAuthUser(refreshResponse.data.user);
-          }
-          
-          // Retry original request
-          return api(originalRequest);
-        }
+        await api.post('/auth/refresh-token');
+        isRefreshing = false;
+        processQueue(null);
+        return api(originalRequest);
       } catch (refreshError) {
         isRefreshing = false;
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         
-        // Clear auth data
-        if (window.updateAuthUser) {
-          window.updateAuthUser(null);
-        }
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
-        
-        // Only redirect to login if not on public page
         const publicPaths = ['/', '/about', '/blog', '/gallery', '/videos', '/contact', '/login', '/register'];
         const isPublicPage = publicPaths.some(path => 
           window.location.pathname === path || window.location.pathname.startsWith(path)

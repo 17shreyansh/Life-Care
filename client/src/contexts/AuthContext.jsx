@@ -13,87 +13,22 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Make setUser available globally for API interceptor
-  useEffect(() => {
-    window.updateAuthUser = setUser;
-    return () => {
-      delete window.updateAuthUser;
-    };
-  }, []);
-
-  // Check if user is authenticated on initial render
   useEffect(() => {
     const checkAuth = async () => {
       try {
-s        // Check if session might be expired
-        if (sessionUtils.isSessionExpired()) {
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        // Try to get user data - server will check HTTP-only cookie
         const response = await authAPI.getMe();
         setUser(response.data.data);
-        
-        // Initialize session tracking if user is authenticated
-        if (response.data.data) {
-          sessionUtils.initSessionTracking();
-        }
+        sessionUtils.initSessionTracking();
       } catch (error) {
-        // If auth fails, clear user state
         setUser(null);
-        sessionUtils.clearSession();
       } finally {
         setLoading(false);
       }
     };
-    
     checkAuth();
   }, []);
 
-  // Periodic session validation (every 23 hours - before token expires at 24h)
-  useEffect(() => {
-    if (!user) return;
 
-    const refreshInterval = setInterval(async () => {
-      try {
-        // Silent refresh - just verify session is still valid
-        await authAPI.getMe();
-      } catch (error) {
-        // API interceptor will handle token refresh automatically
-        console.error('Session validation failed:', error);
-      }
-    }, 23 * 60 * 60 * 1000); // 23 hours
-
-    return () => clearInterval(refreshInterval);
-  }, [user]);
-
-  // Check auth when user returns after long absence
-  useEffect(() => {
-    if (!user) return;
-
-    let lastCheck = Date.now();
-    const MIN_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes minimum between checks
-
-    const handleVisibilityChange = async () => {
-      if (!document.hidden && Date.now() - lastCheck > MIN_CHECK_INTERVAL) {
-        lastCheck = Date.now();
-        try {
-          // Only check if session might be expired
-          if (sessionUtils.isSessionExpired()) {
-            await authAPI.getMe();
-          }
-        } catch (error) {
-          // API interceptor will handle token refresh automatically
-          console.error('Session check on visibility change failed:', error);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [user]);
 
   // Register user (Clients only - Counsellors must be created by admin)
   const register = async (userData) => {
@@ -110,14 +45,12 @@ s        // Check if session might be expired
     }
   };
 
-  // Verify OTP
   const verifyOTP = async (email, otp) => {
     try {
       setLoading(true);
       setError(null);
       const response = await authAPI.verifyOTP(email, otp);
       const { user: userData } = response.data;
-      
       setUser(userData);
       return userData;
     } catch (err) {
@@ -143,25 +76,20 @@ s        // Check if session might be expired
     }
   };
 
-  // Login user
   const login = async (credentials) => {
     try {
       setLoading(true);
       setError(null);
       const response = await authAPI.login(credentials);
       
-      // Check if OTP verification is required
       if (response.data.requireOTP) {
         return { requireOTP: true, email: credentials.email };
       }
       
       const { user: userData } = response.data;
       setUser(userData);
-      
-      // Initialize session tracking
       sessionUtils.initSessionTracking();
       
-      // Navigate to appropriate dashboard
       if (userData.role === 'admin') {
         navigate('/admin/dashboard');
       } else if (userData.role === 'counsellor') {
@@ -197,7 +125,6 @@ s        // Check if session might be expired
     }
   };
 
-  // Logout user
   const logout = async () => {
     try {
       setLoading(true);
