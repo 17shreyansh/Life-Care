@@ -123,8 +123,7 @@ const VideoCall = () => {
         }
       }, 100);
 
-      const newSocket = io('http://localhost:5000');
-      setSocket(newSocket);
+      const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
 
       const peerConnection = new RTCPeerConnection({
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -132,6 +131,7 @@ const VideoCall = () => {
       setPc(peerConnection);
 
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
 
       peerConnection.ontrack = (event) => {
         console.log('Remote stream received');
