@@ -47,35 +47,129 @@ api.interceptors.response.use(
 
 
 
+// Token refresh state management
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Public routes that don't require authentication
+const publicRoutes = [
+  '/cms/blogs',
+  '/cms/videos', 
+  '/cms/gallery',
+  '/auth/login',
+  '/auth/register',
+  '/auth/verify-email',
+  '/auth/forgot-password',
+  '/auth/reset-password'
+];
+
+const isPublicRoute = (url) => {
+  return publicRoutes.some(route => url?.includes(route));
+};
+
 // Add response interceptor to handle token expiration
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // Skip auth handling for public routes
+    if (isPublicRoute(originalRequest?.url)) {
+      return Promise.reject(error);
+    }
+    
+    // Don't retry refresh-token endpoint to prevent infinite loops
+    if (error.config?.url?.includes('/auth/refresh-token')) {
+      isRefreshing = false;
+      processQueue(error, null);
+      if (window.updateAuthUser) {
+        window.updateAuthUser(null);
+      }
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
       
-      // Try to refresh token using cookie
+      // Only redirect to login if not on public page
+      const publicPaths = ['/', '/about', '/blog', '/gallery', '/videos', '/contact', '/login', '/register'];
+      const isPublicPage = publicPaths.some(path => 
+        window.location.pathname === path || window.location.pathname.startsWith(path)
+      );
+      
+      if (!isPublicPage && window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't attempt refresh if no refresh token exists
+      if (!document.cookie.includes('refreshToken=')) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        // Queue requests while refresh is in progress
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(() => {
+          return api(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
         const refreshResponse = await api.post('/auth/refresh-token');
         if (refreshResponse.data.success) {
+          isRefreshing = false;
+          processQueue(null, true);
+          
           // Update user data if available
           if (refreshResponse.data.user && window.updateAuthUser) {
             window.updateAuthUser(refreshResponse.data.user);
           }
+          
           // Retry original request
           return api(originalRequest);
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        // Clear any stored auth data and redirect to login
+        isRefreshing = false;
+        processQueue(refreshError, null);
+        
+        // Clear auth data
+        if (window.updateAuthUser) {
+          window.updateAuthUser(null);
+        }
         localStorage.removeItem('user');
         sessionStorage.removeItem('user');
-        window.location.href = '/login';
+        
+        // Only redirect to login if not on public page
+        const publicPaths = ['/', '/about', '/blog', '/gallery', '/videos', '/contact', '/login', '/register'];
+        const isPublicPage = publicPaths.some(path => 
+          window.location.pathname === path || window.location.pathname.startsWith(path)
+        );
+        
+        if (!isPublicPage && window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+        
         return Promise.reject(refreshError);
       }
     }
+    
     return Promise.reject(error);
   }
 );

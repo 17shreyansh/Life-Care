@@ -1,4 +1,7 @@
 // Session management utilities
+let lastUpdateTime = 0;
+const UPDATE_THROTTLE = 60000; // Only update once per minute
+
 export const sessionUtils = {
   // Check if session is likely expired based on last activity
   isSessionExpired: () => {
@@ -12,9 +15,14 @@ export const sessionUtils = {
     return (now - lastActivityTime) > sessionTimeout;
   },
 
-  // Update last activity timestamp
+  // Update last activity timestamp (throttled)
   updateLastActivity: () => {
-    localStorage.setItem('lastActivity', Date.now().toString());
+    const now = Date.now();
+    if (now - lastUpdateTime < UPDATE_THROTTLE) {
+      return; // Skip update if called too frequently
+    }
+    lastUpdateTime = now;
+    localStorage.setItem('lastActivity', now.toString());
   },
 
   // Clear session data
@@ -22,12 +30,13 @@ export const sessionUtils = {
     localStorage.removeItem('lastActivity');
     localStorage.removeItem('user');
     sessionStorage.clear();
+    lastUpdateTime = 0;
   },
 
   // Initialize session tracking
   initSessionTracking: () => {
-    // Update activity on user interactions
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    // Use fewer, more meaningful events to reduce overhead
+    const events = ['click', 'keydown', 'scroll'];
     
     const updateActivity = () => {
       sessionUtils.updateLastActivity();

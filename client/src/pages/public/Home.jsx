@@ -250,9 +250,9 @@ const Home = () => {
                         Rating: {counsellor.ratings?.average?.toFixed(1) || 'New'}/5
                       </p>
                       <div className="team-social mb-3">
-                        <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
-                        <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
-                        <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
+                        <button className="team-social-icon" onClick={(e) => e.preventDefault()}><i className="bi bi-linkedin"></i></button>
+                        <button className="team-social-icon" onClick={(e) => e.preventDefault()}><i className="bi bi-twitter"></i></button>
+                        <button className="team-social-icon" onClick={(e) => e.preventDefault()}><i className="bi bi-envelope"></i></button>
                       </div>
                       <button className="btn btn-primary w-100" onClick={() => handleBookSession(counsellor)}>Book Session</button>
                     </div>
@@ -368,9 +368,9 @@ const Home = () => {
           </div>
           
           <div className="text-center mt-4">
-            <a href="#" className="btn btn-outline-primary">
+            <button className="btn btn-outline-primary" onClick={(e) => e.preventDefault()}>
               <i className="bi bi-chat-quote me-2"></i>Read More Testimonials
-            </a>
+            </button>
           </div>
         </div>
       </section>

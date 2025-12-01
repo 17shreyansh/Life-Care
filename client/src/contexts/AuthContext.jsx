@@ -25,6 +25,16 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Skip auth check for public pages
+        const publicPaths = ['/', '/about', '/blog', '/gallery', '/videos', '/contact', '/login', '/register'];
+        const isPublicPage = publicPaths.some(path => window.location.pathname === path || window.location.pathname.startsWith(path));
+        
+        if (isPublicPage && !document.cookie.includes('token=')) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
         // Check if session might be expired
         if (sessionUtils.isSessionExpired()) {
           setUser(null);
@@ -50,35 +60,41 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  // Periodic token refresh (every 20 hours)
+  // Periodic session validation (every 23 hours - before token expires at 24h)
   useEffect(() => {
     if (!user) return;
 
     const refreshInterval = setInterval(async () => {
       try {
-        const response = await authAPI.getMe();
-        setUser(response.data.data);
+        // Silent refresh - just verify session is still valid
+        await authAPI.getMe();
       } catch (error) {
-        console.error('Periodic auth check failed:', error);
-        // Don't logout on periodic check failure, let the API interceptor handle it
+        // API interceptor will handle token refresh automatically
+        console.error('Session validation failed:', error);
       }
-    }, 20 * 60 * 60 * 1000); // 20 hours
+    }, 23 * 60 * 60 * 1000); // 23 hours
 
     return () => clearInterval(refreshInterval);
   }, [user]);
 
-  // Check auth when user returns to the browser tab
+  // Check auth when user returns after long absence
   useEffect(() => {
     if (!user) return;
 
+    let lastCheck = Date.now();
+    const MIN_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes minimum between checks
+
     const handleVisibilityChange = async () => {
-      if (!document.hidden) {
+      if (!document.hidden && Date.now() - lastCheck > MIN_CHECK_INTERVAL) {
+        lastCheck = Date.now();
         try {
-          const response = await authAPI.getMe();
-          setUser(response.data.data);
+          // Only check if session might be expired
+          if (sessionUtils.isSessionExpired()) {
+            await authAPI.getMe();
+          }
         } catch (error) {
-          console.error('Auth check on visibility change failed:', error);
-          // Let the API interceptor handle token refresh
+          // API interceptor will handle token refresh automatically
+          console.error('Session check on visibility change failed:', error);
         }
       }
     };

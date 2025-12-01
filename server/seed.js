@@ -168,7 +168,7 @@ const createTestData = async () => {
         
         <p>If you're struggling with anxiety, remember that professional help is available. Reach out to a mental health professional for personalized guidance.</p>
       `,
-      summary: 'Learn about the causes of anxiety and discover effective strategies to manage anxiety symptoms in your daily life.',
+      excerpt: 'Learn about the causes of anxiety and discover effective strategies to manage anxiety symptoms in your daily life.',
       featuredImage: 'https://example.com/anxiety-image.jpg',
       author: counsellorUser._id,
       categories: ['Anxiety', 'Mental Health', 'Self-Help'],

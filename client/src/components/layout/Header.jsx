@@ -9,6 +9,14 @@ const Header = () => {
   const location = useLocation();
   const { user, logout, isAuthenticated, loading } = useAuth();
 
+  const closeNavbar = () => {
+    const navbarCollapse = document.getElementById('navbarContent');
+    if (navbarCollapse?.classList.contains('show')) {
+      const bsCollapse = new window.bootstrap.Collapse(navbarCollapse, { toggle: false });
+      bsCollapse.hide();
+    }
+  };
+
 
 
   // Check if current route is active
@@ -39,7 +47,7 @@ const Header = () => {
   return (
     <nav className={`navbar navbar-expand-lg ${isScrolled ? 'navbar-scrolled' : ''}`}>
       <div className="container">
-        <Link className="navbar-brand" to="/">
+        <Link className="navbar-brand" to="/" onClick={closeNavbar}>
           <div className="d-flex align-items-center">
             {/* <img src={Logo} alt="Life Care Logo" className="logo-img me-1" style={{ height: '32px' }} /> */}
             {/* <div className="sidebar-logo me-0 mobile-small">SS</div> */}
@@ -59,37 +67,37 @@ const Header = () => {
         <div className="collapse navbar-collapse" id="navbarContent">
           <ul className="navbar-nav mx-auto">
             <li className="nav-item">
-              <Link className={`nav-link ${isActive('/') ? 'active' : ''}`} to="/">
+              <Link className={`nav-link ${isActive('/') ? 'active' : ''}`} to="/" onClick={closeNavbar}>
                 Home
               </Link>
             </li>
             <li className="nav-item">
-              <Link className={`nav-link ${isActive('/about') ? 'active' : ''}`} to="/about">
+              <Link className={`nav-link ${isActive('/about') ? 'active' : ''}`} to="/about" onClick={closeNavbar}>
                 About
               </Link>
             </li>
             <li className="nav-item">
-              <Link className={`nav-link ${isActive('/blog') ? 'active' : ''}`} to="/blog">
+              <Link className={`nav-link ${isActive('/blog') ? 'active' : ''}`} to="/blog" onClick={closeNavbar}>
                 Blog
               </Link>
             </li>
             <li className="nav-item">
-              <Link className={`nav-link ${isActive('/gallery') ? 'active' : ''}`} to="/gallery">
+              <Link className={`nav-link ${isActive('/gallery') ? 'active' : ''}`} to="/gallery" onClick={closeNavbar}>
                 Gallery
               </Link>
             </li>
             <li className="nav-item">
-              <Link className={`nav-link ${isActive('/videos') ? 'active' : ''}`} to="/videos">
+              <Link className={`nav-link ${isActive('/videos') ? 'active' : ''}`} to="/videos" onClick={closeNavbar}>
                 Videos
               </Link>
             </li>
             <li className="nav-item">
-              <Link className={`nav-link ${isActive('/contact') ? 'active' : ''}`} to="/contact">
+              <Link className={`nav-link ${isActive('/contact') ? 'active' : ''}`} to="/contact" onClick={closeNavbar}>
                 Contact
               </Link>
             </li>
             <li className="nav-item">
-              <Link className={`nav-link ${isActive('/consilar') ? 'active' : ''}`} to="/consilar">
+              <Link className={`nav-link ${isActive('/consilar') ? 'active' : ''}`} to="/consilar" onClick={closeNavbar}>
                 Book Session
               </Link>
             </li>
@@ -106,19 +114,19 @@ const Header = () => {
                     style={{ width: '32px', height: '32px', objectFit: 'cover' }}
                   />
                 )}
-                <Link to={`/${user.role}/dashboard`} className="btn btn-outline-primary me-2">
+                <Link to={`/${user.role}/dashboard`} className="btn btn-outline-primary me-2" onClick={closeNavbar}>
                   <i className="bi bi-speedometer2 me-1"></i> Dashboard
                 </Link>
-                <button onClick={handleLogout} className="btn btn-primary">
+                <button onClick={() => { handleLogout(); closeNavbar(); }} className="btn btn-primary">
                   <i className="bi bi-box-arrow-right me-1"></i> Logout
                 </button>
               </>
             ) : !loading ? (
               <>
-                <Link to="/login" className="btn btn-outline-primary me-2">
+                <Link to="/login" className="btn btn-outline-primary me-2" onClick={closeNavbar}>
                   <i className="bi bi-box-arrow-in-right me-1"></i> Login
                 </Link>
-                <Link to="/register" className="btn btn-primary">
+                <Link to="/register" className="btn btn-primary" onClick={closeNavbar}>
                   <i className="bi bi-person-plus me-1"></i> Register
                 </Link>
               </>

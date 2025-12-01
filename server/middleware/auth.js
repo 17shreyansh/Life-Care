@@ -91,15 +91,33 @@ exports.refreshToken = async (req, res, next) => {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh-secret');
     const user = await User.findById(decoded.id).select('+refreshToken');
 
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if user is active
+    if (!user.active) {
+      return res.status(401).json({
+        success: false,
+        message: 'User account is deactivated'
+      });
+    }
+
+    // Verify refresh token matches stored token
+    if (user.refreshToken !== refreshToken) {
       return res.status(401).json({
         success: false,
         message: 'Invalid refresh token'
       });
     }
 
+    // Generate new access token
     const accessToken = user.getSignedJwtToken();
 
+    // Set new access token cookie
     res.cookie('token', accessToken, {
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       httpOnly: true,
@@ -114,12 +132,20 @@ exports.refreshToken = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        counsellorType: user.counsellorType,
         avatar: user.avatar,
         phone: user.phone,
         isEmailVerified: user.isEmailVerified
       }
     });
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token expired, please login again'
+      });
+    }
+    
     return res.status(401).json({
       success: false,
       message: 'Invalid refresh token'

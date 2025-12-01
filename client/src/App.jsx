@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/shared/ProtectedRoute';
+import ScrollToTop from './components/shared/ScrollToTop';
 import NotFound from './pages/public/NotFound';
 import TestApi from './pages/TestApi';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -66,6 +67,7 @@ import AdminDisputes from './pages/admin/Disputes';
 function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ScrollToTop />
       <AuthProvider>
         <Routes>
           {/* Public Routes with MainLayout */}

@@ -26,7 +26,7 @@ exports.getBlogs = async (req, res, next) => {
       query.$or = [
         { title: { $regex: req.query.search, $options: 'i' } },
         { content: { $regex: req.query.search, $options: 'i' } },
-        { summary: { $regex: req.query.search, $options: 'i' } }
+        { excerpt: { $regex: req.query.search, $options: 'i' } }
       ];
     }
     

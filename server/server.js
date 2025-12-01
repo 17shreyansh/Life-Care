@@ -48,8 +48,13 @@ const authLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 
-// Apply rate limiting to auth routes
-// app.use('/api/auth', authLimiter);
+// Stricter rate limiting for refresh token endpoint
+const refreshTokenLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 refresh attempts per 15 minutes
+  message: 'Too many token refresh attempts, please try again later',
+  skipSuccessfulRequests: true // Only count failed requests
+});
 
 // Body parser middleware
 app.use(express.json());
@@ -64,6 +69,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+
+// Apply stricter rate limiting to refresh token endpoint
+app.use('/api/auth/refresh-token', refreshTokenLimiter);
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/client', require('./routes/client'));
