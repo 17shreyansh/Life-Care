@@ -290,7 +290,8 @@ export const cmsAPI = {
   getVideo: (id) => api.get(`/cms/videos/${id}`),
   getVideoCategories: () => api.get('/cms/videos/categories'),
   getGallery: (params) => api.get('/cms/gallery', { params }),
-  getGalleryCategories: () => api.get('/cms/gallery/categories')
+  getGalleryCategories: () => api.get('/cms/gallery/categories'),
+  getPublicCounsellors: () => api.get('/cms/counsellors')
 };
 
 // Payment API

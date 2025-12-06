@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { cmsAPI } from '../../services/api';
 import Logo from '../../assets/explaning.png'
 
 const About = () => {
+  const [counsellors, setCounsellors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCounsellors();
+  }, []);
+
+  const fetchCounsellors = async () => {
+    try {
+      const res = await cmsAPI.getPublicCounsellors();
+      setCounsellors(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to load counsellors:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="about-page py-5">
       <div className="container">
@@ -189,71 +207,45 @@ const About = () => {
               Our team consists of qualified and experienced mental health professionals dedicated to providing the best care.
             </p>
           </div>
-          <div className="row g-4">
-            <div className="col-md-6 col-lg-4">
-              <div className="card team-card card-gradient-blue border-0 shadow-sm">
-                <div className="team-image-wrapper">
-                  <img 
-                    src="https://placehold.co/400x400?text=Dr.+Sarah" 
-                    alt="Dr. Sarah Johnson" 
-                    className="card-img-top"
-                  />
-                </div>
-                <div className="card-body text-center p-4">
-                  <h5 className="card-title mb-1">Dr. Sarah Johnson</h5>
-                  <p className="text-primary mb-3">Clinical Psychologist</p>
-                  <p className="card-text text-muted mb-3">Specializes in anxiety disorders and depression with over 10 years of experience.</p>
-                  <div className="team-social">
-                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
-                  </div>
-                </div>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
               </div>
             </div>
-            <div className="col-md-6 col-lg-4">
-              <div className="card team-card card-gradient-green border-0 shadow-sm">
-                <div className="team-image-wrapper">
-                  <img 
-                    src="https://placehold.co/400x400?text=Dr.+Michael" 
-                    alt="Dr. Michael Chen" 
-                    className="card-img-top"
-                  />
-                </div>
-                <div className="card-body text-center p-4">
-                  <h5 className="card-title mb-1">Dr. Michael Chen</h5>
-                  <p className="text-primary mb-3">Psychiatrist</p>
-                  <p className="card-text text-muted mb-3">Expert in mood disorders and cognitive behavioral therapy with 15 years of practice.</p>
-                  <div className="team-social">
-                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
+          ) : counsellors.length > 0 ? (
+            <div className="row g-4">
+              {counsellors.slice(0, 6).map((counsellor, index) => (
+                <div className="col-md-6 col-lg-4" key={counsellor._id}>
+                  <div className={`card team-card ${index % 3 === 0 ? 'card-gradient-blue' : index % 3 === 1 ? 'card-gradient-green' : 'card-gradient-purple'} border-0 shadow-sm`}>
+                    <div className="team-image-wrapper">
+                      <img 
+                        src={counsellor.user?.avatar || 'https://placehold.co/400x400?text=Counsellor'} 
+                        alt={counsellor.user?.name} 
+                        className="card-img-top"
+                      />
+                    </div>
+                    <div className="card-body text-center p-4">
+                      <h5 className="card-title mb-1">{counsellor.user?.name}</h5>
+                      <p className="text-primary mb-3">{counsellor.specializations?.[0] || 'Mental Health Professional'}</p>
+                      <p className="card-text text-muted mb-3">
+                        {counsellor.bio || `Specializes in ${counsellor.specializations?.join(', ') || 'mental health'} with ${counsellor.experience || 'several'} years of experience.`}
+                      </p>
+                      <div className="team-social">
+                        <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
+                        <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
+                        <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-            <div className="col-md-6 col-lg-4">
-              <div className="card team-card card-gradient-purple border-0 shadow-sm">
-                <div className="team-image-wrapper">
-                  <img 
-                    src="https://placehold.co/400x400?text=Dr.+Emily" 
-                    alt="Dr. Emily Rodriguez" 
-                    className="card-img-top"
-                  />
-                </div>
-                <div className="card-body text-center p-4">
-                  <h5 className="card-title mb-1">Dr. Emily Rodriguez</h5>
-                  <p className="text-primary mb-3">Counselling Psychologist</p>
-                  <p className="card-text text-muted mb-3">Specializes in relationship counseling and stress management techniques.</p>
-                  <div className="team-social">
-                    <a href="#" className="team-social-icon"><i className="bi bi-linkedin"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-twitter"></i></a>
-                    <a href="#" className="team-social-icon"><i className="bi bi-envelope"></i></a>
-                  </div>
-                </div>
-              </div>
+          ) : (
+            <div className="text-center py-5">
+              <p className="text-muted">No counsellors available at the moment.</p>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Security Section */}

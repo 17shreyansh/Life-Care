@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import ConditionsSection from '../../components/home/ConditionsSection';
+import GalleryCarousel from '../../components/home/GalleryCarousel';
 import HeroImage from '../../assets/woman-psychologist.jpg';
 import { useState, useEffect } from 'react';
 import { clientAPI } from '../../services/api';
@@ -23,11 +24,9 @@ const Home = () => {
 
   const fetchCounsellors = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/cms/counsellors`);
-      const data = await res.json();
-      if (data.success) {
-        setCounsellors(data.data.slice(0, 3));
-      }
+      const { cmsAPI } = await import('../../services/api');
+      const res = await cmsAPI.getPublicCounsellors();
+      setCounsellors(res.data.data.slice(0, 3));
     } catch (err) {
       console.error('Failed to load counsellors:', err);
     } finally {
@@ -169,6 +168,9 @@ const Home = () => {
       
       {/* What are you struggling with Section */}
       <ConditionsSection />
+      
+      {/* Gallery Carousel */}
+      <GalleryCarousel />
       
       {/* Features Section */}
       <section className="py-5 features-section">

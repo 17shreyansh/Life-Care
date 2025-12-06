@@ -1,32 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { clientAPI } from '../../services/api';
+import { cmsAPI } from '../../services/api';
 
 const Videos = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const [counsellors, setCounsellors] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [categories, setCategories] = useState(['all']);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    fetchCounsellors();
-  }, []);
+    fetchVideos();
+    fetchCategories();
+  }, [activeFilter]);
 
-  const fetchCounsellors = async () => {
+  const fetchVideos = async () => {
     try {
-      const res = await clientAPI.getCounsellors({ limit: 6 });
-      setCounsellors(res.data.data || []);
+      const params = {};
+      if (activeFilter !== 'all') params.category = activeFilter;
+      const res = await cmsAPI.getVideos(params);
+      setVideos(res.data.data || []);
     } catch (err) {
-      console.error('Failed to load counsellors:', err);
+      console.error('Failed to load videos:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const videos = [];
+  const fetchCategories = async () => {
+    try {
+      const res = await cmsAPI.getVideoCategories();
+      setCategories(['all', ...(res.data.data || [])]);
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+    }
+  };
 
-  const filteredVideos = [];
+  const filteredVideos = videos;
 
   const openVideoModal = (video) => {
     setSelectedVideo(video);
@@ -51,71 +62,56 @@ const Videos = () => {
 
         {/* Video Filters */}
         <div className="video-filter-container mb-5">
-          <button 
-            className={`video-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            All Videos
-          </button>
-          <button 
-            className={`video-filter-btn ${activeFilter === 'anxiety' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('anxiety')}
-          >
-            Anxiety
-          </button>
-          <button 
-            className={`video-filter-btn ${activeFilter === 'depression' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('depression')}
-          >
-            Depression
-          </button>
-          <button 
-            className={`video-filter-btn ${activeFilter === 'mindfulness' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('mindfulness')}
-          >
-            Mindfulness
-          </button>
-          <button 
-            className={`video-filter-btn ${activeFilter === 'stress' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('stress')}
-          >
-            Stress Management
-          </button>
-          <button 
-            className={`video-filter-btn ${activeFilter === 'relationships' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('relationships')}
-          >
-            Relationships
-          </button>
+          {categories.map((category, index) => (
+            <button 
+              key={index}
+              className={`video-filter-btn ${activeFilter === category ? 'active' : ''}`}
+              onClick={() => setActiveFilter(category)}
+            >
+              {category === 'all' ? 'All Videos' : category.charAt(0).toUpperCase() + category.slice(1)}
+            </button>
+          ))}
         </div>
 
         {/* Video Grid */}
-        <div className="row g-4">
-          {filteredVideos.map(video => (
-            <div className="col-md-6 col-lg-4" key={video.id}>
-              <div className="video-card">
-                <div className="video-thumbnail">
-                  <img src={video.thumbnail} alt={video.title} />
-                  <div className="video-category">{video.category}</div>
-                  <div className="video-duration">{video.duration}</div>
-                  <div 
-                    className="video-play-button"
-                    onClick={() => openVideoModal(video)}
-                  >
-                    <i className="bi bi-play-fill"></i>
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : filteredVideos.length > 0 ? (
+          <div className="row g-4">
+            {filteredVideos.map(video => (
+              <div className="col-md-6 col-lg-4" key={video._id}>
+                <div className="video-card">
+                  <div className="video-thumbnail">
+                    <img src={video.thumbnailUrl || 'https://placehold.co/400x300?text=Video'} alt={video.title} />
+                    <div className="video-category">{video.categories?.[0] || 'General'}</div>
+                    <div className="video-duration">{video.duration || '5:00'}</div>
+                    <div 
+                      className="video-play-button"
+                      onClick={() => openVideoModal(video)}
+                    >
+                      <i className="bi bi-play-fill"></i>
+                    </div>
                   </div>
-                </div>
-                <div className="video-content">
-                  <h5 className="video-title">{video.title}</h5>
-                  <div className="video-meta">
-                    <span><i className="bi bi-eye me-1"></i> {video.views} views</span>
-                    <span><i className="bi bi-calendar3 me-1"></i> {new Date(video.date).toLocaleDateString()}</span>
+                  <div className="video-content">
+                    <h5 className="video-title">{video.title}</h5>
+                    <div className="video-meta">
+                      <span><i className="bi bi-eye me-1"></i> {video.viewCount || 0} views</span>
+                      <span><i className="bi bi-calendar3 me-1"></i> {new Date(video.publishedAt).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-5">
+            <p className="text-muted">No videos available.</p>
+          </div>
+        )}
 
         {/* Featured Video Section */}
         <div className="featured-video-section p-5 mt-5">
@@ -167,50 +163,7 @@ const Videos = () => {
           </div>
         </div>
 
-        {/* Our Counsellors Section */}
-        <div className="counsellors-section mt-5">
-          <div className="text-center mb-4">
-            <h2 className="mb-3">Learn from Our <span className="text-gradient">Expert Counsellors</span></h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
-              Connect with our qualified mental health professionals who create these educational videos.
-            </p>
-          </div>
-          {!loading && counsellors.length > 0 && (
-            <div className="row g-4">
-              {counsellors.slice(0, 4).map(counsellor => (
-                <div className="col-md-6 col-lg-3" key={counsellor._id}>
-                  <div className="card counsellor-card h-100 border-0 shadow-sm">
-                    <div className="counsellor-image-wrapper">
-                      <img 
-                        src={counsellor.user?.avatar || 'https://via.placeholder.com/300'} 
-                        alt={counsellor.user?.name}
-                        className="card-img-top"
-                        style={{ height: '180px', objectFit: 'cover' }}
-                      />
-                    </div>
-                    <div className="card-body p-3">
-                      <h6 className="card-title mb-2">{counsellor.user?.name}</h6>
-                      <p className="text-muted small mb-2">
-                        {counsellor.specializations?.join(', ') || 'General Counselling'}
-                      </p>
-                      <p className="text-muted small mb-2">
-                        {counsellor.experience || 'N/A'} years experience
-                      </p>
-                      <Link to="/consilar" className="btn btn-primary btn-sm w-100">
-                        Book Session
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="text-center mt-4">
-            <Link to="/consilar" className="btn btn-outline-primary">
-              View All Counsellors
-            </Link>
-          </div>
-        </div>
+
       </div>
 
       {/* Video Modal */}
@@ -224,7 +177,7 @@ const Videos = () => {
             <div className="modal-body p-0">
               <div className="ratio ratio-16x9">
                 <iframe 
-                  src={`${selectedVideo.videoUrl}?autoplay=1`} 
+                  src={`${selectedVideo.videoUrl || selectedVideo.youtubeUrl}?autoplay=1`} 
                   title={selectedVideo.title} 
                   allowFullScreen
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

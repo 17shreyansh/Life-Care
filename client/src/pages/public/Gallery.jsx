@@ -1,32 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { clientAPI } from '../../services/api';
+import { cmsAPI } from '../../services/api';
 
 const Gallery = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [counsellors, setCounsellors] = useState([]);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [categories, setCategories] = useState(['all']);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    fetchCounsellors();
-  }, []);
+    fetchGallery();
+    fetchCategories();
+  }, [activeFilter]);
 
-  const fetchCounsellors = async () => {
+  const fetchGallery = async () => {
     try {
-      const res = await clientAPI.getCounsellors({ limit: 8 });
-      setCounsellors(res.data.data || []);
+      const params = {};
+      if (activeFilter !== 'all') params.category = activeFilter;
+      const res = await cmsAPI.getGallery(params);
+      setGalleryItems(res.data.data || []);
     } catch (err) {
-      console.error('Failed to load counsellors:', err);
+      console.error('Failed to load gallery:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const galleryItems = [];
+  const fetchCategories = async () => {
+    try {
+      const res = await cmsAPI.getGalleryCategories();
+      setCategories(['all', ...(res.data.data || [])]);
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+    }
+  };
 
-  const filteredItems = [];
+  const filteredItems = galleryItems;
 
   const openLightbox = (item) => {
     setSelectedImage(item);
@@ -52,97 +63,50 @@ const Gallery = () => {
 
         {/* Gallery Filters */}
         <div className="filter-container mb-5">
-          <button 
-            className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            All
-          </button>
-          <button 
-            className={`filter-btn ${activeFilter === 'office' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('office')}
-          >
-            Office
-          </button>
-          <button 
-            className={`filter-btn ${activeFilter === 'team' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('team')}
-          >
-            Team
-          </button>
-          <button 
-            className={`filter-btn ${activeFilter === 'events' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('events')}
-          >
-            Events
-          </button>
-        </div>
-
-        {/* Gallery Grid */}
-        <div className="row gallery-grid">
-          {filteredItems.map(item => (
-            <div className="col-md-6 col-lg-4" key={item.id}>
-              <div className="gallery-item" onClick={() => openLightbox(item)}>
-                <img src={item.image} alt={item.title} />
-                <div className="gallery-overlay">
-                  <div className="gallery-info">
-                    <h5>{item.title}</h5>
-                    <div className="gallery-category">{item.category}</div>
-                  </div>
-                </div>
-                <button className="gallery-zoom">
-                  <i className="bi bi-zoom-in"></i>
-                </button>
-              </div>
-            </div>
+          {categories.map((category, index) => (
+            <button 
+              key={index}
+              className={`filter-btn ${activeFilter === category ? 'active' : ''}`}
+              onClick={() => setActiveFilter(category)}
+            >
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </button>
           ))}
         </div>
 
-        {/* Our Team Gallery Section */}
-        <div className="team-gallery-section mt-5">
-          <div className="text-center mb-4">
-            <h2 className="mb-3">Meet Our <span className="text-gradient">Professional Team</span></h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
-              Get to know our dedicated team of mental health professionals who are here to support you.
-            </p>
-          </div>
-          {!loading && counsellors.length > 0 && (
-            <div className="row gallery-grid">
-              {counsellors.map(counsellor => (
-                <div className="col-md-6 col-lg-3" key={counsellor._id}>
-                  <div className="gallery-item team-member" onClick={() => openLightbox({
-                    id: `counsellor-${counsellor._id}`,
-                    image: counsellor.user?.avatar || 'https://via.placeholder.com/400',
-                    title: counsellor.user?.name,
-                    category: 'team',
-                    description: `${counsellor.user?.name} - ${counsellor.specializations?.join(', ') || 'Mental Health Professional'} with ${counsellor.experience || 'N/A'} years of experience. Rating: ${counsellor.ratings?.average?.toFixed(1) || 'New'}/5`
-                  })}>
-                    <img 
-                      src={counsellor.user?.avatar || 'https://via.placeholder.com/400'} 
-                      alt={counsellor.user?.name}
-                      style={{ height: '250px', objectFit: 'cover' }}
-                    />
-                    <div className="gallery-overlay">
-                      <div className="gallery-info">
-                        <h5>{counsellor.user?.name}</h5>
-                        <div className="gallery-category">team</div>
-                        <p className="small mt-2">{counsellor.specializations?.join(', ') || 'Mental Health Professional'}</p>
-                      </div>
-                    </div>
-                    <button className="gallery-zoom">
-                      <i className="bi bi-zoom-in"></i>
-                    </button>
-                  </div>
-                </div>
-              ))}
+        {/* Gallery Grid */}
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
             </div>
-          )}
-          <div className="text-center mt-4">
-            <Link to="/consilar" className="btn btn-primary">
-              Book a Session with Our Team
-            </Link>
           </div>
-        </div>
+        ) : filteredItems.length > 0 ? (
+          <div className="row gallery-grid">
+            {filteredItems.map(item => (
+              <div className="col-md-6 col-lg-4" key={item._id}>
+                <div className="gallery-item" onClick={() => openLightbox(item)}>
+                  <img src={item.imageUrl} alt={item.title} />
+                  <div className="gallery-overlay">
+                    <div className="gallery-info">
+                      <h5>{item.title}</h5>
+                      <div className="gallery-category">{item.category}</div>
+                    </div>
+                  </div>
+                  <button className="gallery-zoom">
+                    <i className="bi bi-zoom-in"></i>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-5">
+            <p className="text-muted">No gallery images available.</p>
+          </div>
+        )}
+
+
       </div>
 
       {/* Lightbox */}
@@ -152,7 +116,7 @@ const Gallery = () => {
             <button className="lightbox-close" onClick={closeLightbox}>
               <i className="bi bi-x-lg"></i>
             </button>
-            <img src={selectedImage.image} alt={selectedImage.title} />
+            <img src={selectedImage.imageUrl} alt={selectedImage.title} />
             <div className="lightbox-caption">
               <h5>{selectedImage.title}</h5>
               <p>{selectedImage.description}</p>

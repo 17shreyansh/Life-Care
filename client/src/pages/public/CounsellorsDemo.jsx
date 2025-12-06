@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CounsellorCard from '../../components/counsellor/CounsellorCard';
 import { useAuth } from '../../contexts/AuthContext';
+import { cmsAPI } from '../../services/api';
 
 const CounsellorsDemo = () => {
   const navigate = useNavigate();
@@ -15,21 +16,18 @@ const CounsellorsDemo = () => {
 
   const fetchCounsellors = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/cms/counsellors`);
-      const data = await res.json();
-      if (data.success) {
-        const formattedData = data.data.map(c => ({
-          id: c._id,
-          name: c.user?.name || 'Counsellor',
-          photo: c.user?.avatar || 'https://placehold.co/300x300?text=Avatar',
-          specialization: c.specializations?.[0] || 'Mental Health Professional',
-          verified: c.isVerified || false,
-          clientsHelped: Math.floor(Math.random() * 100) + 50,
-          experience: c.experience || '5',
-          rating: c.ratings?.average || 4.5
-        }));
-        setCounsellors(formattedData);
-      }
+      const res = await cmsAPI.getPublicCounsellors();
+      const formattedData = res.data.data.map(c => ({
+        id: c._id,
+        name: c.user?.name || 'Counsellor',
+        photo: c.user?.avatar || 'https://placehold.co/300x300?text=Avatar',
+        specialization: c.specializations?.[0] || 'Mental Health Professional',
+        verified: c.isVerified || false,
+        clientsHelped: Math.floor(Math.random() * 100) + 50,
+        experience: c.experience || '5',
+        rating: c.ratings?.average || 4.5
+      }));
+      setCounsellors(formattedData);
     } catch (error) {
       console.error('Error fetching counsellors:', error);
     } finally {
