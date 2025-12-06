@@ -108,6 +108,94 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Professional Credentials Section */}
+      <section className="py-5 bg-light">
+        <div className="container">
+          <div className="row align-items-center">
+            <div className="col-lg-6 mb-4 mb-lg-0">
+              <h6 className="section-subtitle">EXPERT CARE</h6>
+              <h2 className="section-title mobile-h2">Led by <span className="text-gradient">Experienced Professionals</span></h2>
+              <p className="lead mb-4">RCI Registered Psychologist with 20 years of counselling experience and clinical knowledge</p>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-body">
+                      <div className="d-flex align-items-center mb-2">
+                        <i className="bi bi-award text-primary fs-3 me-3"></i>
+                        <h6 className="mb-0">MA (Clinical Psychology)</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-body">
+                      <div className="d-flex align-items-center mb-2">
+                        <i className="bi bi-mortarboard text-success fs-3 me-3"></i>
+                        <h6 className="mb-0">PG Diploma in Rehabilitation Psychology</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-body">
+                      <div className="d-flex align-items-center mb-2">
+                        <i className="bi bi-patch-check text-info fs-3 me-3"></i>
+                        <h6 className="mb-0">Diploma in Intellectual Disability</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-body">
+                      <div className="d-flex align-items-center mb-2">
+                        <i className="bi bi-shield-check text-warning fs-3 me-3"></i>
+                        <h6 className="mb-0">RCI Registered</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-6">
+              <div className="card border-0 shadow-lg">
+                <div className="card-body p-4">
+                  <h5 className="text-primary mb-3">Our Locations</h5>
+                  <div className="mb-3">
+                    <div className="d-flex align-items-start mb-2">
+                      <i className="bi bi-geo-alt-fill text-primary me-2 mt-1"></i>
+                      <div>
+                        <strong>Main Branch - Dwarka</strong>
+                        <p className="mb-0 text-muted">Flat No 30A DDA Flat Pocket 2, Dr Lean, Dwarka Sector 6-110075</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <div className="d-flex align-items-start mb-2">
+                      <i className="bi bi-geo-alt-fill text-success me-2 mt-1"></i>
+                      <div>
+                        <strong>West Delhi Branch - Paschim Vihar</strong>
+                        <p className="mb-0 text-muted">A15 Second Floor LIC Colony, Paschim Vihar, 110087<br/>(Near St Marks School Meerabagh)</p>
+                      </div>
+                    </div>
+                  </div>
+                  <hr />
+                  <div className="d-flex align-items-center mb-2">
+                    <i className="bi bi-telephone-fill text-primary me-2"></i>
+                    <div>
+                      <a href="tel:08123746026" className="text-decoration-none me-3">08123746026</a>
+                      <a href="tel:9716129129" className="text-decoration-none">9716129129</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Why S S Psychologist Life Care Section */}
       <section className="py-5 why-section">
         <div className="container">

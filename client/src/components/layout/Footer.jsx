@@ -56,11 +56,17 @@ const Footer = () => {
             <ul className="list-unstyled">
               <li className="mb-3 d-flex">
                 <i className="bi bi-geo-alt me-2 text-primary"></i>
-                <span>Flat No 30A DDA Flat Pocket 2, Dr Lean, Dwarka Sector 6-110075</span>
+                <div>
+                  <div className="mb-2"><strong>Main:</strong> Dwarka Sector 6, 110075</div>
+                  <div><strong>West Delhi:</strong> A15, Paschim Vihar, 110087</div>
+                </div>
               </li>
               <li className="mb-3 d-flex">
                 <i className="bi bi-telephone me-2 text-primary"></i>
-                <a href="tel:08123746026" className="footer-link">08123746026</a>
+                <div>
+                  <a href="tel:08123746026" className="footer-link d-block">08123746026</a>
+                  <a href="tel:9716129129" className="footer-link d-block">9716129129</a>
+                </div>
               </li>
               <li className="mb-3 d-flex">
                 <i className="bi bi-envelope me-2 text-primary"></i>

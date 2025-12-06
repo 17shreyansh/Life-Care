@@ -53,8 +53,9 @@ const Contact = () => {
                     <i className="bi bi-geo-alt"></i>
                   </div>
                   <div>
-                    <h5 className="mb-1">Our Location</h5>
-                    <p className="mb-0 text-muted">Flat No 30A DDA Flat Pocket 2, Dr Lean, Dwarka Sector 6-110075</p>
+                    <h5 className="mb-1">Our Locations</h5>
+                    <p className="mb-0 text-muted"><strong>Main Branch:</strong> Flat No 30A DDA Flat Pocket 2, Dr Lean, Dwarka Sector 6-110075</p>
+                    <p className="mb-0 text-muted mt-2"><strong>West Delhi Branch:</strong> A15 Second Floor LIC Colony, Paschim Vihar, 110087 (Near St Marks School Meerabagh)</p>
                   </div>
                 </div>
                 <div className="d-flex align-items-center mb-4">
@@ -62,9 +63,12 @@ const Contact = () => {
                     <i className="bi bi-telephone"></i>
                   </div>
                   <div>
-                    <h5 className="mb-1">Phone Number</h5>
+                    <h5 className="mb-1">Phone Numbers</h5>
                     <p className="mb-0">
                       <a href="tel:08123746026" className="text-muted text-decoration-none">08123746026</a>
+                    </p>
+                    <p className="mb-0 mt-1">
+                      <a href="tel:9716129129" className="text-muted text-decoration-none">9716129129</a>
                     </p>
                   </div>
                 </div>

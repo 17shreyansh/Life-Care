@@ -52,16 +52,25 @@ const About = () => {
               <h2 className="mb-4">Bridging the Gap in Mental Healthcare</h2>
               <p className="mb-4">
                 S S Psychologist Life Care was founded with a simple yet powerful mission: to make quality mental healthcare accessible to everyone. 
-                We recognized the growing need for mental health support and the barriers many face in accessing it.
+                Led by an RCI Registered Psychologist with 20 years of counselling experience and clinical knowledge, we provide expert mental health support.
               </p>
               <p className="mb-4">
                 Our platform brings together qualified mental health professionals and individuals seeking support in a secure, 
                 convenient, and confidential online environment. We believe that everyone deserves access to quality mental healthcare, 
                 regardless of their location or circumstances.
               </p>
+              <div className="mb-4">
+                <h6 className="text-primary fw-bold mb-3">Professional Qualifications:</h6>
+                <ul className="list-unstyled">
+                  <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>MA (Clinical Psychology)</li>
+                  <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>PG Diploma in Rehabilitation Psychology</li>
+                  <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Diploma in Intellectual Disability</li>
+                  <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>RCI Registered Psychologist</li>
+                </ul>
+              </div>
               <div className="d-flex align-items-center mb-4">
                 <div className="me-4">
-                  <h3 className="text-gradient mb-0">5+</h3>
+                  <h3 className="text-gradient mb-0">20+</h3>
                   <p className="text-muted mb-0">Years Experience</p>
                 </div>
                 <div>
