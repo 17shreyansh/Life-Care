@@ -82,21 +82,19 @@ const Gallery = () => {
             </div>
           </div>
         ) : filteredItems.length > 0 ? (
-          <div className="row gallery-grid">
+          <div className="gallery-grid">
             {filteredItems.map(item => (
-              <div className="col-md-6 col-lg-4" key={item._id}>
-                <div className="gallery-item" onClick={() => openLightbox(item)}>
-                  <img src={item.imageUrl} alt={item.title} />
-                  <div className="gallery-overlay">
-                    <div className="gallery-info">
-                      <h5>{item.title}</h5>
-                      <div className="gallery-category">{item.category}</div>
-                    </div>
+              <div className="gallery-item" key={item._id} onClick={() => openLightbox(item)}>
+                <img src={item.imageUrl} alt={item.title} />
+                <div className="gallery-overlay">
+                  <div className="gallery-info">
+                    <h5>{item.title}</h5>
+                    <div className="gallery-category">{item.category}</div>
                   </div>
-                  <button className="gallery-zoom">
-                    <i className="bi bi-zoom-in"></i>
-                  </button>
                 </div>
+                <button className="gallery-zoom">
+                  <i className="bi bi-zoom-in"></i>
+                </button>
               </div>
             ))}
           </div>
