@@ -1,6 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import ConditionsSection from '../../components/home/ConditionsSection';
 import GalleryCarousel from '../../components/home/GalleryCarousel';
+import WelcomePopup from '../../components/shared/WelcomePopup';
+import CounsellorGallery from '../../components/home/CounsellorGallery';
+import FounderSection from '../../components/home/FounderSection';
+import ClinicGallery from '../../components/home/ClinicGallery';
 import HeroImage from '../../assets/woman-psychologist.jpg';
 import { useState, useEffect } from 'react';
 import { clientAPI } from '../../services/api';
@@ -64,6 +68,7 @@ const Home = () => {
 
   return (
     <>
+      <WelcomePopup />
       {/* Hero Section */}
       <section className="hero-section py-5">
         <div className="container">
@@ -73,7 +78,7 @@ const Home = () => {
               <p className="lead leading-relaxed mb-4">Our mission is simple: to help you feel better, get better and stay better.</p>
               <p className="text-lg leading-relaxed mb-4 text-muted">We bring together self-care, support from qualified therapists and psychiatrists, as well as community access to deliver the best quality mental healthcare for your needs.</p>
               <div className="d-grid gap-3 d-md-flex justify-content-md-start mb-4">
-                <Link to="/register" className="btn btn-primary btn-lg px-4">Get Started</Link>
+                <Link to="/consilar" className="btn btn-primary btn-lg px-4">Book Section</Link>
                 <Link to="/about" className="btn btn-success btn-lg px-4">Learn More</Link>
               </div>
               <div className="hero-features d-flex flex-wrap gap-4 mt-4">
@@ -107,6 +112,15 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Counsellor Gallery */}
+      <CounsellorGallery />
+
+      {/* Founder Section */}
+      <FounderSection />
+
+      {/* Clinic Gallery */}
+      <ClinicGallery />
 
       {/* Professional Credentials Section */}
       <section className="py-5 bg-light">
