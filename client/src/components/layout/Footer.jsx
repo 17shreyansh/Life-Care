@@ -65,7 +65,7 @@ const Footer = () => {
                 <i className="bi bi-telephone me-2 text-primary"></i>
                 <div>
                   <a href="tel:08123746026" className="footer-link d-block">08123746026</a>
-                  <a href="tel:9716129129" className="footer-link d-block">9716129129</a>
+                  <a href="tel:9899555507" className="footer-link d-block">9899555507</a>
                 </div>
               </li>
               <li className="mb-3 d-flex">

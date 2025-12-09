@@ -200,7 +200,7 @@ const Home = () => {
                     <i className="bi bi-telephone-fill text-primary me-2"></i>
                     <div>
                       <a href="tel:08123746026" className="text-decoration-none me-3">08123746026</a>
-                      <a href="tel:9716129129" className="text-decoration-none">9716129129</a>
+                      <a href="tel:9899555507" className="text-decoration-none">9899555507</a>
                     </div>
                   </div>
                 </div>

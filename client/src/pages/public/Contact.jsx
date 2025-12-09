@@ -68,7 +68,7 @@ const Contact = () => {
                       <a href="tel:08123746026" className="text-muted text-decoration-none">08123746026</a>
                     </p>
                     <p className="mb-0 mt-1">
-                      <a href="tel:9716129129" className="text-muted text-decoration-none">9716129129</a>
+                      <a href="tel:9899555507" className="text-muted text-decoration-none">9899555507</a>
                     </p>
                   </div>
                 </div>
