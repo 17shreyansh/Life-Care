@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../../assets/logo.png';
 import './WelcomePopup.css';
 
 const WelcomePopup = () => {
@@ -36,13 +37,18 @@ const WelcomePopup = () => {
         </button>
         
         <div className="welcome-popup-content">
-          <div className="welcome-popup-icon">
-            <i className="bi bi-heart-pulse"></i>
+          <div className="welcome-popup-logo">
+            <img src={Logo} alt="SS Psychologist Life Care" />
           </div>
           
           <h2 className="welcome-popup-title">
             Welcome to <span className="text-gradient">SS Psychologist Life Care</span>
           </h2>
+          
+          <div className="welcome-popup-badge">
+            <i className="bi bi-award-fill"></i>
+            <span>20+ Years of Excellence</span>
+          </div>
           
           <p className="welcome-popup-text">
             Trust us with your mental health. Our mission is to help you feel better, get better and stay better with 20 years of counselling experience.
