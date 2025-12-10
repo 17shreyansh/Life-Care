@@ -16,6 +16,7 @@ import FounderSection from '../../components/home/FounderSection';
 import ClinicGallery from '../../components/home/ClinicGallery';
 import MarqueeBanner from '../../components/ui/MarqueeBanner';
 import HeroImage from '../../assets/woman-psychologist.jpg';
+import JustDialImage from '../../assets/justdial.jpg';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -120,12 +121,23 @@ const Home = () => {
         </div>
       </section>
 
+     
+
       <MarqueeBanner 
         items={[
           { icon: 'bi bi-star-fill', text: 'Online Sessions Starting from ₹850 per Hour' }
         ]} 
         speed={25} 
       />
+
+       {/* JustDial Section */}
+      <section className="py-4 bg-light">
+        <div className="container">
+          <div className="text-center">
+            <img src={JustDialImage} alt="JustDial" className="img-fluid" style={{ maxWidth: '800px', width: '100%' }} />
+          </div>
+        </div>
+      </section>
 
       {/* Counsellor Gallery */}
       <CounsellorGallery />
