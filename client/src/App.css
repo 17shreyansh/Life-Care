@@ -411,7 +411,9 @@
   
   /* Hero Section Responsive */
   .hero-section {
-    padding: 100px 0 60px;
+    margin-top: -80px !important;
+    padding-top: 140px !important;
+    padding-bottom: 60px !important;
   }
   
   .hero-section h1 {
@@ -470,7 +472,9 @@
   
   /* Hero Section Mobile */
   .hero-section {
-    padding: 80px 0 40px;
+    margin-top: -70px !important;
+    padding-top: 120px !important;
+    padding-bottom: 40px !important;
   }
   
   .hero-section h1 {
