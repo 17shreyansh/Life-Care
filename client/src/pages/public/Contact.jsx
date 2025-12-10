@@ -56,6 +56,7 @@ const Contact = () => {
                     <h5 className="mb-1">Our Locations</h5>
                     <p className="mb-0 text-muted"><strong>Main Branch:</strong> Flat No 30A DDA Flat Pocket 2, Dr Lean, Dwarka Sector 6-110075</p>
                     <p className="mb-0 text-muted mt-2"><strong>West Delhi Branch:</strong> A15 Second Floor LIC Colony, Paschim Vihar, 110087 (Near St Marks School Meerabagh)</p>
+                    <p className="mb-0 text-muted mt-2"><strong>South Delhi Branch:</strong> Harcharan Bagh, 773, Sector A Main Rd, near BSES Office, Desu Colony, Vasant Kunj, New Delhi, Delhi 110070</p>
                   </div>
                 </div>
                 <div className="d-flex align-items-center mb-4">

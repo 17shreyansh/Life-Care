@@ -201,6 +201,15 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
+                  <div className="mb-3">
+                    <div className="d-flex align-items-start mb-2">
+                      <i className="bi bi-geo-alt-fill text-info me-2 mt-1"></i>
+                      <div>
+                        <strong>South Delhi Branch - Vasant Kunj</strong>
+                        <p className="mb-0 text-muted">Harcharan Bagh, 773, Sector A Main Rd, near BSES Office, Desu Colony, Vasant Kunj, New Delhi, Delhi 110070</p>
+                      </div>
+                    </div>
+                  </div>
                   <hr />
                   <div className="d-flex align-items-center mb-2">
                     <i className="bi bi-telephone-fill text-primary me-2"></i>

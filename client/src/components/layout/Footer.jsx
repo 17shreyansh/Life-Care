@@ -67,6 +67,7 @@ const Footer = () => {
               <div>
                 <p className="footer-contact-text">Dwarka Sector 6, 110075</p>
                 <p className="footer-contact-text">A15, Paschim Vihar, 110087</p>
+                <p className="footer-contact-text">773, Sector A, Vasant Kunj, 110070</p>
               </div>
             </div>
             <div className="footer-contact-item">
