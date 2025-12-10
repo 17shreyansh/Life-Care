@@ -37,7 +37,7 @@ const Header = () => {
       <div className="container">
         <Link className="navbar-brand" to="/" onClick={closeNavbar}>
           <div className="d-flex align-items-center">
-            <img src={Logo} alt="Life Care Logo" className="logo-img me-2" style={{ height: '56px' }} />
+            <img src={Logo} alt="Life Care Logo" className="logo-img me-2" style={{ height: '70px' }} />
             <span className="brand-text">SS Psychologist Life Care</span>
           </div>
         </Link>
