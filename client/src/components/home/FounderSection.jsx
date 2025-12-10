@@ -18,7 +18,7 @@ const FounderSection = () => {
       <div className="container">
         <div className="text-center mb-5">
           <h6 className="section-subtitle">LEADERSHIP</h6>
-          <h2 className="section-title">Meet Our <span className="text-gradient">Founder</span></h2>
+          <h2 className="section-title">Meet Our Founder</h2>
         </div>
         
         <div className="founder-content">

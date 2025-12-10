@@ -357,19 +357,20 @@
 
 /* Floating Header Styles */
 .navbar {
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: var(--border-radius);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
   margin: 0 20px;
-  padding: 15px 20px;
-  transition: all 0.3s ease;
+  padding: var(--space-4) var(--space-5);
+  transition: all var(--transition-base);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
-  margin-top: 10px;
-  box-shadow: 0 5px 20px rgba(37, 99, 235, 0.1);
+  z-index: var(--z-fixed);
+  margin-top: var(--space-3);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-light);
 }
 
 @media (max-width: 991px) {
@@ -408,39 +409,42 @@
 }
 
 .navbar-scrolled {
-  padding: 10px 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 5px 20px rgba(37, 99, 235, 0.2);
+  padding: var(--space-3) var(--space-5);
+  background-color: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--shadow-lg);
 }
 
 .navbar .nav-link {
-  color: #333;
-  font-weight: 500;
-  margin: 0 5px;
-  padding: 8px 15px;
-  border-radius: var(--border-radius);
-  transition: all 0.3s ease;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  margin: 0 var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  font-size: var(--font-size-sm);
 }
 
 .navbar .nav-link:hover {
-  color: var(--primary-color);
-  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--color-primary-600);
+  background-color: var(--color-primary-50);
+}
+
+.navbar .nav-link.active {
+  color: var(--color-primary-600);
+  background-color: var(--color-primary-50);
 }
 
 .navbar .navbar-brand {
   font-weight: var(--font-weight-bold);
-  color: var(--primary-color);
-  font-size: var(--text-xl);
+  color: var(--color-primary-600);
+  font-size: var(--font-size-lg);
 }
 
 .brand-text {
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-primary-600);
   font-weight: var(--font-weight-bold);
-  font-size: var(--text-lg);
-  letter-spacing: var(--tracking-tight);
+  font-size: var(--font-size-base);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 @media (max-width: 767px) {

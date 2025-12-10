@@ -1,6 +1,9 @@
-/* Import Typography System */
+/* Import Design System */
+@import './styles/theme.css';
 @import './styles/typography.css';
+@import './styles/components.css';
 @import './styles/button-groups.css';
+@import './styles/global-overrides.css';
 
 :root {
   --primary-color: #2563eb;
@@ -44,8 +47,8 @@ body {
 
 /* Hero section styles */
 .hero-section {
-  padding-top: 120px;
-  padding-bottom: 80px;
+  padding-top: calc(80px + var(--space-20));
+  padding-bottom: var(--space-20);
   position: relative;
   overflow: hidden;
 }
@@ -56,8 +59,8 @@ body {
 }
 
 .hero-image {
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-2xl);
   position: relative;
   z-index: 2;
 }
@@ -85,16 +88,17 @@ body {
 }
 
 .feature-item {
-  background-color: white;
-  padding: 8px 15px;
-  border-radius: 50px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  font-size: 0.9rem;
+  background-color: var(--color-surface);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border-light);
 }
 
 .feature-icon {
-  color: var(--primary-color);
-  font-size: 1.2rem;
+  color: var(--color-primary-500);
+  font-size: var(--font-size-lg);
 }
 
 /* Why section styles */

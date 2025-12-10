@@ -26,7 +26,7 @@ const About = () => {
       <div className="container">
         {/* Hero Section */}
         <div className="text-center mb-5">
-          <h1 className="mb-3">About <span className="text-gradient">S S Psychologist Life Care</span></h1>
+          <h1 className="mb-3">About S S Psychologist Life Care</h1>
           <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
             We're dedicated to making mental healthcare accessible, affordable, and effective for everyone.
           </p>
@@ -70,11 +70,11 @@ const About = () => {
               </div>
               <div className="d-flex align-items-center mb-4">
                 <div className="me-4">
-                  <h3 className="text-gradient mb-0">20+</h3>
+                  <h3 className="text-primary mb-0">20+</h3>
                   <p className="text-muted mb-0">Years Experience</p>
                 </div>
                 <div>
-                  <h3 className="text-gradient mb-0">1000+</h3>
+                  <h3 className="text-primary mb-0">1000+</h3>
                   <p className="text-muted mb-0">Clients Helped</p>
                 </div>
               </div>
@@ -303,11 +303,11 @@ const About = () => {
           <div className="cta-card">
             <div className="row align-items-center">
               <div className="col-lg-8 mb-4 mb-lg-0">
-                <h2 className="mb-3">Ready to Take the First Step?</h2>
-                <p className="lead mb-0">Join thousands who have improved their mental well-being with our platform.</p>
+                <h2 className="mb-3 text-white">Ready to Take the First Step?</h2>
+                <p className="lead mb-0 text-white">Join thousands who have improved their mental well-being with our platform.</p>
               </div>
               <div className="col-lg-4 text-lg-end">
-                <Link to="/register" className="btn btn-light btn-lg px-4 py-3">Get Started Today</Link>
+                <Link to="/register" className="btn btn-light btn-lg">Get Started Today</Link>
               </div>
             </div>
           </div>
