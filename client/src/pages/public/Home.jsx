@@ -14,6 +14,7 @@ import WelcomePopup from '../../components/shared/WelcomePopup';
 import CounsellorGallery from '../../components/home/CounsellorGallery';
 import FounderSection from '../../components/home/FounderSection';
 import ClinicGallery from '../../components/home/ClinicGallery';
+import MarqueeBanner from '../../components/ui/MarqueeBanner';
 import HeroImage from '../../assets/woman-psychologist.jpg';
 
 const Home = () => {
@@ -79,7 +80,7 @@ const Home = () => {
       <section className="hero-section">
         <div className="container">
           <div className="row align-items-center">
-            <div className="col-lg-6">
+            <div className="col-lg-6 order-2 order-lg-1">
               <h1 className="display-2 font-bold mb-4 mobile-h1">Trust S S Psychologist Life Care with your mental health</h1>
               <p className="lead mb-4">Our mission is simple: to help you feel better, get better and stay better.</p>
               <p className="text-muted mb-4">We bring together self-care, support from qualified therapists and psychiatrists, as well as community access to deliver the best quality mental healthcare for your needs.</p>
@@ -108,7 +109,7 @@ const Home = () => {
                 </div>
               </div>
             </div>
-            <div className="col-lg-6 d-none d-lg-block">
+            <div className="col-lg-6 order-1 order-lg-2 mb-4 mb-lg-0">
               <div className="hero-image-container">
                 <img src={HeroImage} alt="Mental Health Support" className="img-fluid hero-image" />
                 <div className="hero-shape-1"></div>
@@ -118,6 +119,13 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      <MarqueeBanner 
+        items={[
+          { icon: 'bi bi-star-fill', text: 'Online Sessions Starting from ₹850 per Hour' }
+        ]} 
+        speed={25} 
+      />
 
       {/* Counsellor Gallery */}
       <CounsellorGallery />

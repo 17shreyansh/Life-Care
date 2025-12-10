@@ -1,6 +1,6 @@
 export const SITE_CONFIG = {
   name: 'SS Psychologist Life Care',
-  email: 'contact@sspsychologist.com',
+  email: 'contact@plcc.in',
   phones: ['9716129129', '9899555507']
 };
 

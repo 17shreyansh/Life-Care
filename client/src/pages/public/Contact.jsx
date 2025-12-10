@@ -80,7 +80,7 @@ const Contact = () => {
                   <div>
                     <h5 className="mb-1">Email Address</h5>
                     <p className="mb-0">
-                      <a href="mailto:contact@sspsychologist.com" className="text-muted text-decoration-none">contact@sspsychologist.com</a>
+                      <a href="mailto:contact@plcc.in" className="text-muted text-decoration-none">contact@plcc.in</a>
                     </p>
                   </div>
                 </div>
@@ -90,7 +90,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h5 className="mb-1">Working Hours</h5>
-                    <p className="mb-0 text-muted">Monday - Saturday: 9:00 AM - 7:00 PM</p>
+                    <p className="mb-0 text-muted">24 Hours (Starting 9:00 AM Daily)</p>
                   </div>
                 </div>
               </div>
@@ -219,7 +219,7 @@ const Contact = () => {
                 </div>
                 <h5 className="card-title mb-3">Customer Support</h5>
                 <p className="card-text text-muted mb-3">Need help with booking or technical issues? Our support team is ready to assist.</p>
-                <a href="mailto:support@sspsychologist.com" className="btn btn-outline-primary">
+                <a href="mailto:support@plcc.in" className="btn btn-outline-primary">
                   <i className="bi bi-envelope me-2"></i>Email Support
                 </a>
               </div>
@@ -247,7 +247,7 @@ const Contact = () => {
                 </div>
                 <h5 className="card-title mb-3">Join Our Team</h5>
                 <p className="card-text text-muted mb-3">Are you a mental health professional? We're always looking for qualified counsellors.</p>
-                <a href="mailto:careers@sspsychologist.com" className="btn btn-outline-primary">
+                <a href="mailto:careers@plcc.in" className="btn btn-outline-primary">
                   <i className="bi bi-person-plus me-2"></i>Apply Now
                 </a>
               </div>

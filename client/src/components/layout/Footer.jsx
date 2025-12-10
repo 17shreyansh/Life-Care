@@ -22,17 +22,11 @@ const Footer = () => {
               Professional mental health support with compassion, expertise, and confidentiality.
             </p>
             <div className="footer-social">
-              <a href="#" className="footer-social-link" aria-label="Facebook">
-                <i className="bi bi-facebook"></i>
-              </a>
-              <a href="#" className="footer-social-link" aria-label="Twitter">
-                <i className="bi bi-twitter"></i>
-              </a>
-              <a href="#" className="footer-social-link" aria-label="Instagram">
+              <a href="https://www.instagram.com/psychological_life_care?igsh=N2Z5NnZoaXI0NmVv&utm_source=qr" target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label="Instagram">
                 <i className="bi bi-instagram"></i>
               </a>
-              <a href="#" className="footer-social-link" aria-label="LinkedIn">
-                <i className="bi bi-linkedin"></i>
+              <a href="https://www.youtube.com/@monikr5665" target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label="YouTube">
+                <i className="bi bi-youtube"></i>
               </a>
             </div>
           </div>
@@ -79,7 +73,7 @@ const Footer = () => {
             </div>
             <div className="footer-contact-item">
               <i className="bi bi-envelope footer-contact-icon"></i>
-              <a href="mailto:contact@sspsychologist.com" className="footer-link">contact@sspsychologist.com</a>
+              <a href="mailto:contact@plcc.in" className="footer-link">contact@plcc.in</a>
             </div>
           </div>
         </div>
