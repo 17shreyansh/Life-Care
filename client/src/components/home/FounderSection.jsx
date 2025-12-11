@@ -35,7 +35,7 @@ const FounderSection = () => {
             </div>
             <div className="founder-info">
               <h3 className="founder-name">Monish Khera</h3>
-              <p className="founder-title">Founder & Rehabilitation Psychologist</p>
+              <p className="founder-title">Child, Adolescent and Rehabilitation Psychologist</p>
               <p className="founder-experience">20 Years of Counselling Experience</p>
             </div>
           </div>
