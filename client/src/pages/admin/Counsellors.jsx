@@ -97,6 +97,19 @@ const Counsellors = () => {
     }
   };
 
+  const handleDeleteCounsellor = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this counsellor? This will also delete their user account.')) return;
+    
+    try {
+      await adminAPI.deleteCounsellor(id);
+      showAlert('Counsellor deleted successfully');
+      fetchCounsellors();
+    } catch (error) {
+      console.error('Error deleting counsellor:', error);
+      showAlert('Error deleting counsellor', 'danger');
+    }
+  };
+
   const handleEditCounsellor = (counsellor) => {
     setEditCounsellor({
       name: counsellor.user?.name || '',
@@ -465,6 +478,13 @@ const Counsellors = () => {
                           <i className="bi bi-x-lg"></i> Unverify
                         </Button>
                       )}
+                      <Button 
+                        variant="outline-danger" 
+                        size="sm"
+                        onClick={() => handleDeleteCounsellor(counsellor._id)}
+                      >
+                        <i className="bi bi-trash"></i>
+                      </Button>
                     </td>
                   </tr>
                 ))}

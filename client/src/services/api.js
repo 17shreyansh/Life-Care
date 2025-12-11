@@ -244,6 +244,7 @@ export const adminAPI = {
   getCounsellor: (id) => api.get(`/admin/counsellors/${id}`),
   createCounsellor: (counsellorData) => api.post('/admin/counsellors', counsellorData),
   updateCounsellor: (id, counsellorData) => api.put(`/admin/counsellors/${id}`, counsellorData),
+  deleteCounsellor: (id) => api.delete(`/admin/counsellors/${id}`),
   verifyCounsellor: (id, isVerified) => api.put(`/admin/counsellors/${id}/verify`, { isVerified }),
   
   // Appointments

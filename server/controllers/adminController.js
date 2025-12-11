@@ -441,6 +441,32 @@ exports.updateCounsellor = async (req, res, next) => {
   }
 };
 
+// @desc    Delete counsellor
+// @route   DELETE /api/admin/counsellors/:id
+// @access  Private (Admin only)
+exports.deleteCounsellor = async (req, res, next) => {
+  try {
+    const counsellor = await Counsellor.findById(req.params.id);
+    
+    if (!counsellor) {
+      return next(new ErrorResponse(`Counsellor not found with id of ${req.params.id}`, 404));
+    }
+    
+    // Delete counsellor profile
+    await Counsellor.findByIdAndDelete(req.params.id);
+    
+    // Delete associated user
+    await User.findByIdAndDelete(counsellor.user);
+    
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Update counsellor verification status
 // @route   PUT /api/admin/counsellors/:id/verify
 // @access  Private (Admin only)

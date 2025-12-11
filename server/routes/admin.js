@@ -10,6 +10,7 @@ const {
   getCounsellor,
   createCounsellor,
   updateCounsellor,
+  deleteCounsellor,
   verifyCounsellor,
   getAppointments,
   updatePaymentStatus,
@@ -65,7 +66,8 @@ router.route('/counsellors')
 
 router.route('/counsellors/:id')
   .get(getCounsellor)
-  .put(updateCounsellor);
+  .put(updateCounsellor)
+  .delete(deleteCounsellor);
 
 router.put('/counsellors/:id/verify', verifyCounsellor);
 
