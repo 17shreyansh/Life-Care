@@ -27,6 +27,7 @@ const Counsellors = () => {
     password: '',
     phone: '',
     profilePicture: '',
+    counsellorType: 'counsellor',
     specializations: '',
     experience: '',
     qualifications: [{
@@ -109,12 +110,12 @@ const Counsellors = () => {
       videoFee: counsellor.fees?.video || '',
       chatFee: counsellor.fees?.chat || '',
       languages: Array.isArray(counsellor.languages) ? counsellor.languages.join(', ') : counsellor.languages || '',
-      gender: counsellor.gender || '',
-      dateOfBirth: counsellor.dateOfBirth || '',
-      address: counsellor.address || '',
-      city: counsellor.city || '',
-      state: counsellor.state || '',
-      pincode: counsellor.pincode || ''
+      gender: '',
+      dateOfBirth: '',
+      address: counsellor.location?.address || '',
+      city: counsellor.location?.city || '',
+      state: counsellor.location?.state || '',
+      pincode: counsellor.location?.postalCode || ''
     });
     setSelectedCounsellor(counsellor);
     setShowEditModal(true);
@@ -243,6 +244,7 @@ const Counsellors = () => {
         password: '',
         phone: '',
         profilePicture: '',
+        counsellorType: 'counsellor',
         specializations: '',
         experience: '',
         qualifications: [{

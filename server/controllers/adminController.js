@@ -300,7 +300,8 @@ exports.createCounsellor = async (req, res, next) => {
     const { 
       name, email, password, phone, profilePicture,
       specializations, experience, qualifications, 
-      bio, fees, languages 
+      bio, fees, languages, gender, dateOfBirth,
+      address, city, state, pincode
     } = req.body;
     
     // Check if user already exists
@@ -316,22 +317,51 @@ exports.createCounsellor = async (req, res, next) => {
       password,
       phone,
       role: 'counsellor',
+      counsellorType: 'counsellor',
       avatar: profilePicture,
       isEmailVerified: true // Admin-created users are automatically verified
     });
     
     try {
+      // Clean qualifications - remove empty certificate fields
+      const cleanedQualifications = qualifications ? qualifications.map(qual => {
+        const cleaned = {
+          degree: qual.degree,
+          institution: qual.institution,
+          year: parseInt(qual.year) || new Date().getFullYear()
+        };
+        // Only add certificate if it's not empty
+        if (qual.certificate && qual.certificate.trim() !== '') {
+          cleaned.certificate = qual.certificate;
+        }
+        return cleaned;
+      }) : [];
+      
+      // Build location object if address fields are provided
+      const location = {};
+      if (address && address.trim()) location.address = address;
+      if (city && city.trim()) location.city = city;
+      if (state && state.trim()) location.state = state;
+      if (pincode && pincode.trim()) location.postalCode = pincode;
+      
       // Create counsellor profile
-      const counsellor = await Counsellor.create({
+      const counsellorData = {
         user: user._id,
         specializations: Array.isArray(specializations) ? specializations : (specializations ? specializations.split(',').map(s => s.trim()) : []),
         experience: parseInt(experience) || 0,
-        qualifications: qualifications || [],
+        qualifications: cleanedQualifications,
         bio,
         fees: fees || { video: 0, chat: 0 },
         languages: Array.isArray(languages) ? languages : (languages ? languages.split(',').map(l => l.trim()) : []),
         isVerified: true // Admin-created counsellors are automatically verified
-      });
+      };
+      
+      // Add location if any fields are present
+      if (Object.keys(location).length > 0) {
+        counsellorData.location = location;
+      }
+      
+      const counsellor = await Counsellor.create(counsellorData);
       
       res.status(201).json({
         success: true,
@@ -361,17 +391,36 @@ exports.updateCounsellor = async (req, res, next) => {
     const updateFields = {};
     if (specializations) updateFields.specializations = Array.isArray(specializations) ? specializations : specializations.split(',').map(s => s.trim());
     if (experience !== undefined) updateFields.experience = parseInt(experience) || 0;
-    if (qualifications) updateFields.qualifications = qualifications;
+    
+    // Clean qualifications - remove empty certificate fields
+    if (qualifications) {
+      updateFields.qualifications = qualifications.map(qual => {
+        const cleaned = {
+          degree: qual.degree,
+          institution: qual.institution,
+          year: parseInt(qual.year) || new Date().getFullYear()
+        };
+        // Only add certificate if it's not empty
+        if (qual.certificate && qual.certificate.trim() !== '') {
+          cleaned.certificate = qual.certificate;
+        }
+        return cleaned;
+      });
+    }
+    
     if (bio) updateFields.bio = bio;
     if (fees) updateFields.fees = fees;
     if (languages) updateFields.languages = Array.isArray(languages) ? languages : languages.split(',').map(l => l.trim());
     if (isVerified !== undefined) updateFields.isVerified = isVerified;
-    if (gender) updateFields.gender = gender;
-    if (dateOfBirth) updateFields.dateOfBirth = dateOfBirth;
-    if (address) updateFields.address = address;
-    if (city) updateFields.city = city;
-    if (state) updateFields.state = state;
-    if (pincode) updateFields.pincode = pincode;
+    
+    // Build location object if address fields are provided
+    if (address || city || state || pincode) {
+      updateFields.location = {};
+      if (address && address.trim()) updateFields.location.address = address;
+      if (city && city.trim()) updateFields.location.city = city;
+      if (state && state.trim()) updateFields.location.state = state;
+      if (pincode && pincode.trim()) updateFields.location.postalCode = pincode;
+    }
     
     const counsellor = await Counsellor.findByIdAndUpdate(
       req.params.id,
