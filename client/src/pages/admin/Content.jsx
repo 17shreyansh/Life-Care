@@ -196,7 +196,8 @@ const Content = () => {
           const response = await adminAPI.createBlog(selectedItem);
           setBlogs([response.data.data, ...blogs]);
         } else if (modalType === 'video') {
-          const response = await adminAPI.createVideo(selectedItem);
+          const videoData = { ...selectedItem, status: 'published' };
+          const response = await adminAPI.createVideo(videoData);
           setVideos([response.data.data, ...videos]);
         } else if (modalType === 'gallery') {
           const response = await adminAPI.uploadGalleryImage(selectedItem);
@@ -515,41 +516,43 @@ const Content = () => {
                 
                 {activeTab === 'videos' && (
                   videos.length > 0 ? (
-                    <Table responsive hover>
-                      <thead>
-                        <tr>
-                          <th>Title</th>
-                          <th>Uploaded</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {videos.map((video) => (
-                          <tr key={video._id}>
-                            <td>{video.title}</td>
-                            <td>{new Date(video.createdAt).toLocaleDateString()}</td>
-                            <td>
-                              <div className="d-flex gap-1">
+                    <Row>
+                      {videos.map((video) => (
+                        <Col md={4} key={video._id} className="mb-4">
+                          <Card className="h-100">
+                            <Card.Body>
+                              <Card.Title className="h6 mb-3">{video.title}</Card.Title>
+                              {video.videoUrl && (
+                                <div className="mb-3" style={{ position: 'relative', paddingTop: '56.25%', backgroundColor: '#000', borderRadius: '4px', overflow: 'hidden' }}>
+                                  <video 
+                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                                    controls
+                                  >
+                                    <source src={video.videoUrl} type="video/mp4" />
+                                  </video>
+                                </div>
+                              )}
+                              <div className="d-flex gap-2">
                                 <Button 
                                   variant="outline-primary" 
                                   size="sm"
                                   onClick={() => handleEdit(video, 'video')}
                                 >
-                                  <i className="bi bi-pencil"></i>
+                                  <i className="bi bi-pencil"></i> Edit
                                 </Button>
                                 <Button 
                                   variant="outline-danger" 
                                   size="sm"
                                   onClick={() => handleDelete(video._id, 'video')}
                                 >
-                                  <i className="bi bi-trash"></i>
+                                  <i className="bi bi-trash"></i> Delete
                                 </Button>
                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
                   ) : (
                     <div className="text-center py-5">
                       <p className="mb-0">No videos found</p>

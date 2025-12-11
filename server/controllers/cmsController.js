@@ -115,8 +115,8 @@ exports.getBlogCategories = async (req, res, next) => {
 // @access  Public
 exports.getVideos = async (req, res, next) => {
   try {
-    // Build query
-    let query = { status: 'published' };
+    // Build query - show all videos if no status field exists
+    let query = { $or: [{ status: 'published' }, { status: { $exists: false } }] };
     
     // Filter by category
     if (req.query.category) {

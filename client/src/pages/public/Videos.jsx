@@ -20,9 +20,11 @@ const Videos = () => {
       const params = {};
       if (activeFilter !== 'all') params.category = activeFilter;
       const res = await cmsAPI.getVideos(params);
+      console.log('Videos response:', res.data);
       setVideos(res.data.data || []);
     } catch (err) {
       console.error('Failed to load videos:', err);
+      setVideos([]);
     } finally {
       setLoading(false);
     }
@@ -34,6 +36,7 @@ const Videos = () => {
       setCategories(['all', ...(res.data.data || [])]);
     } catch (err) {
       console.error('Failed to load categories:', err);
+      setCategories(['all']);
     }
   };
 
@@ -84,24 +87,22 @@ const Videos = () => {
           <div className="row g-4">
             {filteredVideos.map(video => (
               <div className="col-md-6 col-lg-4" key={video._id}>
-                <div className="video-card">
-                  <div className="video-thumbnail">
-                    <img src={video.thumbnailUrl || 'https://placehold.co/400x300?text=Video'} alt={video.title} />
-                    <div className="video-category">{video.categories?.[0] || 'General'}</div>
-                    <div className="video-duration">{video.duration || '5:00'}</div>
-                    <div 
-                      className="video-play-button"
-                      onClick={() => openVideoModal(video)}
-                    >
-                      <i className="bi bi-play-fill"></i>
+                <div className="card h-100" style={{ cursor: 'pointer', overflow: 'hidden' }} onClick={() => openVideoModal(video)}>
+                  <div style={{ position: 'relative', paddingTop: '56.25%', backgroundColor: '#000' }}>
+                    {video.videoUrl && (
+                      <video 
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        muted
+                      >
+                        <source src={video.videoUrl} type="video/mp4" />
+                      </video>
+                    )}
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+                      <i className="bi bi-play-circle-fill" style={{ fontSize: '64px', color: 'white' }}></i>
                     </div>
                   </div>
-                  <div className="video-content">
-                    <h5 className="video-title">{video.title}</h5>
-                    <div className="video-meta">
-                      <span><i className="bi bi-eye me-1"></i> {video.viewCount || 0} views</span>
-                      <span><i className="bi bi-calendar3 me-1"></i> {new Date(video.publishedAt).toLocaleDateString()}</span>
-                    </div>
+                  <div className="card-body">
+                    <h5 className="card-title">{video.title}</h5>
                   </div>
                 </div>
               </div>
@@ -113,76 +114,27 @@ const Videos = () => {
           </div>
         )}
 
-        {/* Featured Video Section */}
-        <div className="featured-video-section p-5 mt-5">
-          <div className="text-center mb-4">
-            <h2 className="mb-3">Featured <span className="text-gradient">Video</span></h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
-              Our most popular video on mental health awareness and self-care techniques.
-            </p>
-          </div>
-          <div className="row align-items-center">
-            <div className="col-lg-8 mb-4 mb-lg-0">
-              <div className="featured-video-card position-relative">
-                <img 
-                  src="https://placehold.co/800x450?text=Featured+Video" 
-                  alt="Featured Video" 
-                  className="img-fluid featured-video-thumbnail"
-                />
-                <div 
-                  className="featured-video-play"
-                  onClick={() => openVideoModal({
-                    id: 'featured',
-                    title: 'Mental Health Awareness: Breaking the Stigma',
-                    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-                  })}
-                >
-                  <i className="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-4">
-              <div className="featured-video-info">
-                <h3 className="mb-3">Mental Health Awareness: Breaking the Stigma</h3>
-                <p className="text-muted mb-4">
-                  This comprehensive video explores the importance of mental health awareness and provides 
-                  practical tips for maintaining good mental wellbeing in today's fast-paced world.
-                </p>
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => openVideoModal({
-                    id: 'featured',
-                    title: 'Mental Health Awareness: Breaking the Stigma',
-                    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-                  })}
-                >
-                  <i className="bi bi-play-fill me-2"></i>Watch Now
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
 
       </div>
 
       {/* Video Modal */}
       {showModal && selectedVideo && (
-        <div className="modal-overlay" onClick={closeVideoModal}>
-          <div className="modal-custom" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h5 className="modal-title">{selectedVideo.title}</h5>
+        <div className="modal-overlay" onClick={closeVideoModal} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div className="modal-custom" onClick={e => e.stopPropagation()} style={{ width: '90%', maxWidth: '900px', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden' }}>
+            <div className="modal-header" style={{ padding: '15px 20px', borderBottom: '1px solid #dee2e6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h5 className="modal-title" style={{ margin: 0 }}>{selectedVideo.title}</h5>
               <button type="button" className="btn-close" onClick={closeVideoModal}></button>
             </div>
             <div className="modal-body p-0">
-              <div className="ratio ratio-16x9">
-                <iframe 
-                  src={`${selectedVideo.videoUrl || selectedVideo.youtubeUrl}?autoplay=1`} 
-                  title={selectedVideo.title} 
-                  allowFullScreen
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                ></iframe>
-              </div>
+              {selectedVideo.videoUrl && (
+                <video 
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
+                  controls
+                  autoPlay
+                >
+                  <source src={selectedVideo.videoUrl} type="video/mp4" />
+                </video>
+              )}
             </div>
           </div>
         </div>

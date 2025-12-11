@@ -954,6 +954,7 @@ exports.getVideos = async (req, res, next) => {
 exports.createVideo = async (req, res, next) => {
   try {
     req.body.author = req.user.id;
+    if (!req.body.status) req.body.status = 'published';
     const video = await Video.create(req.body);
     
     res.status(201).json({
