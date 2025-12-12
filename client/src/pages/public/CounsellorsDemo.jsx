@@ -24,8 +24,7 @@ const CounsellorsDemo = () => {
         specialization: c.specializations?.[0] || 'Mental Health Professional',
         verified: c.isVerified || false,
         clientsHelped: Math.floor(Math.random() * 100) + 50,
-        experience: c.experience || '5',
-        rating: c.ratings?.average || 4.5
+        experience: c.experience || '5'
       }));
       setCounsellors(formattedData);
     } catch (error) {

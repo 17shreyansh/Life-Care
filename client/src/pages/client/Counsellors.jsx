@@ -256,10 +256,6 @@ const Counsellors = () => {
                       <i className="bi bi-clock-history"></i>
                       {counsellor.experience}+ Years
                     </span>
-                    <span className="badge-item badge-rating">
-                      <i className="bi bi-star-fill"></i>
-                      {counsellor.rating}
-                    </span>
                   </div>
                 </div>
                 
@@ -285,10 +281,6 @@ const Counsellors = () => {
                     <div className="fee-info">
                       <span className="fee-amount">₹{counsellor.fees?.video || counsellor.fee || 1500}</span>
                       <span className="fee-label">per session</span>
-                    </div>
-                    <div className="availability">
-                      <i className="bi bi-star-fill"></i>
-                      Rating: {counsellor.ratings?.average || counsellor.rating || 'N/A'}
                     </div>
                   </div>
                   

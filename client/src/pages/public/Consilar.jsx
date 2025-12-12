@@ -182,7 +182,6 @@ const Consilar = () => {
                 <Card.Text>
                   <strong>Specializations:</strong> {counsellor.specializations?.join(', ')}<br />
                   <strong>Experience:</strong> {counsellor.experience} years<br />
-                  <strong>Rating:</strong> ⭐ {counsellor.ratings?.average?.toFixed(1) || 'New'}<br />
                   <strong>Fee:</strong> ₹{counsellor.fees?.video || counsellor.fees} per session
                 </Card.Text>
                 <Button 

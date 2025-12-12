@@ -320,14 +320,8 @@ const Home = () => {
                       <h5 className="card-title mb-1">{counsellor.user?.name}</h5>
                       <p className="text-primary mb-3">{counsellor.specializations?.join(', ') || 'Mental Health Professional'}</p>
                       <p className="card-text text-muted mb-3">
-                        {counsellor.experience ? `${counsellor.experience} years of experience` : 'Experienced professional'} • 
-                        Rating: {counsellor.ratings?.average?.toFixed(1) || 'New'}/5
+                        {counsellor.experience ? `${counsellor.experience} years of experience` : 'Experienced professional'}
                       </p>
-                      <div className="team-social mb-3">
-                        <button className="team-social-icon" onClick={(e) => e.preventDefault()}><i className="bi bi-linkedin"></i></button>
-                        <button className="team-social-icon" onClick={(e) => e.preventDefault()}><i className="bi bi-twitter"></i></button>
-                        <button className="team-social-icon" onClick={(e) => e.preventDefault()}><i className="bi bi-envelope"></i></button>
-                      </div>
                       <button className="btn btn-primary w-100" onClick={() => handleBookSession(counsellor)}>Book Session</button>
                     </div>
                   </div>

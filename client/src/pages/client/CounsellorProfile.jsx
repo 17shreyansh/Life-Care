@@ -90,9 +90,6 @@ const CounsellorProfile = () => {
             <span className="badge experience">
               <i className="bi bi-clock-history"></i> {counsellor.experience}+ Years
             </span>
-            <span className="badge rating">
-              <i className="bi bi-star-fill"></i> {counsellor.ratings?.average || 'New'} ({counsellor.ratings?.count || 0})
-            </span>
           </div>
           
           <h1 className="profile-name">{counsellor.user?.name}</h1>
