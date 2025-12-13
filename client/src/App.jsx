@@ -44,6 +44,7 @@ import Feedback from './pages/client/Feedback';
 import Profile from './pages/client/Profile';
 import ClientCounsellorProfile from './pages/client/CounsellorProfile';
 import PostSessionMaterials from './pages/client/PostSessionMaterials';
+import AppointmentDetail from './pages/client/AppointmentDetail';
 
 // Counsellor Pages
 import CounsellorDashboard from './pages/counsellor/Dashboard';
@@ -51,6 +52,7 @@ import CounsellorAppointments from './pages/counsellor/Appointments';
 import CounsellorAvailability from './pages/counsellor/Availability';
 import CounsellorEarnings from './pages/counsellor/Earnings';
 import CounsellorProfile from './pages/counsellor/Profile';
+import CounsellorAppointmentDetail from './pages/counsellor/AppointmentDetail';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -103,6 +105,8 @@ function App() {
               <Route path="counsellors" element={<CounsellorFinder />} />
               <Route path="book-appointment/:counsellorId" element={<BookAppointment />} />
               <Route path="appointments" element={<MyAppointments />} />
+              <Route path="appointments/:appointmentId" element={<AppointmentDetail />} />
+              <Route path="appointments/:appointmentId/notes" element={<AppointmentDetail />} />
               <Route path="attachments" element={<PostSessionMaterials />} />
               <Route path="chat/:appointmentId" element={<ChatSession />} />
               <Route path="payments" element={<Payments />} />
@@ -117,6 +121,7 @@ function App() {
             <Route path="/counsellor" element={<DashboardLayout role="counsellor" />}>
               <Route path="dashboard" element={<CounsellorDashboard />} />
               <Route path="appointments" element={<CounsellorAppointments />} />
+              <Route path="appointments/:appointmentId" element={<CounsellorAppointmentDetail />} />
               <Route path="availability" element={<CounsellorAvailability />} />
               <Route path="earnings" element={<CounsellorEarnings />} />
               <Route path="profile" element={<CounsellorProfile />} />

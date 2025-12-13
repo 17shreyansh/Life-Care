@@ -82,7 +82,7 @@ const Appointments = () => {
 
   const canAddAttachment = (appointment) => {
     return appointment.status === 'completed' && 
-           user && 
+             user?.counsellorType && 
            ['psychiatrist', 'psychologist'].includes(user.counsellorType);
   };
 
@@ -222,7 +222,7 @@ const Appointments = () => {
                     <button 
                       className="btn-action btn-success-action"
                       onClick={() => handleAddAttachment(appointment)}
-                      title="Add post-session material"
+                      title="Only psychiatrists and psychologists can add materials"
                     >
                       <i className="bi bi-plus-circle"></i> Add Material
                     </button>

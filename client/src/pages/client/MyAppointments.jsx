@@ -200,17 +200,19 @@ const MyAppointments = () => {
                   {appointment.status === 'completed' && (
                     <>
                       <Link 
-                        to={`/client/appointments/${appointment._id}/notes`}
+                        to={`/client/appointments/${appointment._id}`}
                         className="btn-action btn-secondary-action"
                       >
-                        <i className="bi bi-journal-text"></i> Notes
+                        <i className="bi bi-eye"></i> View Details
                       </Link>
-                      <Link 
-                        to={`/client/feedback?appointment=${appointment._id}`}
-                        className="btn-action btn-secondary-action"
-                      >
-                        <i className="bi bi-star"></i> Feedback
-                      </Link>
+                      {!appointment.feedback && (
+                        <Link 
+                          to={`/client/feedback?appointment=${appointment._id}`}
+                          className="btn-action btn-secondary-action"
+                        >
+                          <i className="bi bi-star"></i> Feedback
+                        </Link>
+                      )}
                       <InvoiceDownload appointment={appointment} />
                     </>
                   )}

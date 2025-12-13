@@ -22,12 +22,24 @@ exports.getAvailableSlots = async (req, res, next) => {
       return next(new ErrorResponse('Counsellor ID and date are required', 400));
     }
 
+    // Prevent booking past dates
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      return res.status(200).json({
+        success: true,
+        slots: [],
+        message: 'Cannot book appointments for past dates'
+      });
+    }
+
     const counsellor = await Counsellor.findById(counsellorId);
     if (!counsellor) {
       return next(new ErrorResponse('Counsellor not found', 404));
     }
-
-    const selectedDate = new Date(date);
     const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     
     // Get counsellor's availability for the day
@@ -55,6 +67,12 @@ exports.getAvailableSlots = async (req, res, next) => {
     const startTime = dayAvailability.startTime;
     const endTime = dayAvailability.endTime;
     const slotDuration = 60; // 1 hour slots
+    
+    // Get current time for today's date
+    const now = new Date();
+    const isToday = selectedDate.toDateString() === now.toDateString();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
 
     let currentTime = startTime;
     while (currentTime < endTime) {
@@ -64,6 +82,18 @@ exports.getAvailableSlots = async (req, res, next) => {
       const isBooked = existingAppointments.some(apt => 
         apt.startTime === currentTime && apt.endTime === nextTime
       );
+      
+      // Skip past time slots for today
+      if (isToday) {
+        const [slotHour, slotMinute] = currentTime.split(':').map(Number);
+        const slotTimeInMinutes = slotHour * 60 + slotMinute;
+        const currentTimeInMinutes = currentHour * 60 + currentMinute;
+        
+        if (slotTimeInMinutes <= currentTimeInMinutes) {
+          currentTime = nextTime;
+          continue;
+        }
+      }
 
       if (!isBooked) {
         slots.push({
@@ -90,6 +120,29 @@ exports.getAvailableSlots = async (req, res, next) => {
 exports.bookAppointment = async (req, res, next) => {
   try {
     const { counsellorId, date, startTime, endTime, sessionType, notes } = req.body;
+    
+    // Prevent booking past dates and times
+    const appointmentDate = new Date(date);
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    appointmentDate.setHours(0, 0, 0, 0);
+    
+    if (appointmentDate < today) {
+      return next(new ErrorResponse('Cannot book appointments for past dates', 400));
+    }
+    
+    // Check if booking time has passed for today
+    const isToday = appointmentDate.toDateString() === today.toDateString();
+    if (isToday) {
+      const [slotHour, slotMinute] = startTime.split(':').map(Number);
+      const slotTimeInMinutes = slotHour * 60 + slotMinute;
+      const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+      
+      if (slotTimeInMinutes <= currentTimeInMinutes) {
+        return next(new ErrorResponse('Cannot book appointments for past time slots', 400));
+      }
+    }
     
     // Validate counsellor
     const counsellor = await Counsellor.findById(counsellorId).populate('user');

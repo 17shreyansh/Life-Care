@@ -197,6 +197,7 @@ export const counsellorAPI = {
   getAppointment: (id) => api.get(`/counsellor/appointments/${id}`),
   updateAppointmentStatus: (id, status, reason) => api.put(`/counsellor/appointments/${id}/status`, { status, reason }),
   addSessionNotes: (id, notesData) => api.post(`/counsellor/appointments/${id}/notes`, notesData),
+  getSessionNotes: (id) => api.get(`/counsellor/appointments/${id}/notes`),
   getEarnings: () => api.get('/counsellor/earnings'),
   requestWithdrawal: (withdrawalData) => api.post('/counsellor/withdrawals', withdrawalData),
   createBlog: (blogData) => api.post('/counsellor/blogs', blogData),

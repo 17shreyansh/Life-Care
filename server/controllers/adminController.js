@@ -298,7 +298,7 @@ exports.getCounsellor = async (req, res, next) => {
 exports.createCounsellor = async (req, res, next) => {
   try {
     const { 
-      name, email, password, phone, profilePicture,
+      name, email, password, phone, profilePicture, counsellorType,
       specializations, experience, qualifications, 
       bio, fees, languages, gender, dateOfBirth,
       address, city, state, pincode
@@ -317,7 +317,7 @@ exports.createCounsellor = async (req, res, next) => {
       password,
       phone,
       role: 'counsellor',
-      counsellorType: 'counsellor',
+      counsellorType: counsellorType || 'counsellor',
       avatar: profilePicture,
       isEmailVerified: true // Admin-created users are automatically verified
     });

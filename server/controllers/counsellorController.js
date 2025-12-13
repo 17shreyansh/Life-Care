@@ -240,7 +240,10 @@ exports.getAppointment = async (req, res, next) => {
     // Find appointment
     const appointment = await Appointment.findById(req.params.id)
       .populate('client', 'name email avatar phone')
-      .populate('sessionNotes');
+      .populate({
+        path: 'sessionNotes',
+        select: 'publicNotes privateNotes diagnosis treatmentPlan followUpRecommended followUpDate createdAt updatedAt'
+      });
     
     if (!appointment) {
       return next(new ErrorResponse(`Appointment not found with id of ${req.params.id}`, 404));

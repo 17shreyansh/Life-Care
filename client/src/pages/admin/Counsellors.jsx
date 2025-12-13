@@ -651,7 +651,21 @@ const Counsellors = () => {
             </Row>
             
             <Row>
-              <Col md={6}>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Counsellor Type <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    value={newCounsellor.counsellorType}
+                    onChange={(e) => handleInputChange('counsellorType', e.target.value)}
+                    required
+                  >
+                    <option value="counsellor">Counsellor</option>
+                    <option value="psychiatrist">Psychiatrist</option>
+                    <option value="psychologist">Psychologist</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Gender <span className="text-danger">*</span></Form.Label>
                   <Form.Select
@@ -670,7 +684,7 @@ const Counsellors = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Date of Birth <span className="text-danger">*</span></Form.Label>
                   <Form.Control
