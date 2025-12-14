@@ -175,7 +175,7 @@ const Consilar = () => {
                 variant="top" 
                 src={counsellor.user?.avatar || 'https://via.placeholder.com/300'} 
                 alt={counsellor.user?.name}
-                style={{ height: '200px', objectFit: 'cover' }}
+                style={{ height: '350px', objectFit: 'cover' }}
               />
               <Card.Body className="d-flex flex-column">
                 <Card.Title>{counsellor.user?.name}</Card.Title>

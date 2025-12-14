@@ -310,7 +310,7 @@ const Home = () => {
                         alt={counsellor.user?.name}
                         className="card-img-top"
                         style={{ 
-                          height: '300px',
+                          height: '400px',
                           objectFit: 'cover',
                           objectPosition: 'top center'
                         }}
