@@ -167,6 +167,12 @@ export const authAPI = {
 // Client API
 export const clientAPI = {
   getProfile: () => api.get('/client/profile'),
+  updateProfile: (profileData) => {
+    const isFormData = profileData instanceof FormData;
+    return api.put('/client/profile', profileData, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
+    });
+  },
   getCounsellors: (params) => api.get('/client/counsellors', { params }),
   getCounsellor: (id) => api.get(`/client/counsellors/${id}`),
   bookAppointment: (appointmentData) => api.post('/client/appointments', appointmentData),
@@ -190,7 +196,12 @@ export const appointmentAPI = {
 // Counsellor API
 export const counsellorAPI = {
   getProfile: () => api.get('/counsellor/profile'),
-  updateProfile: (profileData) => api.put('/counsellor/profile', profileData),
+  updateProfile: (profileData) => {
+    const isFormData = profileData instanceof FormData;
+    return api.put('/counsellor/profile', profileData, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
+    });
+  },
   updateAvailability: (availabilityData) => api.put('/counsellor/availability', availabilityData),
   uploadVerificationDocuments: (documents) => api.post('/counsellor/verification', { documentUrls: documents }),
   getAppointments: (params) => api.get('/counsellor/appointments', { params }),

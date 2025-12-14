@@ -29,7 +29,10 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 5000;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false
+}));
 app.use(cors({
   origin: [
     process.env.CLIENT_URL || 'http://localhost:5173',
@@ -64,8 +67,11 @@ app.use(cookieParser()); // For JWT cookies
 // Static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files with proper headers
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

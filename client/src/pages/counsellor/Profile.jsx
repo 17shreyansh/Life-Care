@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card, Form, Button, Row, Col, Alert } from 'react-bootstrap';
-import { counsellorAPI } from '../../services/api';
+import { counsellorAPI, uploadAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { getAvatarUrl } from '../../utils/imageUtils';
 import './Profile.css';
 import '../client/Dashboard.css';
 
 const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, fetchCurrentUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -165,8 +166,14 @@ const Profile = () => {
         bankDetails
       };
 
-      await counsellorAPI.updateProfile(profileData);
+      const response = await counsellorAPI.updateProfile(profileData);
+      setProfile(response.data.data);
       setSuccess('Profile updated successfully!');
+      
+      // Update user context if name or avatar changed
+      if (updateProfile) {
+        await updateProfile({ name: user.name, avatar: user.avatar });
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       setError('Failed to update profile. Please try again.');
@@ -271,6 +278,68 @@ const Profile = () => {
             
             {activeTab === 'basic' && (
               <Form onSubmit={handleSubmit}>
+                <Row className="mb-4">
+                  <Col md={12} className="text-center">
+                    <div className="avatar-upload-section" style={{ position: 'relative', display: 'inline-block' }}>
+                      <img
+                        src={getAvatarUrl(user?.avatar || profile?.user?.avatar)}
+                        alt="Profile"
+                        className="avatar-image"
+                        style={{ 
+                          width: '150px', 
+                          height: '150px', 
+                          objectFit: 'cover', 
+                          borderRadius: '50%',
+                          border: '4px solid #e9ecef'
+                        }}
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            try {
+                              const response = await uploadAPI.uploadAvatar(file);
+                              const avatarUrl = response.data.data.url;
+                              await counsellorAPI.updateProfile({ avatar: avatarUrl });
+                              await fetchCurrentUser();
+                              setSuccess('Profile picture updated successfully!');
+                            } catch (error) {
+                              setError('Failed to upload profile picture');
+                            }
+                          }
+                        }}
+                        style={{ display: 'none' }}
+                        id="avatar-upload"
+                      />
+                      <label 
+                        htmlFor="avatar-upload" 
+                        style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          right: '10px',
+                          backgroundColor: '#007bff',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: '40px',
+                          height: '40px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          border: '2px solid white',
+                          fontSize: '16px'
+                        }}
+                      >
+                        <i className="bi bi-camera"></i>
+                      </label>
+                    </div>
+                    <h5 className="mt-2">{user?.name || profile?.user?.name}</h5>
+                    <p className="text-muted">{user?.email || profile?.user?.email}</p>
+                  </Col>
+                </Row>
+                
                 <Form.Group className="mb-3">
                   <Form.Label>Bio</Form.Label>
                   <Form.Control

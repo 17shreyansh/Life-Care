@@ -63,18 +63,33 @@ exports.updateProfile = async (req, res, next) => {
     if (socialMedia) profileFields.socialMedia = socialMedia;
     if (bankDetails) profileFields.bankDetails = bankDetails;
     
+    // Update user avatar if provided
+    const userUpdateFields = {};
+    if (req.file) {
+      userUpdateFields.avatar = `/${req.file.path.replace(/\\/g, '/')}`;
+    } else if (req.body.avatar) {
+      userUpdateFields.avatar = req.body.avatar;
+    }
+    if (req.body.name) userUpdateFields.name = req.body.name;
+    if (req.body.phone) userUpdateFields.phone = req.body.phone;
+    
+    if (Object.keys(userUpdateFields).length > 0) {
+      await User.findByIdAndUpdate(req.user.id, userUpdateFields, { new: true });
+    }
+    
     if (counsellor) {
       // Update existing profile
       counsellor = await Counsellor.findOneAndUpdate(
         { user: req.user.id },
         { $set: profileFields },
         { new: true, runValidators: true }
-      );
+      ).populate('user', 'name email phone avatar');
     } else {
       // Create new profile
       profileFields.user = req.user.id;
       profileFields.name = req.user.name;
       counsellor = await Counsellor.create(profileFields);
+      counsellor = await counsellor.populate('user', 'name email phone avatar');
     }
     
     res.status(200).json({

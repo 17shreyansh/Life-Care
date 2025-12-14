@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card, Form, Button, Row, Col, Alert, Tab, Nav } from 'react-bootstrap';
-import { adminAPI } from '../../services/api';
+import { adminAPI, uploadAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { getAvatarUrl } from '../../utils/imageUtils';
 import PaymentSettings from '../../components/admin/PaymentSettings';
 import '../client/Dashboard.css';
 import './AdminStyles.css';
 
 const Settings = () => {
+  const { user, fetchCurrentUser } = useAuth();
   const [settings, setSettings] = useState({
     platform: {
       name: '',
@@ -154,6 +157,84 @@ const Settings = () => {
               {/* Platform Settings */}
               <Tab.Pane eventKey="platform">
                 <h5 className="mb-4">Platform Configuration</h5>
+                
+                {/* Admin Profile Section */}
+                <Card className="mb-4 border">
+                  <Card.Body>
+                    <h6 className="mb-3">Admin Profile</h6>
+                    <Row>
+                      <Col md={3} className="text-center">
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                          <img
+                            src={getAvatarUrl(user?.avatar)}
+                            alt="Admin Avatar"
+                            style={{ 
+                              width: '120px', 
+                              height: '120px', 
+                              objectFit: 'cover', 
+                              borderRadius: '50%',
+                              border: '3px solid #dee2e6'
+                            }}
+                          />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                try {
+                                  setSaving(true);
+                                  const response = await uploadAPI.uploadAvatar(file);
+                                  const avatarUrl = response.data.data.url;
+                                  await adminAPI.updateUser(user._id, { avatar: avatarUrl });
+                                  await fetchCurrentUser();
+                                  showAlert('Profile picture updated successfully');
+                                } catch (error) {
+                                  showAlert('Failed to upload profile picture', 'danger');
+                                } finally {
+                                  setSaving(false);
+                                }
+                              }
+                            }}
+                            style={{ display: 'none' }}
+                            id="admin-avatar-upload"
+                          />
+                          <label 
+                            htmlFor="admin-avatar-upload" 
+                            style={{
+                              position: 'absolute',
+                              bottom: '5px',
+                              right: '5px',
+                              backgroundColor: '#0d6efd',
+                              color: 'white',
+                              borderRadius: '50%',
+                              width: '36px',
+                              height: '36px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              border: '2px solid white',
+                              fontSize: '14px'
+                            }}
+                          >
+                            <i className="bi bi-camera-fill"></i>
+                          </label>
+                        </div>
+                        <h6 className="mt-2 mb-0">{user?.name}</h6>
+                        <small className="text-muted">{user?.email}</small>
+                      </Col>
+                      <Col md={9}>
+                        <p className="text-muted mb-0">
+                          <i className="bi bi-info-circle me-2"></i>
+                          Click the camera icon to update your profile picture
+                        </p>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+                
+                <h6 className="mb-3">Platform Details</h6>
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">

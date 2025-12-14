@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
-import { authAPI, uploadAPI } from '../../services/api';
+import { clientAPI, uploadAPI } from '../../services/api';
+import { getAvatarUrl } from '../../utils/imageUtils';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, setUser } = useAuth();
   const [activeTab, setActiveTab] = useState('personal');
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -57,7 +58,8 @@ const Profile = () => {
         address: formData.address
       };
       
-      await updateProfile(updateData);
+      const response = await clientAPI.updateProfile(updateData);
+      setUser(response.data.data);
       alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -148,7 +150,7 @@ const Profile = () => {
                 <Col md={3} className="text-center">
                   <div className="avatar-upload-section" style={{ position: 'relative', display: 'inline-block' }}>
                     <img
-                      src={formData.avatar || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjZTllY2VmIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjNmM3NTdkIi8+CjxwYXRoIGQ9Ik0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NXYzMEgzMHoiIGZpbGw9IiM2Yzc1N2QiLz4KPHN2Zz4K'}
+                      src={getAvatarUrl(formData.avatar)}
                       alt="Profile"
                       className="avatar-image"
                       style={{ 

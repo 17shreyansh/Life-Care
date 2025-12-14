@@ -1,5 +1,6 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
+const { uploadAvatar } = require('../middleware/upload');
 const {
   getProfile,
   updateProfile,
@@ -23,7 +24,7 @@ router.use(authorize('counsellor'));
 
 // Profile routes
 router.get('/profile', getProfile);
-router.put('/profile', updateProfile);
+router.put('/profile', uploadAvatar, updateProfile);
 router.put('/availability', updateAvailability);
 router.post('/verification', uploadVerificationDocuments);
 

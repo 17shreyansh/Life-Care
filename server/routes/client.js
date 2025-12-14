@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   getProfile,
+  updateProfile,
   getCounsellors,
   getCounsellor,
   bookAppointment,
@@ -12,6 +13,7 @@ const {
 } = require('../controllers/clientController');
 
 const { protect, authorize } = require('../middleware/auth');
+const { uploadAvatar } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -21,6 +23,7 @@ router.use(authorize('client'));
 
 // Profile routes
 router.get('/profile', getProfile);
+router.put('/profile', uploadAvatar, updateProfile);
 
 // Counsellor routes
 router.get('/counsellors', getCounsellors);

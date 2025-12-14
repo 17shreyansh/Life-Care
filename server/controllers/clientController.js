@@ -20,6 +20,40 @@ exports.getProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Update client profile
+// @route   PUT /api/client/profile
+// @access  Private (Client only)
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const fieldsToUpdate = {};
+    
+    if (req.body.name) fieldsToUpdate.name = req.body.name;
+    if (req.body.phone) fieldsToUpdate.phone = req.body.phone;
+    if (req.body.dateOfBirth) fieldsToUpdate.dateOfBirth = req.body.dateOfBirth;
+    if (req.body.gender) fieldsToUpdate.gender = req.body.gender;
+    if (req.body.address) fieldsToUpdate.address = req.body.address;
+
+    // Handle avatar from file upload or direct URL
+    if (req.file) {
+      fieldsToUpdate.avatar = `/${req.file.path.replace(/\\/g, '/')}`;
+    } else if (req.body.avatar) {
+      fieldsToUpdate.avatar = req.body.avatar;
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+      new: true,
+      runValidators: true
+    });
+
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get all counsellors
 // @route   GET /api/client/counsellors
 // @access  Private (Client only)

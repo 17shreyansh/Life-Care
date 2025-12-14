@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Form, Button, Image } from 'react-bootstrap';
 import { uploadAPI } from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const ImageUpload = ({ 
   type = 'avatar', 
@@ -61,7 +62,7 @@ const ImageUpload = ({
     <div className={`text-center ${className}`}>
       <div className="mb-3">
         <Image
-          src={preview || '/default-avatar.png'}
+          src={getImageUrl(preview) || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjZTllY2VmIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjNmM3NTdkIi8+CjxwYXRoIGQ9Ik0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NXYzMEgzMHoiIGZpbGw9IiM2Yzc1N2QiLz4KPHN2Zz4K'}
           roundedCircle={type === 'avatar'}
           style={{ 
             width: size, 
