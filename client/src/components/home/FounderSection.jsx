@@ -37,6 +37,14 @@ const FounderSection = () => {
               <h3 className="founder-name">Monish Khera</h3>
               <p className="founder-title">Child, Adolescent and Rehabilitation Psychologist</p>
               <p className="founder-experience">20 Years of Counselling Experience</p>
+              <div className="founder-social">
+                <a href="https://www.instagram.com/psychological_life_care?igsh=N2Z5NnZoaXI0NmVv&utm_source=qr" target="_blank" rel="noopener noreferrer" className="founder-social-link" aria-label="Instagram">
+                  <i className="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.youtube.com/@monikr5665" target="_blank" rel="noopener noreferrer" className="founder-social-link" aria-label="YouTube">
+                  <i className="bi bi-youtube"></i>
+                </a>
+              </div>
             </div>
           </div>
 

@@ -80,6 +80,32 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.founder-social {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.founder-social-link {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.founder-social-link:hover {
+  background: white;
+  color: var(--color-primary-500, #4C6FAF);
+  transform: translateY(-2px);
+}
+
 .achievements-section {
   margin-top: 40px;
 }
