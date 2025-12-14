@@ -147,6 +147,65 @@ const Home = () => {
       {/* Founder Section */}
       <FounderSection />
 
+
+{/* Featured Counsellors */}
+      <section className="py-5 bg-light">
+        <div className="container">
+          <div className="text-center mb-5">
+            <h6 className="text-primary fw-bold mb-2">OUR EXPERTS</h6>
+            <h2 className="mb-4">Featured Counsellors</h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
+              Our team consists of qualified and experienced mental health professionals dedicated to providing the best care.
+            </p>
+          </div>
+          {!loading && counsellors.length > 0 ? (
+            <div className="row g-4">
+              {counsellors.map((counsellor, index) => (
+                <div className="col-md-6 col-lg-4" key={counsellor._id}>
+                  <div className={`card team-card ${index === 0 ? 'card-gradient-blue' : index === 1 ? 'card-gradient-green' : 'card-gradient-purple'} border-0 shadow-sm`}>
+                    <div className="team-image-wrapper">
+                      <img 
+                        src={counsellor.user?.avatar || 'https://via.placeholder.com/400'}
+                        alt={counsellor.user?.name}
+                        className="card-img-top"
+                        style={{ 
+                          height: '400px',
+                          objectFit: 'cover',
+                          objectPosition: 'top center'
+                        }}
+                      />
+                    </div>
+                    <div className="card-body text-center p-4">
+                      <h5 className="card-title mb-1">{counsellor.user?.name}</h5>
+                      <p className="text-primary mb-3">{counsellor.specializations?.join(', ') || 'Mental Health Professional'}</p>
+                      <p className="card-text text-muted mb-3">
+                        {counsellor.experience ? `${counsellor.experience} years of experience` : 'Experienced professional'}
+                      </p>
+                      <button className="btn btn-primary w-100" onClick={() => handleBookSession(counsellor)}>Book Session</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-5">
+              {loading ? (
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              ) : (
+                <p className="text-muted">No counsellors available at the moment.</p>
+              )}
+            </div>
+          )}
+          <div className="text-center mt-4">
+            <Link to="/consilar" className="btn btn-primary">
+              <i className="bi bi-people me-2"></i>View All Counsellors
+            </Link>
+          </div>
+        </div>
+      </section>
+      
       {/* Clinic Gallery */}
       <ClinicGallery />
 
@@ -289,63 +348,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Counsellors */}
-      <section className="py-5 bg-light">
-        <div className="container">
-          <div className="text-center mb-5">
-            <h6 className="text-primary fw-bold mb-2">OUR EXPERTS</h6>
-            <h2 className="mb-4">Featured Counsellors</h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: '700px' }}>
-              Our team consists of qualified and experienced mental health professionals dedicated to providing the best care.
-            </p>
-          </div>
-          {!loading && counsellors.length > 0 ? (
-            <div className="row g-4">
-              {counsellors.map((counsellor, index) => (
-                <div className="col-md-6 col-lg-4" key={counsellor._id}>
-                  <div className={`card team-card ${index === 0 ? 'card-gradient-blue' : index === 1 ? 'card-gradient-green' : 'card-gradient-purple'} border-0 shadow-sm`}>
-                    <div className="team-image-wrapper">
-                      <img 
-                        src={counsellor.user?.avatar || 'https://via.placeholder.com/400'}
-                        alt={counsellor.user?.name}
-                        className="card-img-top"
-                        style={{ 
-                          height: '400px',
-                          objectFit: 'cover',
-                          objectPosition: 'top center'
-                        }}
-                      />
-                    </div>
-                    <div className="card-body text-center p-4">
-                      <h5 className="card-title mb-1">{counsellor.user?.name}</h5>
-                      <p className="text-primary mb-3">{counsellor.specializations?.join(', ') || 'Mental Health Professional'}</p>
-                      <p className="card-text text-muted mb-3">
-                        {counsellor.experience ? `${counsellor.experience} years of experience` : 'Experienced professional'}
-                      </p>
-                      <button className="btn btn-primary w-100" onClick={() => handleBookSession(counsellor)}>Book Session</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-5">
-              {loading ? (
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              ) : (
-                <p className="text-muted">No counsellors available at the moment.</p>
-              )}
-            </div>
-          )}
-          <div className="text-center mt-4">
-            <Link to="/consilar" className="btn btn-primary">
-              <i className="bi bi-people me-2"></i>View All Counsellors
-            </Link>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Testimonials */}
       <section className="py-5">
