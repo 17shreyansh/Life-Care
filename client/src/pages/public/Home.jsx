@@ -178,9 +178,10 @@ const Home = () => {
                     <div className="card-body text-center p-4">
                       <h5 className="card-title mb-1">{counsellor.user?.name}</h5>
                       <p className="text-primary mb-3">{counsellor.specializations?.join(', ') || 'Mental Health Professional'}</p>
-                      <p className="card-text text-muted mb-3">
+                      <p className="card-text text-muted mb-2">
                         {counsellor.experience ? `${counsellor.experience} years of experience` : 'Experienced professional'}
                       </p>
+                      <p className="fw-bold text-success mb-3">Online fees: ₹{counsellor.fees?.video || counsellor.fees || 850} per session</p>
                       <button className="btn btn-primary w-100" onClick={() => handleBookSession(counsellor)}>Book Session</button>
                     </div>
                   </div>

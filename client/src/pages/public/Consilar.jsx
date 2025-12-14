@@ -182,7 +182,7 @@ const Consilar = () => {
                 <Card.Text>
                   <strong>Specializations:</strong> {counsellor.specializations?.join(', ')}<br />
                   <strong>Experience:</strong> {counsellor.experience} years<br />
-                  <strong>Fee:</strong> ₹{counsellor.fees?.video || counsellor.fees} per session
+                  <strong>Online fees:</strong> ₹{counsellor.fees?.video || counsellor.fees} per session
                 </Card.Text>
                 <Button 
                   variant="primary" 
