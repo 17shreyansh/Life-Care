@@ -33,7 +33,7 @@ app.use(helmet());
 app.use(cors({
   origin: [
     process.env.CLIENT_URL || 'http://localhost:5173',
-    'https://www.plcc.com' // Add your actual frontend URL
+    'https://www.plcc.in' // Add your actual frontend URL
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
