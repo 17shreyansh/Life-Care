@@ -32,7 +32,10 @@ const {
   getReports,
   getDashboardStats,
   getSettings,
-  updateSettings
+  updateSettings,
+  getCallbackRequests,
+  updateCallbackRequest,
+  deleteCallbackRequest
 } = require('../controllers/adminController');
 
 const { protect, authorize } = require('../middleware/auth');
@@ -111,5 +114,13 @@ router.get('/reports', getReports);
 router.route('/settings')
   .get(getSettings)
   .put(updateSettings);
+
+// Callback request routes
+router.route('/callbacks')
+  .get(getCallbackRequests);
+
+router.route('/callbacks/:id')
+  .put(updateCallbackRequest)
+  .delete(deleteCallbackRequest);
 
 module.exports = router;

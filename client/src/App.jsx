@@ -65,6 +65,7 @@ import BlogEditor from './pages/admin/BlogEditor';
 import AdminReports from './pages/admin/Reports';
 import AdminSettings from './pages/admin/Settings';
 import AdminDisputes from './pages/admin/Disputes';
+import AdminCallbacks from './pages/admin/CallbackRequests';
 
 function App() {
   return (
@@ -143,6 +144,7 @@ function App() {
               <Route path="reports" element={<AdminReports />} />
               <Route path="disputes" element={<AdminDisputes />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="callbacks" element={<AdminCallbacks />} />
             </Route>
           </Route>
           

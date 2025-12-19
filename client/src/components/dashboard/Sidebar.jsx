@@ -53,6 +53,7 @@ const Sidebar = ({ userRole, onToggle, mobileOpen, setMobileOpen }) => {
           { path: '/admin/users', icon: 'bi-people', label: 'Users' },
           { path: '/admin/counsellors', icon: 'bi-person-badge', label: 'Counsellors' },
           { path: '/admin/appointments', icon: 'bi-calendar-check', label: 'Appointments' },
+          { path: '/admin/callbacks', icon: 'bi-telephone', label: 'Callback Requests' },
           { path: '/admin/withdrawals', icon: 'bi-cash-coin', label: 'Withdrawals' },
           { path: '/admin/disputes', icon: 'bi-exclamation-triangle', label: 'Disputes' },
           { path: '/admin/content', icon: 'bi-file-earmark-text', label: 'Content' },

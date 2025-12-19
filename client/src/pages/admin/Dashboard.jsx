@@ -23,10 +23,15 @@ const Dashboard = () => {
     content: {
       blogs: 0,
       videos: 0
+    },
+    callbacks: {
+      total: 0,
+      pending: 0
     }
   });
   const [loading, setLoading] = useState(true);
   const [pendingCounsellors, setPendingCounsellors] = useState([]);
+  const [pendingCallbacks, setPendingCallbacks] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -37,7 +42,20 @@ const Dashboard = () => {
         
         // Fetch pending counsellors
         const counsellorsRes = await adminAPI.getCounsellors({ isVerified: false });
-        setPendingCounsellors(counsellorsRes.data.data.slice(0, 5)); // Show only 5 pending counsellors
+        setPendingCounsellors(counsellorsRes.data.data.slice(0, 5));
+        
+        // Fetch pending callbacks
+        const callbacksRes = await adminAPI.getCallbackRequests({ status: 'pending' });
+        setPendingCallbacks(callbacksRes.data.data.slice(0, 5));
+        
+        // Update stats with callback count
+        setStats(prev => ({
+          ...prev,
+          callbacks: {
+            total: callbacksRes.data.pagination.total,
+            pending: callbacksRes.data.pagination.total
+          }
+        }));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -98,11 +116,11 @@ const Dashboard = () => {
           <Card className="stat-card">
             <Card.Body className="d-flex align-items-center">
               <div className="stat-icon">
-                <i className="bi bi-cash-coin"></i>
+                <i className="bi bi-telephone"></i>
               </div>
               <div className="stat-content">
-                <h5 className="stat-title">Total Revenue</h5>
-                <h2 className="stat-value">{formatCurrency(stats.finances.totalRevenue)}</h2>
+                <h5 className="stat-title">Callback Requests</h5>
+                <h2 className="stat-value">{stats.callbacks?.pending || 0}</h2>
               </div>
             </Card.Body>
           </Card>
@@ -112,11 +130,11 @@ const Dashboard = () => {
           <Card className="stat-card">
             <Card.Body className="d-flex align-items-center">
               <div className="stat-icon">
-                <i className="bi bi-wallet2"></i>
+                <i className="bi bi-cash-coin"></i>
               </div>
               <div className="stat-content">
-                <h5 className="stat-title">Pending Withdrawals</h5>
-                <h2 className="stat-value">{stats.finances.pendingWithdrawals}</h2>
+                <h5 className="stat-title">Total Revenue</h5>
+                <h2 className="stat-value">{formatCurrency(stats.finances.totalRevenue)}</h2>
               </div>
             </Card.Body>
           </Card>
@@ -295,8 +313,8 @@ const Dashboard = () => {
                   </Link>
                 </Col>
                 <Col md={3}>
-                  <Link to="/admin/withdrawals" className="btn btn-outline-primary d-block mb-2">
-                    <i className="bi bi-cash-coin me-2"></i>Process Withdrawals
+                  <Link to="/admin/callbacks" className="btn btn-outline-primary d-block mb-2">
+                    <i className="bi bi-telephone me-2"></i>Callback Requests
                   </Link>
                 </Col>
               </Row>

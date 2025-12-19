@@ -291,7 +291,12 @@ export const adminAPI = {
   
   // Settings
   getSettings: () => api.get('/admin/settings'),
-  updateSettings: (settingsData) => api.put('/admin/settings', settingsData)
+  updateSettings: (settingsData) => api.put('/admin/settings', settingsData),
+  
+  // Callback Requests
+  getCallbackRequests: (params) => api.get('/admin/callbacks', { params }),
+  updateCallbackRequest: (id, data) => api.put(`/admin/callbacks/${id}`, data),
+  deleteCallbackRequest: (id) => api.delete(`/admin/callbacks/${id}`)
 };
 
 // CMS API (Public)

@@ -7,6 +7,7 @@ const Blog = require('../models/Blog');
 const Video = require('../models/Video');
 const GalleryImage = require('../models/GalleryImage');
 const ErrorResponse = require('../utils/errorResponse');
+const CallbackRequest = require('../models/CallbackRequest');
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -1502,6 +1503,75 @@ exports.handleDispute = async (req, res, next) => {
       success: true,
       data: appointment
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// @desc    Get all callback requests
+// @route   GET /api/admin/callbacks
+// @access  Private (Admin only)
+exports.getCallbackRequests = async (req, res, next) => {
+  try {
+    let query = {};
+    if (req.query.status) query.status = req.query.status;
+    
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    
+    const callbacks = await CallbackRequest.find(query)
+      .sort({ createdAt: -1 })
+      .skip(startIndex)
+      .limit(limit);
+    
+    const total = await CallbackRequest.countDocuments(query);
+    
+    res.status(200).json({
+      success: true,
+      count: callbacks.length,
+      pagination: { total, page, pages: Math.ceil(total / limit) },
+      data: callbacks
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update callback request
+// @route   PUT /api/admin/callbacks/:id
+// @access  Private (Admin only)
+exports.updateCallbackRequest = async (req, res, next) => {
+  try {
+    const { status, notes } = req.body;
+    const callback = await CallbackRequest.findByIdAndUpdate(
+      req.params.id,
+      { status, notes },
+      { new: true, runValidators: true }
+    );
+    
+    if (!callback) {
+      return next(new ErrorResponse(`Callback request not found with id of ${req.params.id}`, 404));
+    }
+    
+    res.status(200).json({ success: true, data: callback });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete callback request
+// @route   DELETE /api/admin/callbacks/:id
+// @access  Private (Admin only)
+exports.deleteCallbackRequest = async (req, res, next) => {
+  try {
+    const callback = await CallbackRequest.findById(req.params.id);
+    if (!callback) {
+      return next(new ErrorResponse(`Callback request not found with id of ${req.params.id}`, 404));
+    }
+    await CallbackRequest.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, data: {} });
   } catch (error) {
     next(error);
   }

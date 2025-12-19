@@ -14,6 +14,7 @@ import WelcomePopup from '../../components/shared/WelcomePopup';
 import CounsellorGallery from '../../components/home/CounsellorGallery';
 import FounderSection from '../../components/home/FounderSection';
 import ClinicGallery from '../../components/home/ClinicGallery';
+import AppointmentRequestSection from '../../components/home/AppointmentRequestSection';
 import MarqueeBanner from '../../components/ui/MarqueeBanner';
 import HeroImage from '../../assets/woman-psychologist.jpg';
 import JustDialImage from '../../assets/justdial.jpg';
@@ -146,6 +147,9 @@ const Home = () => {
 
       {/* Founder Section */}
       <FounderSection />
+
+      {/* Appointment Request Section */}
+      <AppointmentRequestSection />
 
 
 {/* Featured Counsellors */}
