@@ -21,6 +21,7 @@ import Videos from './pages/public/Videos';
 import Contact from './pages/public/Contact';
 import CounsellorsDemo from './pages/public/CounsellorsDemo';
 import Consilar from './pages/public/Consilar';
+import ConditionDetail from './pages/public/conditions/ConditionDetail';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -72,6 +73,15 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />
       <AuthProvider>
+        {/* Floating Action Buttons */}
+        <div className="floating-actions">
+          <a href="https://wa.me/9716129129" target="_blank" rel="noopener noreferrer" className="floating-btn whatsapp-btn" title="Chat on WhatsApp">
+            <i className="bi bi-whatsapp"></i>
+          </a>
+          <a href="tel:+919716129129" className="floating-btn contact-btn" title="Call Us">
+            <i className="bi bi-telephone-fill"></i>
+          </a>
+        </div>
         <Routes>
           {/* Public Routes with MainLayout */}
           <Route path="/" element={<MainLayout />}>
@@ -82,6 +92,7 @@ function App() {
             <Route path="videos" element={<Videos />} />
             <Route path="contact" element={<Contact />} />
             <Route path="consilar" element={<Consilar />} />
+            <Route path="conditions/:condition" element={<ConditionDetail />} />
           </Route>
           
           {/* Auth Routes */}

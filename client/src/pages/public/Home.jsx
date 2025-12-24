@@ -142,16 +142,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Counsellor Gallery */}
-      <CounsellorGallery />
-
-      {/* Founder Section */}
-      <FounderSection />
-
-      {/* Appointment Request Section */}
-      <AppointmentRequestSection />
-
-
+      
 {/* Featured Counsellors */}
       <section className="py-5 bg-light">
         <div className="container">
@@ -210,6 +201,16 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Counsellor Gallery */}
+
+      {/* Founder Section */}
+      <FounderSection />
+
+      {/* Appointment Request Section */}
+
+      <CounsellorGallery />
+
       
       {/* Clinic Gallery */}
       <ClinicGallery />
